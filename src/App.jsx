@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Step1PersonalRisk from './pages/Step1PersonalRisk';
-import Step2IncomeExpenses from './pages/Step2IncomeExpenses';
-import Step3AssetsLiabilities from './pages/Step3AssetsLiabilities';
-import Step4FinancialGoals from './pages/Step4FinancialGoals';
-import Step5InsuranceGap from './pages/Step5InsuranceGap';
-import Step6TaxOptimization from './pages/Step6TaxOptimization';
-import AssessmentComplete from './pages/AssessmentComplete';
+import Layout from './components/layout/Layout';
+import Home from './features/dashboard/pages/Home';
+import Step1PersonalRisk from './features/assessment/pages/Step1PersonalRisk';
+import Step2IncomeExpenses from './features/assessment/pages/Step2IncomeExpenses';
+import Step3AssetsLiabilities from './features/assessment/pages/Step3AssetsLiabilities';
+import Step4FinancialGoals from './features/assessment/pages/Step4FinancialGoals';
+import Step5InsuranceGap from './features/assessment/pages/Step5InsuranceGap';
+import Step6TaxOptimization from './features/assessment/pages/Step6TaxOptimization';
+import AssessmentComplete from './features/assessment/pages/AssessmentComplete';
 
 const queryClient = new QueryClient();
 
