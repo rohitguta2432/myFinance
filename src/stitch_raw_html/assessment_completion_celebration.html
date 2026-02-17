@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assessment Complete</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Confetti Pattern for Background */
+        .confetti-bg {
+            background-image: radial-gradient(#0df259 1.5px, transparent 1.5px), radial-gradient(#0df259 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            opacity: 0.1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-between text-slate-900 dark:text-white antialiased overflow-hidden relative">
+<!-- Background Pattern -->
+<div class="absolute inset-0 confetti-bg pointer-events-none z-0"></div>
+<!-- Main Content Wrapper -->
+<div class="flex-1 w-full max-w-md flex flex-col items-center justify-center p-6 z-10 space-y-8">
+<!-- Hero Image / Icon -->
+<div class="relative w-full flex justify-center py-6">
+<div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75 animate-pulse"></div>
+<!-- Image placeholder describing a 3D celebratory financial icon -->
+<div class="relative w-48 h-48 bg-contain bg-center bg-no-repeat drop-shadow-[0_0_15px_rgba(13,242,89,0.3)]" data-alt="3D glossy green shield with a checkmark floating in dark space, high quality render" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAy5AF4mKZc2zvFjMpxYrF5E-icoFo4P2Bw6OEQqfh2ijswrdsdKBe-u-ig2mVW5HjMwujf1Hge937_IGsIdOGl-sVZxzs9u6dINsBHMdd48Uk-Yz7tdO_n_sbep1CBn1k_5PyOUeAMLLlG9VqZaV_GOMmiRl5YtDqPPC7ey6SD0-3hkAs9AEzGZiCDs3WeLAKfYxC6jCyq4p5XfCtdL2kWlhBgVAM8Hhr5RMWnqSv8kF947lfnQDn-jeyK1rjQznQtEPcMn0vsxa4');">
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center space-y-3">
+<h1 class="text-3xl font-extrabold tracking-tight text-white leading-tight">
+<span class="inline-block animate-bounce mr-2">🎉</span>ASSESSMENT<br/>COMPLETE!
+            </h1>
+<p class="text-slate-400 text-lg font-medium leading-relaxed max-w-[280px] mx-auto">
+                Your Financial Position Summary is ready!
+            </p>
+</div>
+<!-- Checklist Card -->
+<div class="w-full bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm shadow-xl">
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 group">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+<p class="text-white text-base font-medium flex-1 group-hover:text-primary transition-colors">
+                        Net Worth Calculated
+                    </p>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 group">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+<p class="text-white text-base font-medium flex-1 group-hover:text-primary transition-colors">
+                        Tax Savings Found
+                    </p>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 group">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+<p class="text-white text-base font-medium flex-1 group-hover:text-primary transition-colors">
+                        Insurance Gaps Identified
+                    </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="w-full max-w-md p-6 z-10 pb-10">
+<button class="w-full h-14 bg-primary hover:bg-[#0be050] active:scale-[0.98] transition-all duration-200 text-background-dark text-lg font-bold rounded-lg shadow-[0_0_20px_rgba(13,242,89,0.4)] flex items-center justify-center group">
+<span class="mr-2">View Your Dashboard</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</body></html>

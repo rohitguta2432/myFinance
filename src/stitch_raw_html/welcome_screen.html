@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MyFinancial Welcome Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259",
+                        "primary-dark": "#0ab842",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1a3322",
+                        "surface-dark-light": "#23422e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col overflow-hidden relative selection:bg-primary selection:text-background-dark">
+<!-- Sticky Trust Banner -->
+<div class="bg-primary/10 border-b border-primary/20 backdrop-blur-md sticky top-0 z-50 pt-safe-top">
+<div class="px-4 py-3 flex items-start justify-center gap-2 text-center">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 translate-y-[2px]">lock</span>
+<p class="text-primary text-xs font-medium leading-relaxed">
+                No Name/Phone/Email Required · Data Stays on Device · Export Anytime
+            </p>
+</div>
+</div>
+<!-- Main Content Area with Scroll -->
+<div class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<!-- Header / Nav -->
+<div class="flex items-center justify-between p-6">
+<div class="flex items-center gap-2">
+<div class="bg-primary/20 p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">shield_person</span>
+</div>
+<h2 class="text-white text-lg font-bold tracking-tight">MyFinancial</h2>
+</div>
+<!-- Optional Menu Icon -->
+<button class="text-white/60 hover:text-white transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Hero Section -->
+<div class="px-6 pt-2 pb-8 text-center">
+<h1 class="text-white text-[34px] leading-[1.15] font-extrabold tracking-tight mb-4">
+                Fix Your Finances Early, or Pay <span class="text-primary">10× Later</span>
+</h1>
+<p class="text-white/70 text-base font-normal leading-relaxed max-w-sm mx-auto">
+                Most professionals lose lakhs in opportunity cost by ignoring financial planning. Get your free Financial Position Summary in 10 minutes.
+            </p>
+</div>
+<!-- Social Proof Pill -->
+<div class="flex justify-center mb-8">
+<div class="bg-surface-dark border border-white/10 rounded-full py-2 pl-2 pr-4 flex items-center gap-3">
+<div class="flex -space-x-2">
+<img alt="User avatar" class="w-8 h-8 rounded-full border-2 border-surface-dark object-cover" data-alt="Smiling woman portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACSVuZ2uj4gdwvCukFMOSsdEarjqe0sVPBULppTIaJoe9CeBxvpXNYoz2CyuQwc4V1x0mxi4d-JqghzUew2BJox9Ebdmnuq_8easpVyjYdWjU-gs-dZBLHCq-SaqC_AD-j_7xeh_zMvQwde9TP4kn2jLk2F84CFICN4jKatVqGm1RmEqjfcjzrPX2YBNstZLdfYHfBMhrAhoRHl3Vjyx6NC79sSeABq64fVNpX-Iwwkz4ji-3jcyzmSLlHFVBlg0gsc6x33NmjBJs"/>
+<img alt="User avatar" class="w-8 h-8 rounded-full border-2 border-surface-dark object-cover" data-alt="Confident man portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsNRd6VqTqJVXn2exqPcTGvb2TeJdLsG17kHx0fHUqlCw8tSvy5JK6J4VBH2B1V9IwqImgoipcsgBfg8RZ-iv8Vr6tpTzhHUrJf1nOhmSWrrhNGPdqiSgGCCjf4INCqSN9EZgr33ZiUtkaafiIEfHEUMAszStms4UAHtpQ-nljF_hekd0RnpVnE_OX79RFT_WZ0fxkoFKF7fDOtAVQtcModwnI0UMf2phmUeyvox3QhMJh0k0eenpawLvF-bqE-o6E_GgGGCMDVM"/>
+<img alt="User avatar" class="w-8 h-8 rounded-full border-2 border-surface-dark object-cover" data-alt="Smiling man glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAvh2mBaUZ2rAnimgB55WKU9BwIRZW2pLwBNpsbpgtlN-4vyBHZDt84idl0Q9DPGP1tcrzjuAxfZ1vrKQqaVG27o8iX6KcyoUNA51zdv25lbfhZMjTTKyymk0X7VURXYZ6qrwRRT8ilX_5ZKX_c8rfNLUtXYUfeHitk9bNrd2034RqP4zsyOvSOL0gIqECJ6vABrF7S2n1p7B9DZa1yJXtg6ugI1U2yEW0jiM9jLcPwC6wFq6xG5s9EfbSZrhjlL4Y7TMd3jUUGSc"/>
+</div>
+<div class="flex flex-col items-start">
+<div class="flex text-yellow-400 text-[10px] gap-0.5">
+<span class="material-symbols-outlined text-[12px] fill">star</span>
+<span class="material-symbols-outlined text-[12px] fill">star</span>
+<span class="material-symbols-outlined text-[12px] fill">star</span>
+<span class="material-symbols-outlined text-[12px] fill">star</span>
+<span class="material-symbols-outlined text-[12px] fill">star</span>
+</div>
+<span class="text-white/80 text-xs font-medium">50,000+ Indians trust us</span>
+</div>
+</div>
+</div>
+<!-- Feature Cards Grid -->
+<div class="px-6 space-y-4 mb-8">
+<!-- Card 1: Post-Tax Return -->
+<div class="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-primary text-6xl">trending_up</span>
+</div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="bg-primary/10 p-3 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-primary">monitoring</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">Post-Tax Return Analysis</h3>
+<p class="text-white/60 text-sm leading-snug">See the real growth of your wealth after taxes and inflation eats into your returns.</p>
+</div>
+</div>
+<!-- Visual Decoration -->
+<div class="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-3/4 rounded-full"></div>
+</div>
+</div>
+<!-- Card 2: Tax Regime Optimizer -->
+<div class="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-primary text-6xl">calculate</span>
+</div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="bg-primary/10 p-3 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">Tax Regime Optimizer</h3>
+<div class="inline-block bg-white/10 rounded px-2 py-0.5 mb-2">
+<span class="text-[10px] text-primary font-bold uppercase tracking-wider">FY 2026-27 Ready</span>
+</div>
+<p class="text-white/60 text-sm leading-snug">Compare Old vs. New regime instantly tailored to your specific deductions.</p>
+</div>
+</div>
+</div>
+<!-- Card 3: Goal Roadmap -->
+<div class="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-primary text-6xl">flag</span>
+</div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="bg-primary/10 p-3 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-primary">flag</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">Goal-Based Roadmap</h3>
+<p class="text-white/60 text-sm leading-snug">Map your savings to life events like buying a home, education, or retirement.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Note -->
+<p class="text-center text-white/30 text-xs px-8 pb-8">
+            MyFinancial is a privacy-first tool. We do not sell your data to banks or insurance agents.
+        </p>
+</div>
+<!-- Sticky Bottom CTA -->
+<div class="absolute bottom-0 left-0 w-full bg-background-dark/80 backdrop-blur-xl border-t border-white/5 p-5 pb-8 z-40">
+<button class="w-full bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-background-dark font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(13,242,89,0.3)]">
+            Start Free Assessment
+            <span class="material-symbols-outlined text-xl font-bold">arrow_forward</span>
+</button>
+</div>
+</body></html>

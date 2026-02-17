@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personal &amp; Risk Profile</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0df259",
+              "background-light": "#f5f8f6",
+              "background-dark": "#102216",
+              "surface-dark": "#162e1e",
+              "surface-active": "#1f3d2a",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            spacing: {
+                '18': '4.5rem',
+            }
+          },
+        },
+      }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #102216; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f3d2a; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0df259; 
+        }
+
+        /* Range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #0df259;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(13, 242, 89, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #1f3d2a;
+            border-radius: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
+<div class="flex items-center p-4 pb-2 justify-between">
+<button class="text-slate-600 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">
+                    Profile &amp; Risk
+                </h2>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-2 px-6 pb-4">
+<div class="flex justify-between items-end">
+<p class="text-primary text-xs font-semibold uppercase tracking-wider">Step 1 of 6</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">16% Completed</p>
+</div>
+<div class="h-1.5 w-full rounded-full bg-gray-200 dark:bg-surface-active overflow-hidden">
+<div class="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(13,242,89,0.5)]" style="width: 16%;"></div>
+</div>
+</div>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-32">
+<!-- Section A: Demographics -->
+<section class="space-y-5">
+<div class="flex items-center gap-2 mb-2">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30">A</span>
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Demographics</h3>
+</div>
+<!-- Age Slider -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-5 shadow-sm">
+<div class="flex justify-between items-center mb-4">
+<label class="text-sm font-medium text-slate-500 dark:text-slate-400">Your Age</label>
+<span class="text-2xl font-mono font-bold text-primary">30</span>
+</div>
+<div class="relative w-full h-6 flex items-center">
+<input class="z-10 relative" max="75" min="18" type="range" value="30"/>
+<!-- Custom track fill logic would be JS, visually represented here by static styling in style block -->
+</div>
+<div class="flex justify-between mt-1 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+<span>18</span>
+<span>75+</span>
+</div>
+</div>
+<!-- City Type -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-5 shadow-sm space-y-3">
+<label class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Current City Tier</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="flex items-center justify-center py-2.5 px-3 rounded-lg bg-primary text-background-dark font-bold text-sm shadow-[0_0_15px_rgba(13,242,89,0.3)] transition-all transform hover:scale-[1.02]">
+                            Metro
+                        </button>
+<button class="flex items-center justify-center py-2.5 px-3 rounded-lg bg-gray-100 dark:bg-surface-active text-slate-600 dark:text-slate-300 font-medium text-sm hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                            Tier 1
+                        </button>
+<button class="flex items-center justify-center py-2.5 px-3 rounded-lg bg-gray-100 dark:bg-surface-active text-slate-600 dark:text-slate-300 font-medium text-sm hover:bg-gray-200 dark:hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                            Tier 2
+                        </button>
+</div>
+</div>
+<!-- Grouped Inputs: Marital Status & Dependents -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Marital Status -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-5 shadow-sm space-y-3">
+<label class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Marital Status</label>
+<div class="flex p-1 bg-gray-100 dark:bg-surface-active rounded-lg">
+<button class="flex-1 py-2 rounded-md bg-white dark:bg-background-dark text-slate-900 dark:text-primary shadow-sm font-semibold text-sm transition-all">Single</button>
+<button class="flex-1 py-2 rounded-md text-slate-500 dark:text-slate-400 font-medium text-sm hover:text-slate-700 dark:hover:text-white transition-colors">Married</button>
+</div>
+</div>
+<!-- Dependents -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-5 shadow-sm flex items-center justify-between">
+<div>
+<label class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Dependents</label>
+<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Parents, children, spouse</p>
+</div>
+<div class="flex items-center gap-3 bg-gray-100 dark:bg-surface-active rounded-lg p-1">
+<button class="size-8 flex items-center justify-center rounded bg-white dark:bg-background-dark text-slate-400 hover:text-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="w-4 text-center font-mono font-bold text-lg dark:text-white">2</span>
+<button class="size-8 flex items-center justify-center rounded bg-white dark:bg-background-dark text-primary hover:text-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Dropdowns -->
+<div class="grid grid-cols-2 gap-3">
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-4 shadow-sm relative group cursor-pointer">
+<label class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">Employment</label>
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Salaried</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">keyboard_arrow_down</span>
+</div>
+</div>
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-4 shadow-sm relative group cursor-pointer">
+<label class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1">Residency</label>
+<div class="flex items-center justify-between">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Resident</span>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">keyboard_arrow_down</span>
+</div>
+</div>
+</div>
+</section>
+<div class="h-px w-full bg-gray-200 dark:bg-white/10 my-2"></div>
+<!-- Section B: Risk Profile -->
+<section class="space-y-5">
+<div class="flex items-center gap-2 mb-2">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30">B</span>
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Risk Assessment</h3>
+</div>
+<!-- Question 1 (Expanded) -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
+<div class="p-4 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-surface-active/30">
+<div class="flex justify-between items-start gap-4">
+<p class="text-sm font-medium text-slate-900 dark:text-white leading-relaxed">
+<span class="text-primary font-bold mr-1">Q1.</span> 
+                                If your investment drops by 20% in 3 months, what would you do?
+                            </p>
+</div>
+</div>
+<div class="p-2 space-y-1">
+<label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-surface-active cursor-pointer transition-colors border border-transparent hover:border-white/5 group">
+<div class="relative flex items-center justify-center size-5 rounded-full border-2 border-slate-300 dark:border-slate-500 group-hover:border-primary">
+<div class="size-2.5 rounded-full bg-primary hidden group-hover:block"></div>
+</div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Sell immediately to prevent further loss</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-lg bg-primary/10 border border-primary/30 cursor-pointer transition-colors">
+<div class="relative flex items-center justify-center size-5 rounded-full border-2 border-primary">
+<div class="size-2.5 rounded-full bg-primary"></div>
+</div>
+<span class="text-sm text-slate-900 dark:text-white font-medium">Hold and wait for recovery</span>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-surface-active cursor-pointer transition-colors border border-transparent hover:border-white/5 group">
+<div class="relative flex items-center justify-center size-5 rounded-full border-2 border-slate-300 dark:border-slate-500 group-hover:border-primary">
+<div class="size-2.5 rounded-full bg-primary hidden group-hover:block"></div>
+</div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Buy more at lower prices</span>
+</label>
+</div>
+</div>
+<!-- Collapsed Questions Preview -->
+<div class="space-y-2">
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 opacity-60">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1"><span class="font-bold mr-2">Q2.</span> Investment horizon...</p>
+<span class="material-symbols-outlined text-slate-400">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 opacity-60">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1"><span class="font-bold mr-2">Q3.</span> Primary goal...</p>
+<span class="material-symbols-outlined text-slate-400">radio_button_unchecked</span>
+</div>
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 opacity-60">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1"><span class="font-bold mr-2">Q4.</span> Income stability...</p>
+<span class="material-symbols-outlined text-slate-400">radio_button_unchecked</span>
+</div>
+</div>
+<!-- Result Card (Simulated 'Completed' State) -->
+<div class="relative mt-8 group animate-fade-in-up">
+<div class="absolute inset-0 bg-primary/20 blur-xl rounded-2xl"></div>
+<div class="relative rounded-xl bg-gradient-to-br from-surface-dark to-black border border-primary/40 p-5 shadow-2xl">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-black shadow-[0_0_15px_rgba(13,242,89,0.4)]">
+<span class="material-symbols-outlined text-[24px] font-bold">check</span>
+</div>
+<div>
+<p class="text-xs text-primary font-bold uppercase tracking-wide mb-0.5">Assessment Complete</p>
+<h4 class="text-white text-lg font-bold">Moderate Risk Profile</h4>
+</div>
+</div>
+<div class="text-right">
+<p class="text-xs text-slate-400 mb-0.5">Risk Score</p>
+<p class="text-xl font-mono font-bold text-white">6.0<span class="text-slate-500 text-sm">/10</span></p>
+</div>
+</div>
+<div class="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
+<div class="space-y-3">
+<p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Recommended Asset Mix</p>
+<div class="flex h-3 w-full rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 50%"></div>
+<div class="bg-blue-500 h-full" style="width: 30%"></div>
+<div class="bg-yellow-500 h-full" style="width: 20%"></div>
+</div>
+<div class="flex justify-between text-xs font-medium">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-primary"></div>
+<span class="text-white">Equity 50%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-blue-500"></div>
+<span class="text-white">Debt 30%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-yellow-500"></div>
+<span class="text-white">Gold 20%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Footer CTA -->
+<footer class="fixed bottom-0 z-50 w-full max-w-md bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-[#0be050] text-background-dark text-base font-bold py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(13,242,89,0.3)] transition-all transform active:scale-[0.98]">
+<span>Next: Income &amp; Expenses</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</footer>
+</div>
+<!-- Background Decoration Image -->
+<div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+<div class="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[100px]"></div>
+<div class="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[100px]"></div>
+</div>
+</body></html>

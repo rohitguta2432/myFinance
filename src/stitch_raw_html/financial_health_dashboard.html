@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Health Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259",
+                        "primary-dark": "#0ab843",
+                        "danger": "#ff4d4d",
+                        "warning": "#ffa500",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#101010", // Deep charcoal/black
+                        "card-dark": "#1a1a1a", // Slightly lighter for cards
+                        "card-highlight": "#252525",
+                        "text-secondary": "#a1a1a1",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden antialiased selection:bg-primary selection:text-black">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Header -->
+<header class="flex items-center justify-between px-5 pt-6 pb-2 sticky top-0 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<div class="flex items-center gap-3">
+<div class="relative h-10 w-10 overflow-hidden rounded-full border-2 border-card-highlight">
+<img alt="User Profile Avatar" class="h-full w-full object-cover" data-alt="Smiling man portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgrGUxFRcThKTR22gXAqPpk9CFXU5MiECth0XFTWI0WJZDKSNHuxs9UuExk32UhCC657h6YZlhgfkz_FC6uEhclL_g92EEUbQdhD62vE0tK7UKETScAS6PcQlErHd6DXsxORC0XrO1FXCp6iGjv6NLc6iQhmrdQszcvKwtdiAHg7Fn5JZoaavAwMQ0JT0YBZlnPBeAzmoIPUXFjbE_-E145j_Mn8-xrpGmrw-qbv0MuokPXSqkAe7EkNWeaZlqlhSCN9LxbNGujY4"/>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-text-secondary">Welcome back,</span>
+<h1 class="text-lg font-bold leading-tight tracking-tight">Financial Health</h1>
+</div>
+</div>
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-card-dark text-white hover:bg-card-highlight transition-colors relative">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+</button>
+</header>
+<main class="flex-1 flex flex-col gap-6 p-5 pb-24 overflow-y-auto no-scrollbar">
+<!-- Section 1: Executive Summary Card -->
+<section class="flex flex-col rounded-2xl bg-card-dark p-5 shadow-lg border border-white/5">
+<div class="flex items-start justify-between mb-6">
+<div>
+<h2 class="text-sm font-medium text-text-secondary uppercase tracking-wider">Overall Score</h2>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="text-4xl font-extrabold text-white">53</span>
+<span class="text-lg font-medium text-text-secondary">/100</span>
+</div>
+</div>
+<div class="relative flex h-16 w-16 items-center justify-center">
+<!-- Radial Progress Placeholder -->
+<svg class="h-full w-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary drop-shadow-[0_0_8px_rgba(13,242,89,0.5)]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="53, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute material-symbols-outlined text-primary text-xl">health_and_safety</span>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Wealth Growth -->
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-white">Wealth Growth</span>
+<span class="text-sm font-bold text-primary">66/100</span>
+</div>
+<div class="h-2 w-full rounded-full bg-black/40">
+<div class="h-full w-[66%] rounded-full bg-primary shadow-[0_0_10px_rgba(13,242,89,0.3)]"></div>
+</div>
+</div>
+<!-- Risk Protection -->
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-white">Risk Protection</span>
+<span class="text-sm font-bold text-danger">30/100</span>
+</div>
+<div class="h-2 w-full rounded-full bg-black/40">
+<div class="h-full w-[30%] rounded-full bg-danger shadow-[0_0_10px_rgba(255,77,77,0.3)]"></div>
+</div>
+<p class="text-[10px] text-danger mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">warning</span> Critical attention needed
+                        </p>
+</div>
+<!-- Tax Efficiency -->
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-white">Tax Efficiency</span>
+<span class="text-sm font-bold text-primary">66/100</span>
+</div>
+<div class="h-2 w-full rounded-full bg-black/40">
+<div class="h-full w-[66%] rounded-full bg-primary shadow-[0_0_10px_rgba(13,242,89,0.3)]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Net Worth -->
+<section class="flex flex-col gap-2">
+<h3 class="text-xs font-semibold text-text-secondary uppercase tracking-widest pl-1">Net Worth</h3>
+<div class="bg-gradient-to-br from-card-dark to-[#151515] p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[80px]">account_balance_wallet</span>
+</div>
+<div class="relative z-10">
+<p class="text-3xl font-bold text-white tracking-tight">₹ 2.45 <span class="text-primary">Cr</span></p>
+<p class="text-sm text-text-secondary mt-1">₹ 2,45,00,000</p>
+<div class="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 border border-white/5 backdrop-blur-sm">
+<span class="material-symbols-outlined text-primary text-sm">trending_up</span>
+<span class="text-xs font-medium text-gray-300">Top <span class="text-white font-bold">12%</span> of peers in Bangalore</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Asset Allocation -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-xs font-semibold text-text-secondary uppercase tracking-widest">Asset Allocation</h3>
+<button class="text-xs text-primary font-medium">View Details</button>
+</div>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<!-- Current Allocation Card -->
+<div class="min-w-[160px] flex-1 bg-card-dark p-4 rounded-xl border border-white/5 flex flex-col items-center">
+<h4 class="text-xs text-text-secondary mb-3 font-medium">Current</h4>
+<div class="relative h-24 w-24 mb-3">
+<svg class="h-full w-full -rotate-90" viewbox="0 0 36 36">
+<!-- Real Estate (Big chunk) -->
+<path class="text-white/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="8"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="70, 100" stroke-width="8"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50">pie_chart</span>
+</div>
+</div>
+<div class="w-full flex justify-between text-[10px] text-text-secondary mt-1 px-2">
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-primary"></div> RE</div>
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-white/20"></div> Other</div>
+</div>
+</div>
+<!-- Target Allocation Card -->
+<div class="min-w-[160px] flex-1 bg-card-dark p-4 rounded-xl border border-white/5 flex flex-col items-center">
+<h4 class="text-xs text-text-secondary mb-3 font-medium">Target</h4>
+<div class="relative h-24 w-24 mb-3">
+<svg class="h-full w-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-white/20" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="8"></path>
+<path class="text-purple-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="40, 100" stroke-width="8"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50">donut_large</span>
+</div>
+</div>
+<div class="w-full flex justify-between text-[10px] text-text-secondary mt-1 px-2">
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-purple-500"></div> Eq</div>
+<div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-white/20"></div> Other</div>
+</div>
+</div>
+</div>
+<!-- Alert Banner -->
+<div class="rounded-lg bg-warning/10 border border-warning/20 p-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-warning shrink-0" style="font-size: 20px;">warning</span>
+<div>
+<p class="text-xs font-bold text-warning mb-0.5">Allocation Mismatch</p>
+<p class="text-xs text-warning/80 leading-relaxed">High exposure to illiquid Real Estate assets compared to target profile.</p>
+</div>
+</div>
+</section>
+<!-- Section 4: Real Returns Preview -->
+<section class="flex flex-col gap-2">
+<h3 class="text-xs font-semibold text-text-secondary uppercase tracking-widest pl-1">Post-Tax Returns Analysis</h3>
+<div class="bg-card-dark rounded-xl border border-white/5 overflow-hidden">
+<div class="p-4 border-b border-white/5">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="bg-blue-500/20 p-1.5 rounded-md text-blue-400">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+</div>
+<span class="text-sm font-medium text-white">FD &amp; Savings</span>
+</div>
+<span class="text-xs font-mono text-text-secondary bg-white/5 px-2 py-1 rounded">Traditional</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-3">
+<div>
+<p class="text-[10px] text-text-secondary uppercase">Nominal Return</p>
+<p class="text-sm font-semibold text-white mt-0.5">6.5%</p>
+</div>
+<div>
+<p class="text-[10px] text-text-secondary uppercase">Real Return (Inf. Adj)</p>
+<p class="text-sm font-bold text-danger mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+                                    -3.5%
+                                </p>
+</div>
+</div>
+</div>
+<!-- Locked Content Teaser -->
+<div class="bg-gradient-to-b from-card-highlight to-black/40 p-4 relative">
+<div class="absolute inset-0 backdrop-blur-[2px] flex flex-col items-center justify-center z-10">
+<span class="material-symbols-outlined text-text-secondary mb-2">lock</span>
+<p class="text-xs text-text-secondary font-medium">Unlock full analysis for Mutual Funds &amp; Gold</p>
+</div>
+<!-- Blurred dummy content -->
+<div class="opacity-30 blur-sm pointer-events-none select-none">
+<div class="flex items-center justify-between mb-2">
+<span class="text-sm font-medium">Mutual Funds</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div><p class="text-sm">12%</p></div>
+<div><p class="text-sm">5.6%</p></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Premium CTA (Inside scroll) -->
+<div class="bg-gradient-to-r from-card-dark to-card-highlight border border-white/10 rounded-xl p-5 flex flex-col items-center text-center gap-3 shadow-lg">
+<div class="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center mb-1">
+<span class="material-symbols-outlined text-primary">diamond</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-white">Optimize Your Tax &amp; Returns</h3>
+<p class="text-xs text-text-secondary mt-1 max-w-[240px]">Get a personalized action plan to fix your -3.5% real returns and save tax.</p>
+</div>
+<button class="w-full bg-primary hover:bg-primary-dark text-black font-bold py-3 px-4 rounded-lg text-sm transition-all transform active:scale-95 flex items-center justify-center gap-2 mt-1">
+                    Unlock Full Analysis
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full max-w-md bg-card-dark border-t border-white/5 px-4 pt-2 pb-5 z-30 flex justify-between items-end backdrop-blur-lg bg-opacity-95">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary group" href="#">
+<div class="flex h-7 items-center justify-center rounded-full bg-primary/10 px-4 transition-all group-hover:bg-primary/20">
+<span class="material-symbols-outlined text-[24px]" data-weight="fill">home</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<div class="flex h-7 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">pie_chart</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Portfolio</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<div class="flex h-7 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">currency_rupee</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Tax</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<div class="flex h-7 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">person</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Profile</p>
+</a>
+</nav>
+</div>
+</body></html>
