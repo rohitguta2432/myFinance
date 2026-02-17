@@ -1,51 +1,78 @@
-import { Outlet, NavLink } from 'react-router-dom';
-// import { Home, PieChart, User } from 'lucide-react';
-import { Home as HomeIcon, PieChart, User } from 'lucide-react';
+import React from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
-export default function Layout() {
+const Layout = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Step info based on current path
+    const getStepInfo = () => {
+        const path = location.pathname;
+        if (path.includes('step-1')) return { step: 1, progress: 16, title: 'Profile & Risk' };
+        if (path.includes('step-2')) return { step: 2, progress: 33, title: 'Income & Expenses' };
+        if (path.includes('step-3')) return { step: 3, progress: 50, title: 'Assets & Liabilities' };
+        if (path.includes('step-4')) return { step: 4, progress: 66, title: 'Financial Goals' };
+        if (path.includes('step-5')) return { step: 5, progress: 83, title: 'Insurance Gap' };
+        if (path.includes('step-6')) return { step: 6, progress: 96, title: 'Tax Planning' };
+        if (path.includes('complete')) return { step: 7, progress: 100, title: 'Complete' };
+        return { step: 0, progress: 0, title: '' };
+    };
+
+    const { step, progress, title } = getStepInfo();
+    const isHome = location.pathname === '/';
+    const isComplete = location.pathname.includes('complete');
+    const showHeader = step > 0 && step <= 6;
+
     return (
-        <div className="flex flex-col h-dvh bg-slate-50 text-slate-900 font-sans">
-            <main className="flex-1 overflow-y-auto pb-24 safe-area-pt safe-area-pb">
+        <div className="min-h-screen bg-background-dark flex flex-col font-display text-white antialiased selection:bg-primary/30">
+            {/* Sticky Header with Progress */}
+            {showHeader && (
+                <header className="sticky top-0 z-50 bg-background-dark/95 backdrop-blur-md border-b border-white/5">
+                    <div className="flex items-center p-4 pb-2 justify-between max-w-md mx-auto">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </button>
+                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">
+                            {title}
+                        </h2>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="flex flex-col gap-2 px-6 pb-4 max-w-md mx-auto">
+                        <div className="flex justify-between items-end">
+                            <p className="text-primary text-xs font-semibold uppercase tracking-wider">
+                                Step {step} of 6
+                            </p>
+                            <p className="text-slate-400 text-xs">
+                                {progress}% Completed
+                            </p>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-surface-active overflow-hidden">
+                            <div
+                                className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(13,242,89,0.5)] transition-all duration-500 ease-out"
+                                style={{ width: `${progress}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </header>
+            )}
+
+            {/* Main Content */}
+            <main className="flex-1 w-full max-w-md mx-auto p-4 md:p-6 animate-fade-in relative">
                 <Outlet />
             </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-area-pb z-50">
-                <div className="flex justify-around items-center h-16">
-                    <NavLink
-                        to="/"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        {({ isActive }) => (
-                            <>
-                                <HomeIcon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                                <span className="text-[10px] font-medium">Home</span>
-                            </>
-                        )}
-                    </NavLink>
-                    <NavLink
-                        to="/transactions"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        {({ isActive }) => (
-                            <>
-                                <PieChart size={24} strokeWidth={isActive ? 2.5 : 2} />
-                                <span className="text-[10px] font-medium">Activity</span>
-                            </>
-                        )}
-                    </NavLink>
-                    <NavLink
-                        to="/profile"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        {({ isActive }) => (
-                            <>
-                                <User size={24} strokeWidth={isActive ? 2.5 : 2} />
-                                <span className="text-[10px] font-medium">Profile</span>
-                            </>
-                        )}
-                    </NavLink>
-                </div>
-            </nav>
+            {/* Footer */}
+            {!isComplete && (
+                <footer className="p-6 text-center text-xs text-white/30">
+                    © 2026 MyFinancial. Secure & Private.
+                </footer>
+            )}
         </div>
     );
-}
+};
+
+export default Layout;
