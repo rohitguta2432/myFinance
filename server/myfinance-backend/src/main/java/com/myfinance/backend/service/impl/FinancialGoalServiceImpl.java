@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,10 +41,19 @@ public class FinancialGoalServiceImpl implements FinancialGoalService {
         goal.setUser(user);
         goal.setGoalType(goalDTO.goalType());
         goal.setName(goalDTO.name());
-        goal.setTargetAmount(goalDTO.targetAmount());
         goal.setCurrentCost(goalDTO.currentCost());
         goal.setTimeHorizonYears(goalDTO.timeHorizonYears());
         goal.setInflationRate(goalDTO.inflationRate());
+
+        // Auto-calculate targetAmount if not provided
+        BigDecimal targetAmount = goalDTO.targetAmount();
+        if (targetAmount == null && goalDTO.currentCost() != null) {
+            double rate = goalDTO.inflationRate() != null ? goalDTO.inflationRate().doubleValue() : 0.06;
+            int years = goalDTO.timeHorizonYears() != null ? goalDTO.timeHorizonYears() : 10;
+            double futureValue = goalDTO.currentCost().doubleValue() * Math.pow(1 + rate, years);
+            targetAmount = BigDecimal.valueOf(futureValue).setScale(2, RoundingMode.HALF_UP);
+        }
+        goal.setTargetAmount(targetAmount);
 
         FinancialGoal savedGoal = goalRepository.save(goal);
         return mapToDTO(savedGoal);
