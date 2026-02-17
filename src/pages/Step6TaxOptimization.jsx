@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Wallet, Users, GraduationCap, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Wallet, Users, GraduationCap, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useTaxQuery, useTaxMutation } from '../hooks/useTax';
 
 const Step6TaxOptimization = () => {
     const navigate = useNavigate();
@@ -12,6 +13,26 @@ const Step6TaxOptimization = () => {
         taxRegime,
         setTaxRegime
     } = useAssessmentStore();
+
+    // API Integration
+    const { data: taxData } = useTaxQuery();
+    const { mutateAsync: saveTaxApi, isPending: isSaving } = useTaxMutation();
+
+    useEffect(() => {
+        if (taxData) {
+            if (taxData.taxRegime) setTaxRegime(taxData.taxRegime);
+            if (taxData.investments80C !== undefined) setInvestments80C(taxData.investments80C);
+        }
+    }, [taxData]);
+
+    const handleComplete = async () => {
+        try {
+            await saveTaxApi({ taxRegime, investments80C, epf, licPpf });
+        } catch (err) {
+            console.warn('Tax API save failed:', err.message);
+        }
+        navigate('/assessment/complete');
+    };
 
     // Local state for 80C breakdown
     const [epf, setEpf] = useState(60000);
@@ -185,11 +206,15 @@ const Step6TaxOptimization = () => {
             {/* Footer */}
             <div className="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-white/10 p-5 z-40 rounded-t-3xl">
                 <button
-                    onClick={() => navigate('/assessment/complete')}
-                    className="w-full bg-primary text-slate-900 font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-lg active:scale-[0.98]"
+                    onClick={handleComplete}
+                    disabled={isSaving}
+                    className="w-full bg-primary text-slate-900 font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-lg active:scale-[0.98] disabled:opacity-60"
                 >
-                    Complete Assessment
-                    <ArrowRight className="w-5 h-5" />
+                    {isSaving ? (
+                        <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                    ) : (
+                        <>Complete Assessment <ArrowRight className="w-5 h-5" /></>
+                    )}
                 </button>
             </div>
         </div>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useGoalsQuery, useAddGoalMutation } from '../hooks/useGoals';
 
 const GOAL_TYPES = [
     { id: 'home', label: 'Home', icon: Home, defaultCost: 5000000, defaultHorizon: 15 },
@@ -15,6 +16,16 @@ const GOAL_TYPES = [
 const Step4FinancialGoals = () => {
     const navigate = useNavigate();
     const { goals, addGoal, removeGoal, updateGoal } = useAssessmentStore();
+
+    // API Integration
+    const { data: goalsData } = useGoalsQuery();
+    const { mutateAsync: addGoalApi } = useAddGoalMutation();
+
+    useEffect(() => {
+        if (goalsData?.length) {
+            useAssessmentStore.setState({ goals: goalsData });
+        }
+    }, [goalsData]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -43,7 +54,7 @@ const Step4FinancialGoals = () => {
         setIsModalOpen(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const goalData = {
             type,
             name: name || GOAL_TYPES.find(t => t.id === type)?.label,
@@ -55,7 +66,9 @@ const Step4FinancialGoals = () => {
         if (editingId) {
             updateGoal(editingId, goalData);
         } else {
-            addGoal({ ...goalData, id: Date.now() });
+            const newGoal = { ...goalData, id: Date.now() };
+            addGoal(newGoal); // optimistic
+            try { await addGoalApi(newGoal); } catch (e) { console.warn('Goal API save failed:', e.message); }
         }
         setIsModalOpen(false);
     };

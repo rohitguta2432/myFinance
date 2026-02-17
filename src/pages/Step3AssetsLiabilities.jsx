@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation } from '../hooks/useBalanceSheet';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
     const { assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
+
+    // API Integration
+    const { data: balanceData } = useBalanceSheetQuery();
+    const { mutateAsync: addAssetApi } = useAddAssetMutation();
+    const { mutateAsync: addLiabilityApi } = useAddLiabilityMutation();
+
+    // Hydrate store from API
+    useEffect(() => {
+        if (balanceData) {
+            if (balanceData.assets?.length) useAssessmentStore.setState({ assets: balanceData.assets });
+            if (balanceData.liabilities?.length) useAssessmentStore.setState({ liabilities: balanceData.liabilities });
+        }
+    }, [balanceData]);
 
     const [activeTab, setActiveTab] = useState('assets'); // 'assets' or 'liabilities'
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,7 +36,7 @@ const Step3AssetsLiabilities = () => {
         setIsModalOpen(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const newItem = {
             id: Date.now(),
             category,
@@ -31,9 +45,11 @@ const Step3AssetsLiabilities = () => {
         };
 
         if (activeTab === 'assets') {
-            addAsset(newItem);
+            addAsset(newItem); // optimistic
+            try { await addAssetApi(newItem); } catch (e) { console.warn('Asset API save failed:', e.message); }
         } else {
-            addLiability(newItem);
+            addLiability(newItem); // optimistic
+            try { await addLiabilityApi(newItem); } catch (e) { console.warn('Liability API save failed:', e.message); }
         }
         setIsModalOpen(false);
     };

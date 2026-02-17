@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckCircle, Info, Loader2 } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
 
 const Step5InsuranceGap = () => {
     const navigate = useNavigate();
@@ -13,6 +14,26 @@ const Step5InsuranceGap = () => {
         insurance,
         setInsurance
     } = useAssessmentStore();
+
+    // API Integration
+    const { data: insuranceData } = useInsuranceQuery();
+    const { mutateAsync: saveInsuranceApi, isPending: isSaving } = useInsuranceMutation();
+
+    useEffect(() => {
+        if (insuranceData) {
+            if (insuranceData.life !== undefined) setInsurance('life', insuranceData.life);
+            if (insuranceData.health !== undefined) setInsurance('health', insuranceData.health);
+        }
+    }, [insuranceData]);
+
+    const handleNext = async () => {
+        try {
+            await saveInsuranceApi(insurance);
+        } catch (err) {
+            console.warn('Insurance API save failed:', err.message);
+        }
+        navigate('/assessment/step-6');
+    };
 
     const [isEditingLife, setIsEditingLife] = useState(false);
     const [isEditingHealth, setIsEditingHealth] = useState(false);
@@ -194,11 +215,15 @@ const Step5InsuranceGap = () => {
             {/* Footer */}
             <div className="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-white/10 p-5 z-40 rounded-t-3xl">
                 <button
-                    onClick={() => navigate('/assessment/step-6')}
-                    className="w-full bg-primary text-slate-900 font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-lg active:scale-[0.98]"
+                    onClick={handleNext}
+                    disabled={isSaving}
+                    className="w-full bg-primary text-slate-900 font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-lg active:scale-[0.98] disabled:opacity-60"
                 >
-                    Next: Tax Optimization
-                    <ArrowRight className="w-5 h-5" />
+                    {isSaving ? (
+                        <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                    ) : (
+                        <>Next: Tax Optimization <ArrowRight className="w-5 h-5" /></>
+                    )}
                 </button>
             </div>
         </div>

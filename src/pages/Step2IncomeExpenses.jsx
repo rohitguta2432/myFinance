@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation } from '../hooks/useFinancials';
 
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
     const { incomes, addIncome, removeIncome, expenses, addExpense, removeExpense } = useAssessmentStore();
+
+    // API Integration
+    const { data: financialsData } = useFinancialsQuery();
+    const { mutateAsync: addIncomeApi } = useAddIncomeMutation();
+    const { mutateAsync: addExpenseApi } = useAddExpenseMutation();
+
+    // Hydrate store from API
+    useEffect(() => {
+        if (financialsData) {
+            if (financialsData.incomes?.length) {
+                useAssessmentStore.setState({ incomes: financialsData.incomes });
+            }
+            if (financialsData.expenses?.length) {
+                useAssessmentStore.setState({ expenses: financialsData.expenses });
+            }
+        }
+    }, [financialsData]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('expense'); // 'income' or 'expense'
@@ -24,7 +42,7 @@ const Step2IncomeExpenses = () => {
         setIsModalOpen(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const newItem = {
             id: Date.now(),
             category,
@@ -34,9 +52,12 @@ const Step2IncomeExpenses = () => {
         };
 
         if (modalType === 'income') {
-            addIncome({ ...newItem, source: category }); // using category as source name
+            const incomeItem = { ...newItem, source: category };
+            addIncome(incomeItem); // optimistic local update
+            try { await addIncomeApi(incomeItem); } catch (e) { console.warn('Income API save failed:', e.message); }
         } else {
-            addExpense(newItem);
+            addExpense(newItem); // optimistic local update
+            try { await addExpenseApi(newItem); } catch (e) { console.warn('Expense API save failed:', e.message); }
         }
         setIsModalOpen(false);
     };

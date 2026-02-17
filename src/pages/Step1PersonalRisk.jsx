@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, Circle, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, Circle, Check, Loader2 } from 'lucide-react';
 import { useAssessmentStore } from '../store/useAssessmentStore';
+import { useProfileQuery, useProfileMutation } from '../hooks/useProfile';
 
 const Step1PersonalRisk = () => {
     const navigate = useNavigate();
@@ -14,6 +15,32 @@ const Step1PersonalRisk = () => {
         residencyStatus, setResidencyStatus,
         riskTolerance, setRiskTolerance
     } = useAssessmentStore();
+
+    // API Integration
+    const { data: profileData, isLoading: isFetching } = useProfileQuery();
+    const { mutateAsync: saveProfileApi, isPending: isSaving } = useProfileMutation();
+
+    // Hydrate Zustand from API on mount
+    useEffect(() => {
+        if (profileData) {
+            if (profileData.age) setAge(profileData.age);
+            if (profileData.cityTier) setCityTier(profileData.cityTier);
+            if (profileData.maritalStatus) setMaritalStatus(profileData.maritalStatus);
+            if (profileData.dependents !== undefined) setDependents(profileData.dependents);
+            if (profileData.employmentType) setEmploymentType(profileData.employmentType);
+            if (profileData.residencyStatus) setResidencyStatus(profileData.residencyStatus);
+            if (profileData.riskTolerance) setRiskTolerance(profileData.riskTolerance);
+        }
+    }, [profileData]);
+
+    const handleNext = async () => {
+        try {
+            await saveProfileApi({ age, cityTier, maritalStatus, dependents, employmentType, residencyStatus, riskTolerance });
+        } catch (err) {
+            console.warn('API save failed, continuing with local data:', err.message);
+        }
+        navigate('/assessment/step-2');
+    };
 
     // Local state for dropdowns and accordion
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -323,11 +350,15 @@ const Step1PersonalRisk = () => {
             {/* Sticky Footer CTA */}
             <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-md mx-auto right-0">
                 <button
-                    onClick={() => navigate('/assessment/step-2')}
-                    className="w-full bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(13,242,89,0.3)]"
+                    onClick={handleNext}
+                    disabled={isSaving}
+                    className="w-full bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(13,242,89,0.3)] disabled:opacity-60"
                 >
-                    Next: Income & Expenses
-                    <ArrowRight className="w-5 h-5 font-bold" />
+                    {isSaving ? (
+                        <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                    ) : (
+                        <>Next: Income & Expenses <ArrowRight className="w-5 h-5 font-bold" /></>
+                    )}
                 </button>
             </div>
         </div>
