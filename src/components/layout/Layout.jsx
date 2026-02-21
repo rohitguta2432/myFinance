@@ -10,7 +10,7 @@ const Layout = () => {
     const getStepInfo = () => {
         const path = location.pathname;
         if (path.includes('step-1')) return { step: 1, progress: 16, title: "Let's Understand Your Starting Point" };
-        if (path.includes('step-2')) return { step: 2, progress: 33, title: 'Income & Expenses' };
+        if (path.includes('step-2')) return { step: 2, progress: 33, title: 'Your Cash Flow Reality Check' };
         if (path.includes('step-3')) return { step: 3, progress: 50, title: 'Assets & Liabilities' };
         if (path.includes('step-4')) return { step: 4, progress: 66, title: 'Financial Goals' };
         if (path.includes('step-5')) return { step: 5, progress: 83, title: 'Insurance Gap' };
@@ -27,7 +27,7 @@ const Layout = () => {
     // Steps config for sidebar
     const steps = [
         { num: 1, title: 'Personal Profile', icon: User, path: '/assessment/step-1' },
-        { num: 2, title: 'Income & Expenses', icon: DollarSign, path: '/assessment/step-2' },
+        { num: 2, title: 'Your Cash Flow Reality Check', icon: DollarSign, path: '/assessment/step-2' },
         { num: 3, title: 'Assets & Liabilities', icon: Wallet, path: '/assessment/step-3' },
         { num: 4, title: 'Financial Goals', icon: Flag, path: '/assessment/step-4' },
         { num: 5, title: 'Insurance Gap', icon: Shield, path: '/assessment/step-5' },
@@ -87,18 +87,18 @@ const Layout = () => {
                                         key={s.num}
                                         onClick={() => navigate(s.path)}
                                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all group ${isActive
-                                                ? 'bg-primary/10 border border-primary/30'
-                                                : isCompleted
-                                                    ? 'hover:bg-white/5 cursor-pointer'
-                                                    : 'opacity-40 cursor-default'
+                                            ? 'bg-primary/10 border border-primary/30'
+                                            : isCompleted
+                                                ? 'hover:bg-white/5 cursor-pointer'
+                                                : 'opacity-40 cursor-default'
                                             }`}
                                         disabled={isFuture}
                                     >
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${isActive
-                                                ? 'bg-primary text-background-dark shadow-[0_0_12px_rgba(13,242,89,0.4)]'
-                                                : isCompleted
-                                                    ? 'bg-primary/20 text-primary'
-                                                    : 'bg-surface-active text-slate-500'
+                                            ? 'bg-primary text-background-dark shadow-[0_0_12px_rgba(13,242,89,0.4)]'
+                                            : isCompleted
+                                                ? 'bg-primary/20 text-primary'
+                                                : 'bg-surface-active text-slate-500'
                                             }`}>
                                             {isCompleted ? (
                                                 <CheckCircle className="w-4 h-4" />

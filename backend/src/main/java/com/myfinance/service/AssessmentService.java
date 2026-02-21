@@ -88,6 +88,8 @@ public class AssessmentService {
                 .sourceName(dto.getSourceName())
                 .amount(dto.getAmount())
                 .frequency(safeEnum(Frequency.class, dto.getFrequency()))
+                .taxDeducted(dto.getTaxDeducted())
+                .tdsPercentage(dto.getTdsPercentage())
                 .build();
         return toIncomeDTO(incomeRepo.save(income));
     }
@@ -108,6 +110,8 @@ public class AssessmentService {
                 .sourceName(i.getSourceName())
                 .amount(i.getAmount())
                 .frequency(enumName(i.getFrequency()))
+                .taxDeducted(i.getTaxDeducted())
+                .tdsPercentage(i.getTdsPercentage())
                 .build();
     }
 

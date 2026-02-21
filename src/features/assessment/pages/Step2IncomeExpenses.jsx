@@ -33,12 +33,16 @@ const Step2IncomeExpenses = () => {
     const [amount, setAmount] = useState('');
     const [frequency, setFrequency] = useState('Monthly');
     const [isEssential, setIsEssential] = useState(true);
+    const [taxDeducted, setTaxDeducted] = useState(false);
+    const [tdsPercentage, setTdsPercentage] = useState(10);
 
     const openModal = (type) => {
         setModalType(type);
-        setCategory(type === 'income' ? 'Salary' : 'Groceries');
+        setCategory(type === 'income' ? 'Salary' : 'Rent/Mortgage');
         setAmount('');
         setFrequency('Monthly');
+        setTaxDeducted(false);
+        setTdsPercentage(10);
         setIsModalOpen(true);
     };
 
@@ -52,7 +56,12 @@ const Step2IncomeExpenses = () => {
         };
 
         if (modalType === 'income') {
-            const incomeItem = { ...newItem, source: category };
+            const incomeItem = {
+                ...newItem,
+                source: category,
+                taxDeducted,
+                tdsPercentage: taxDeducted ? parseFloat(tdsPercentage) || 0 : 0
+            };
             addIncome(incomeItem); // optimistic local update
             try { await addIncomeApi(incomeItem); } catch (e) { console.warn('Income API save failed:', e.message); }
         } else {
@@ -63,8 +72,15 @@ const Step2IncomeExpenses = () => {
     };
 
     // Derived Visuals
-    const totalMonthlyIncome = incomes.reduce((sum, item) => sum + (item.frequency === 'Monthly' ? item.amount : item.amount / 12), 0);
-    const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + (item.frequency === 'Monthly' ? item.amount : item.amount / 12), 0);
+    const calculateMonthly = (item) => {
+        if (item.frequency === 'Monthly') return item.amount;
+        if (item.frequency === 'Quarterly') return item.amount / 3;
+        if (item.frequency === 'Yearly') return item.amount / 12;
+        return item.amount / 12; // One-time amortized
+    };
+
+    const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
+    const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const surplus = totalMonthlyIncome - totalMonthlyExpenses;
     const savingsRate = totalMonthlyIncome > 0 ? Math.round((surplus / totalMonthlyIncome) * 100) : 0;
 
@@ -72,6 +88,10 @@ const Step2IncomeExpenses = () => {
         <div className="flex flex-col h-full pb-32">
             {/* Main Content */}
             <div className="flex-1 space-y-4 overflow-y-auto pb-4">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Your Cash Flow Reality Check</h1>
+                    <p className="text-slate-400 text-sm">Understanding your money flow is step one to controlling it.</p>
+                </div>
                 {/* List Incomes */}
                 {incomes.map((inc) => (
                     <div key={inc.id} className="flex justify-between items-center bg-surface-dark p-4 rounded-xl border border-white/5 shadow-sm">
@@ -81,7 +101,10 @@ const Step2IncomeExpenses = () => {
                             </div>
                             <div>
                                 <p className="font-bold text-sm text-white">{inc.source}</p>
-                                <p className="text-xs text-slate-400">{inc.frequency} • ₹ {inc.amount.toLocaleString()}</p>
+                                <p className="text-xs text-slate-400">
+                                    {inc.frequency} • ₹ {inc.amount.toLocaleString()}
+                                    {inc.taxDeducted && <span className="ml-2 text-primary">({inc.tdsPercentage}% TDS)</span>}
+                                </p>
                             </div>
                         </div>
                         <button onClick={() => removeIncome(inc.id)} className="text-red-400 hover:text-red-500">
@@ -130,16 +153,25 @@ const Step2IncomeExpenses = () => {
                 <div className="bg-surface-dark border-t border-white/5 p-5 rounded-t-3xl max-w-4xl mx-auto right-0 left-0">
                     <div className="flex flex-col gap-4">
                         <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-slate-400 text-xs font-medium uppercase tracking-wide">Monthly Cash Flow</span>
-                                <div className="flex gap-4 text-xs text-slate-300">
-                                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> In: ₹{(totalMonthlyIncome / 1000).toFixed(1)}k</span>
-                                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-400"></span> Out: ₹{(totalMonthlyExpenses / 1000).toFixed(1)}k</span>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Monthly Cash Flow</span>
+                                    <div className="flex gap-4 text-xs text-slate-300 font-medium">
+                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-primary/80"></span> In: ₹{Math.round(totalMonthlyIncome).toLocaleString()}</span>
+                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400/80"></span> Out: ₹{Math.round(totalMonthlyExpenses).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Annual Cash Flow</span>
+                                    <div className="flex gap-4 text-xs text-slate-300 font-medium">
+                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-primary/80"></span> In: ₹{Math.round(totalMonthlyIncome * 12).toLocaleString()}</span>
+                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400/80"></span> Out: ₹{Math.round(totalMonthlyExpenses * 12).toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className="text-xs text-slate-400 block mb-0.5">Surplus</span>
-                                <span className="text-primary text-xl font-bold">₹ {surplus.toLocaleString()}</span>
+                                <span className="text-xs text-slate-400 block mb-0.5">Monthly Surplus</span>
+                                <span className="text-primary text-xl font-bold">₹ {Math.round(surplus).toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -178,7 +210,7 @@ const Step2IncomeExpenses = () => {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">{modalType === 'income' ? 'Source' : 'Category'}</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">{modalType === 'income' ? 'Type of Income' : 'Category'}</label>
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
@@ -187,18 +219,34 @@ const Step2IncomeExpenses = () => {
                                     {modalType === 'income' ? (
                                         <>
                                             <option>Salary</option>
-                                            <option>Business</option>
-                                            <option>Rental</option>
+                                            <option>Business Income</option>
+                                            <option>Freelancing</option>
+                                            <option>Rental Income</option>
+                                            <option>Dividend Income</option>
+                                            <option>Interest Income</option>
+                                            <option>Bonus/Incentive</option>
+                                            <option>Capital Gains (from selling stocks/property)</option>
+                                            <option>Pension</option>
                                             <option>Other</option>
                                         </>
                                     ) : (
                                         <>
-                                            <option>Groceries</option>
-                                            <option>Rent/EMI</option>
-                                            <option>Utilities</option>
-                                            <option>Transport</option>
-                                            <option>Entertainment</option>
-                                            <option>Shopping</option>
+                                            <option>Rent/Mortgage</option>
+                                            <option>EMIs (loan payments)</option>
+                                            <option>Utilities (electricity, water, gas)</option>
+                                            <option>Transportation</option>
+                                            <option>Food & Groceries</option>
+                                            <option>Shopping (clothes, personal care)</option>
+                                            <option>Entertainment (movies, dining out)</option>
+                                            <option>Subscriptions (Netflix, gym, etc.)</option>
+                                            <option>Healthcare</option>
+                                            <option>Education</option>
+                                            <option>Insurance Premiums</option>
+                                            <option>Childcare</option>
+                                            <option>Pet Care</option>
+                                            <option>Travel & Vacations</option>
+                                            <option>Gifts & Donations</option>
+                                            <option>Other</option>
                                         </>
                                     )}
                                 </select>
@@ -224,6 +272,7 @@ const Step2IncomeExpenses = () => {
                                         className="w-full bg-background-dark border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     >
                                         <option>Monthly</option>
+                                        <option>Quarterly</option>
                                         <option>Yearly</option>
                                         <option>One-time</option>
                                     </select>
@@ -243,6 +292,38 @@ const Step2IncomeExpenses = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {modalType === 'income' && (
+                                <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-white">Tax Already Deducted?</label>
+                                        <div
+                                            onClick={() => setTaxDeducted(!taxDeducted)}
+                                            className={`w-12 h-6 rounded-full p-1 flex items-center cursor-pointer transition-colors ${taxDeducted ? 'bg-primary' : 'bg-surface-active'}`}
+                                        >
+                                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${taxDeducted ? 'translate-x-6' : ''}`}></div>
+                                        </div>
+                                    </div>
+                                    {taxDeducted && (
+                                        <div className="animate-fade-in">
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">TDS Percentage (%)</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    value={tdsPercentage}
+                                                    onChange={(e) => setTdsPercentage(e.target.value)}
+                                                    className="w-full bg-background-dark border border-white/10 rounded-lg p-3 pr-10 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                    placeholder="10"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.1"
+                                                />
+                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 font-bold">%</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <button
                                 onClick={handleSave}

@@ -22,4 +22,8 @@ public class Income {
 
     @Enumerated(EnumType.STRING)
     private Frequency frequency;
+
+    private Boolean taxDeducted;
+
+    private Double tdsPercentage;
 }

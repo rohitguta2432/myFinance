@@ -11,4 +11,6 @@ public class IncomeDTO {
     private String sourceName;
     private Double amount;
     private String frequency;
+    private Boolean taxDeducted;
+    private Double tdsPercentage;
 }
