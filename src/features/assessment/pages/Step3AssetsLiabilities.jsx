@@ -129,7 +129,7 @@ const Step3AssetsLiabilities = () => {
             </div>
 
             {/* Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-md mx-auto right-0">
+            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-4xl mx-auto right-0">
                 <button
                     onClick={() => navigate('/assessment/step-4')}
                     className="w-full bg-primary text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98]"
@@ -143,7 +143,7 @@ const Step3AssetsLiabilities = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-surface-dark w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up">
+                    <div className="relative bg-surface-dark w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up">
                         <div className="w-12 h-1 bg-surface-active rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-white">Add {activeTab === 'assets' ? 'Asset' : 'Liability'}</h3>

@@ -164,7 +164,7 @@ const Step4FinancialGoals = () => {
 
             {/* Footer */}
             <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-6 z-40">
-                <div className="bg-surface-dark border-t border-white/5 p-5 rounded-t-3xl max-w-md mx-auto right-0 left-0">
+                <div className="bg-surface-dark border-t border-white/5 p-5 rounded-t-3xl max-w-4xl mx-auto right-0 left-0">
                     <div className="flex flex-col gap-4">
                         {goals.length > 0 && (
                             <div className="flex justify-between items-center text-slate-300 text-sm px-1">
@@ -187,7 +187,7 @@ const Step4FinancialGoals = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-surface-dark w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up">
+                    <div className="relative bg-surface-dark w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up">
                         <div className="w-12 h-1 bg-surface-active rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-white">{editingId ? 'Edit Goal' : 'Add Goal'}</h3>

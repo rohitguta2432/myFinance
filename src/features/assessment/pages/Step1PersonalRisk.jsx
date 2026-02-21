@@ -103,86 +103,89 @@ const Step1PersonalRisk = () => {
                     <h3 className="text-white text-lg font-bold leading-tight">Demographics</h3>
                 </div>
 
-                {/* Age Slider */}
-                <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <label className="text-sm font-medium text-slate-400">Your Age</label>
-                        <span className="text-2xl font-mono font-bold text-primary">{age || 30}</span>
-                    </div>
-                    <div className="relative w-full h-6 flex items-center">
-                        <input
-                            type="range"
-                            min="18"
-                            max="75"
-                            value={age || 30}
-                            onChange={(e) => setAge(e.target.value)}
-                            className="z-10 relative w-full"
-                        />
-                    </div>
-                    <div className="flex justify-between mt-1 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
-                        <span>18</span>
-                        <span>75+</span>
-                    </div>
-                </div>
+                <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-5 lg:space-y-0">
 
-                {/* City Type */}
-                <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
-                    <label className="text-sm font-medium text-slate-400 block">Current City Tier</label>
-                    <div className="grid grid-cols-3 gap-2">
-                        {['Metro', 'Tier 1', 'Tier 2'].map((tier) => (
+                    {/* Age Slider */}
+                    <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <label className="text-sm font-medium text-slate-400">Your Age</label>
+                            <span className="text-2xl font-mono font-bold text-primary">{age || 30}</span>
+                        </div>
+                        <div className="relative w-full h-6 flex items-center">
+                            <input
+                                type="range"
+                                min="18"
+                                max="75"
+                                value={age || 30}
+                                onChange={(e) => setAge(e.target.value)}
+                                className="z-10 relative w-full"
+                            />
+                        </div>
+                        <div className="flex justify-between mt-1 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                            <span>18</span>
+                            <span>75+</span>
+                        </div>
+                    </div>
+
+                    {/* City Type */}
+                    <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
+                        <label className="text-sm font-medium text-slate-400 block">Current City Tier</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {['Metro', 'Tier 1', 'Tier 2'].map((tier) => (
+                                <button
+                                    key={tier}
+                                    onClick={() => setCityTier(tier)}
+                                    className={`flex items-center justify-center py-2.5 px-3 rounded-lg font-bold text-sm transition-all ${cityTier === tier
+                                        ? 'bg-primary text-background-dark shadow-[0_0_15px_rgba(13,242,89,0.3)] transform scale-[1.02]'
+                                        : 'bg-surface-active text-slate-300 font-medium hover:bg-white/10 border border-transparent hover:border-white/10'
+                                        }`}
+                                >
+                                    {tier}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Marital Status */}
+                    <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
+                        <label className="text-sm font-medium text-slate-400 block">Marital Status</label>
+                        <div className="flex p-1 bg-surface-active rounded-lg">
+                            {['Single', 'Married'].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setMaritalStatus(status.toLowerCase())}
+                                    className={`flex-1 py-2 rounded-md font-semibold text-sm transition-all ${maritalStatus === status.toLowerCase()
+                                        ? 'bg-background-dark text-primary shadow-sm'
+                                        : 'text-slate-400 hover:text-white'
+                                        }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Dependents */}
+                    <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm flex items-center justify-between">
+                        <div>
+                            <label className="text-sm font-medium text-slate-400 block">Dependents</label>
+                            <p className="text-xs text-slate-500 mt-0.5">Parents, children, spouse</p>
+                        </div>
+                        <div className="flex items-center gap-3 bg-surface-active rounded-lg p-1">
                             <button
-                                key={tier}
-                                onClick={() => setCityTier(tier)}
-                                className={`flex items-center justify-center py-2.5 px-3 rounded-lg font-bold text-sm transition-all ${cityTier === tier
-                                    ? 'bg-primary text-background-dark shadow-[0_0_15px_rgba(13,242,89,0.3)] transform scale-[1.02]'
-                                    : 'bg-surface-active text-slate-300 font-medium hover:bg-white/10 border border-transparent hover:border-white/10'
-                                    }`}
+                                onClick={() => setDependents(Math.max(0, parseInt(dependents || 0) - 1))}
+                                className="w-8 h-8 flex items-center justify-center rounded bg-background-dark text-slate-400 hover:text-primary shadow-sm transition-colors"
                             >
-                                {tier}
+                                <Minus className="w-4 h-4" />
                             </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Marital Status */}
-                <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
-                    <label className="text-sm font-medium text-slate-400 block">Marital Status</label>
-                    <div className="flex p-1 bg-surface-active rounded-lg">
-                        {['Single', 'Married'].map((status) => (
+                            <span className="w-4 text-center font-mono font-bold text-lg text-white">{dependents || 0}</span>
                             <button
-                                key={status}
-                                onClick={() => setMaritalStatus(status.toLowerCase())}
-                                className={`flex-1 py-2 rounded-md font-semibold text-sm transition-all ${maritalStatus === status.toLowerCase()
-                                    ? 'bg-background-dark text-primary shadow-sm'
-                                    : 'text-slate-400 hover:text-white'
-                                    }`}
+                                onClick={() => setDependents(parseInt(dependents || 0) + 1)}
+                                className="w-8 h-8 flex items-center justify-center rounded bg-background-dark text-primary hover:text-primary shadow-sm transition-colors"
                             >
-                                {status}
+                                <Plus className="w-4 h-4" />
                             </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Dependents */}
-                <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <label className="text-sm font-medium text-slate-400 block">Dependents</label>
-                        <p className="text-xs text-slate-500 mt-0.5">Parents, children, spouse</p>
-                    </div>
-                    <div className="flex items-center gap-3 bg-surface-active rounded-lg p-1">
-                        <button
-                            onClick={() => setDependents(Math.max(0, parseInt(dependents || 0) - 1))}
-                            className="w-8 h-8 flex items-center justify-center rounded bg-background-dark text-slate-400 hover:text-primary shadow-sm transition-colors"
-                        >
-                            <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-4 text-center font-mono font-bold text-lg text-white">{dependents || 0}</span>
-                        <button
-                            onClick={() => setDependents(parseInt(dependents || 0) + 1)}
-                            className="w-8 h-8 flex items-center justify-center rounded bg-background-dark text-primary hover:text-primary shadow-sm transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
+                        </div>
                     </div>
                 </div>
 
@@ -348,7 +351,7 @@ const Step1PersonalRisk = () => {
             </section>
 
             {/* Sticky Footer CTA */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-md mx-auto right-0">
+            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-4xl mx-auto right-0">
                 <button
                     onClick={handleNext}
                     disabled={isSaving}

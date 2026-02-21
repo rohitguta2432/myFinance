@@ -12,18 +12,18 @@ const AssessmentComplete = () => {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mb-6 animate-bounce">
+        <div className="flex flex-col items-center justify-center h-full p-6 text-center max-w-lg mx-auto">
+            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6 animate-bounce">
                 <CheckCircle className="w-12 h-12" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Assessment Complete!</h1>
-            <p className="text-slate-500 mb-8">
+            <h1 className="text-2xl font-bold text-white mb-2">Assessment Complete!</h1>
+            <p className="text-slate-400 mb-8">
                 We have analyzed your financial profile. Your personalized financial plan is ready.
             </p>
 
             <button
                 onClick={() => navigate('/')}
-                className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-lg"
+                className="w-full bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(13,242,89,0.3)]"
             >
                 View Dashboard
                 <ArrowRight className="w-5 h-5" />
