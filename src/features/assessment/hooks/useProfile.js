@@ -14,12 +14,18 @@ export const useProfileQuery = () => {
         staleTime: 5 * 60 * 1000,
         onSuccess: (data) => {
             if (data.age) store.setAge(data.age);
-            if (data.cityTier) store.setCityTier(data.cityTier);
+            if (data.city) store.setCity(data.city);
             if (data.maritalStatus) store.setMaritalStatus(data.maritalStatus);
             if (data.dependents !== undefined) store.setDependents(data.dependents);
+            if (data.childDependents !== undefined) store.setChildDependents(data.childDependents);
             if (data.employmentType) store.setEmploymentType(data.employmentType);
             if (data.residencyStatus) store.setResidencyStatus(data.residencyStatus);
             if (data.riskTolerance) store.setRiskTolerance(data.riskTolerance);
+            if (data.riskAnswers) {
+                Object.entries(data.riskAnswers).forEach(([qId, score]) => {
+                    store.setRiskAnswer(parseInt(qId), score);
+                });
+            }
         },
     });
 };

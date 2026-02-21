@@ -3,10 +3,8 @@ import { api } from '../../../services/api';
 // ─── Enum Conversion Maps ───────────────────────────────────────────────────
 // Frontend display values ↔ Backend UPPERCASE DB enum values
 
-const CITY_TIER_TO_DB = { 'Metro': 'METRO', 'Tier 1': 'TIER_1', 'Tier 2': 'TIER_2', 'Tier 3': 'TIER_3' };
-const CITY_TIER_FROM_DB = Object.fromEntries(Object.entries(CITY_TIER_TO_DB).map(([k, v]) => [v, k]));
+const MARITAL_TO_DB = { 'single': 'SINGLE', 'married': 'MARRIED', 'divorced': 'DIVORCED', 'widowed': 'WIDOWED' };
 
-const MARITAL_TO_DB = { 'single': 'SINGLE', 'married': 'MARRIED' };
 const MARITAL_FROM_DB = Object.fromEntries(Object.entries(MARITAL_TO_DB).map(([k, v]) => [v, k]));
 
 const RISK_TO_DB = { 'low': 'CONSERVATIVE', 'medium': 'MODERATE', 'high': 'AGGRESSIVE' };
@@ -25,27 +23,31 @@ const REGIME_FROM_DB = { 'OLD': 'old', 'NEW': 'new' };
 
 const mapProfileToDTO = (data) => ({
     age: data.age ? parseInt(data.age) : null,
-    cityTier: CITY_TIER_TO_DB[data.cityTier] || data.cityTier?.toUpperCase(),
+    city: data.city || null,
     maritalStatus: MARITAL_TO_DB[data.maritalStatus] || data.maritalStatus?.toUpperCase(),
     dependents: parseInt(data.dependents) || 0,
+    childDependents: parseInt(data.childDependents) || 0,
     employmentType: data.employmentType?.toUpperCase().replace(/ /g, '_'),
     residencyStatus: data.residencyStatus?.toUpperCase(),
     riskScore: null, // Calculated server-side
     riskTolerance: RISK_TO_DB[data.riskTolerance] || data.riskTolerance?.toUpperCase(),
+    riskAnswers: data.riskAnswers || {},
 });
 
 const mapProfileFromDTO = (dto) => ({
     age: dto.age ?? '',
-    cityTier: CITY_TIER_FROM_DB[dto.cityTier] ?? dto.cityTier ?? 'Tier 1',
-    maritalStatus: MARITAL_FROM_DB[dto.maritalStatus] ?? dto.maritalStatus?.toLowerCase() ?? 'single',
+    city: dto.city ?? '',
+    maritalStatus: MARITAL_FROM_DB[dto.maritalStatus] ?? dto.maritalStatus?.toLowerCase() ?? '',
     dependents: dto.dependents ?? 0,
+    childDependents: dto.childDependents ?? 0,
     employmentType: dto.employmentType
         ? dto.employmentType.charAt(0).toUpperCase() + dto.employmentType.slice(1).toLowerCase().replace(/_/g, ' ')
-        : 'Salaried',
+        : '',
     residencyStatus: dto.residencyStatus
         ? dto.residencyStatus.charAt(0).toUpperCase() + dto.residencyStatus.slice(1).toLowerCase()
-        : 'Resident',
-    riskTolerance: RISK_FROM_DB[dto.riskTolerance] ?? dto.riskTolerance?.toLowerCase() ?? 'medium',
+        : '',
+    riskTolerance: RISK_FROM_DB[dto.riskTolerance] ?? dto.riskTolerance?.toLowerCase() ?? '',
+    riskAnswers: dto.riskAnswers ?? {},
 });
 
 const mapIncomeToDTO = (data) => ({

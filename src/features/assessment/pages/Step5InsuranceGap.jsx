@@ -9,7 +9,7 @@ const Step5InsuranceGap = () => {
     const {
         incomes,
         dependents,
-        cityTier,
+        city,
         liabilities,
         insurance,
         setInsurance
@@ -42,7 +42,7 @@ const Step5InsuranceGap = () => {
     const annualIncome = incomes.reduce((sum, item) => sum + (item.frequency === 'Monthly' ? item.amount * 12 : item.amount), 0);
     const totalDebt = liabilities.reduce((sum, item) => sum + item.amount, 0);
     const requiredLifeCover = dependents > 0 ? (annualIncome * 15) + totalDebt : totalDebt;
-    const requiredHealthCover = cityTier === 'Tier 1' ? 1500000 : cityTier === 'Tier 2' ? 1000000 : 500000;
+    const requiredHealthCover = 1000000; // ₹10L baseline recommendation
 
     // Gaps
     const lifeGap = Math.max(0, requiredLifeCover - insurance.life);
@@ -211,7 +211,7 @@ const Step5InsuranceGap = () => {
                     <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
                     <p className="text-xs text-blue-300 leading-relaxed">
                         <strong>Why these numbers?</strong><br />
-                        Life cover is calculated as 15x annual income + debt liabilities. Health cover is recommended based on your city tier ({cityTier}) to cover major medical emergencies.
+                        Life cover is calculated as 15x annual income + debt liabilities. Health cover of ₹10L+ is recommended{city ? ` for ${city}` : ''} to cover major medical emergencies.
                     </p>
                 </div>
 

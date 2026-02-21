@@ -7,17 +7,23 @@ export const useAssessmentStore = create(
             // Step 1: Personal Risk Profile
             age: '',
             setAge: (age) => set({ age }),
-            maritalStatus: 'single', // default
+            city: '', // free-text city name
+            setCity: (city) => set({ city }),
+            maritalStatus: '', // 'single', 'married', 'divorced', 'widowed'
             setMaritalStatus: (maritalStatus) => set({ maritalStatus }),
-            dependents: 0, // default
+            dependents: 0,
             setDependents: (dependents) => set({ dependents }),
-            cityTier: 'Tier 1', // default
-            setCityTier: (cityTier) => set({ cityTier }),
-            employmentType: 'Salaried', // default
+            childDependents: 0,
+            setChildDependents: (childDependents) => set({ childDependents }),
+            employmentType: '', // 'Salaried', 'Self-Employed', 'Business', 'Retired', 'Unemployed'
             setEmploymentType: (employmentType) => set({ employmentType }),
-            residencyStatus: 'Resident', // default
+            residencyStatus: '', // 'Resident', 'NRI', 'OCI'
             setResidencyStatus: (residencyStatus) => set({ residencyStatus }),
-            riskTolerance: 'medium', // 'low', 'medium', 'high'
+            riskAnswers: {}, // { 1: score, 2: score, ... }
+            setRiskAnswer: (qId, score) => set((state) => ({
+                riskAnswers: { ...state.riskAnswers, [qId]: score }
+            })),
+            riskTolerance: '', // computed: 'conservative', 'moderate', 'aggressive'
             setRiskTolerance: (riskTolerance) => set({ riskTolerance }),
 
             // Step 2: Income & Expenses
