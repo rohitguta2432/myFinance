@@ -54,6 +54,8 @@ const mapIncomeToDTO = (data) => ({
     sourceName: data.source,
     amount: parseFloat(data.amount) || 0,
     frequency: FREQ_TO_DB[data.frequency] || data.frequency?.toUpperCase(),
+    taxDeducted: data.taxDeducted || false,
+    tdsPercentage: parseFloat(data.tdsPercentage) || 0,
 });
 
 const mapIncomeFromDTO = (dto) => ({
@@ -61,6 +63,8 @@ const mapIncomeFromDTO = (dto) => ({
     source: dto.sourceName,
     amount: dto.amount,
     frequency: FREQ_FROM_DB[dto.frequency] ?? dto.frequency ?? 'Monthly',
+    taxDeducted: dto.taxDeducted || false,
+    tdsPercentage: dto.tdsPercentage || 0,
 });
 
 const mapExpenseToDTO = (data) => ({

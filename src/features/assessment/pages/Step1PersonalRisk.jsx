@@ -192,14 +192,14 @@ const Step1PersonalRisk = () => {
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm">
                         <div className="flex justify-between items-center mb-4">
                             <label className="text-sm font-medium text-slate-400">Your Age <span className="text-red-400">*</span></label>
-                            <span className="text-2xl font-mono font-bold text-primary">{age || 30}</span>
+                            <span className="text-2xl font-mono font-bold text-primary">{age}</span>
                         </div>
                         <div className="relative w-full h-6 flex items-center">
                             <input
                                 type="range"
                                 min="18"
                                 max="75"
-                                value={age || 30}
+                                value={age}
                                 onChange={(e) => setAge(e.target.value)}
                                 className="z-10 relative w-full"
                             />
@@ -402,13 +402,13 @@ const Step1PersonalRisk = () => {
                                                         key={opt.id}
                                                         onClick={() => handleRiskAnswer(q.id, opt)}
                                                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border ${isSelected
-                                                                ? 'bg-primary/10 border-primary/30'
-                                                                : 'border-transparent hover:bg-surface-active hover:border-white/5'
+                                                            ? 'bg-primary/10 border-primary/30'
+                                                            : 'border-transparent hover:bg-surface-active hover:border-white/5'
                                                             } group`}
                                                     >
                                                         <div className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all ${isSelected
-                                                                ? 'border-primary'
-                                                                : 'border-slate-500 group-hover:border-primary'
+                                                            ? 'border-primary'
+                                                            : 'border-slate-500 group-hover:border-primary'
                                                             }`}>
                                                             <div className={`w-2.5 h-2.5 rounded-full bg-primary transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
                                                                 }`}></div>
@@ -511,8 +511,8 @@ const Step1PersonalRisk = () => {
                     onClick={handleNext}
                     disabled={isSaving || !isFormValid}
                     className={`w-full font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 transition-all ${isFormValid
-                            ? 'bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark shadow-[0_0_20px_rgba(13,242,89,0.3)]'
-                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        ? 'bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark shadow-[0_0_20px_rgba(13,242,89,0.3)]'
+                        : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                         }`}
                 >
                     {isSaving ? (

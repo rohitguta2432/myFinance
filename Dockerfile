@@ -1,9 +1,10 @@
 # ---- Build Stage ----
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN npm run build
 
 # ---- Runtime Stage ----

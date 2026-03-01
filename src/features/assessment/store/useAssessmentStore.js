@@ -5,7 +5,7 @@ export const useAssessmentStore = create(
     persist(
         (set) => ({
             // Step 1: Personal Risk Profile
-            age: '',
+            age: 30,
             setAge: (age) => set({ age }),
             city: '', // free-text city name
             setCity: (city) => set({ city }),
