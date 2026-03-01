@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, Circle, Check, Loader2, MapPin, AlertCircle } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, CheckCircle2, Circle, Check, Loader2, MapPin, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useProfileQuery, useProfileMutation } from '../hooks/useProfile';
 
@@ -499,26 +500,27 @@ const Step1PersonalRisk = () => {
                 )}
             </section>
 
-            {/* Sticky Footer CTA */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-4xl mx-auto right-0">
-                {!isFormValid && (
-                    <div className="flex items-center gap-2 mb-3 justify-center">
-                        <AlertCircle className="w-4 h-4 text-slate-500" />
-                        <p className="text-xs text-slate-500">Please complete all mandatory fields to continue</p>
-                    </div>
-                )}
+            {/* Inline Split Button — Left Aligned */}
+            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                    <CheckCircle2 className={`w-4 h-4 ${isFormValid ? 'text-primary' : 'text-slate-500'}`} />
+                    <span className="text-sm font-semibold text-slate-400">Step 1/6</span>
+                </div>
                 <button
-                    onClick={handleNext}
-                    disabled={isSaving || !isFormValid}
-                    className={`w-full font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 transition-all ${isFormValid
-                        ? 'bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark shadow-[0_0_20px_rgba(13,242,89,0.3)]'
-                        : 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                        }`}
+                    onClick={() => {
+                        if (!isFormValid) {
+                            toast.error('Please complete all fields — age, city, employment, and risk questions', { id: 'validation' });
+                            return;
+                        }
+                        handleNext();
+                    }}
+                    disabled={isSaving}
+                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
                 >
                     {isSaving ? (
-                        <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
                     ) : (
-                        <>Next: Income & Expenses <ArrowRight className="w-5 h-5 font-bold" /></>
+                        <>Next <ArrowRight className="w-4 h-4" /></>
                     )}
                 </button>
             </div>

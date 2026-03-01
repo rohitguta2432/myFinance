@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation } from '../hooks/useFinancials';
 
@@ -148,51 +149,31 @@ const Step2IncomeExpenses = () => {
                 </button>
             </div>
 
-            {/* Summary Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-6 z-40">
-                <div className="bg-surface-dark border-t border-white/5 p-5 rounded-t-3xl max-w-4xl mx-auto right-0 left-0">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                            <div className="flex flex-col gap-3">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Monthly Cash Flow</span>
-                                    <div className="flex gap-4 text-xs text-slate-300 font-medium">
-                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-primary/80"></span> In: ₹{Math.round(totalMonthlyIncome).toLocaleString()}</span>
-                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400/80"></span> Out: ₹{Math.round(totalMonthlyExpenses).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Annual Cash Flow</span>
-                                    <div className="flex gap-4 text-xs text-slate-300 font-medium">
-                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-primary/80"></span> In: ₹{Math.round(totalMonthlyIncome * 12).toLocaleString()}</span>
-                                        <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400/80"></span> Out: ₹{Math.round(totalMonthlyExpenses * 12).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-xs text-slate-400 block mb-0.5">Monthly Surplus</span>
-                                <span className="text-primary text-xl font-bold">₹ {Math.round(surplus).toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        {savingsRate > 20 && (
-                            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex gap-3 items-start">
-                                <Check className="text-primary w-5 h-5 mt-0.5" />
-                                <p className="text-sm text-slate-200 leading-snug">
-                                    <span className="text-primary font-bold">Good Job!</span> You're saving <span className="text-white font-bold">{savingsRate}%</span> of your income.
-                                </p>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={() => navigate('/assessment/step-3')}
-                            className="w-full bg-primary text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98]"
-                        >
-                            Next: Assets & Liabilities
-                            <ArrowRight className="w-5 h-5" />
-                        </button>
-                    </div>
+            {/* Inline Split Button — Left Aligned */}
+            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-slate-400">Step 2/6</span>
                 </div>
+                <button
+                    onClick={() => {
+                        if (totalMonthlyIncome === 0 && totalMonthlyExpenses === 0) {
+                            toast.error('Add at least one income source and one expense to continue', { id: 'step2-guide' });
+                            return;
+                        }
+                        if (totalMonthlyIncome === 0) {
+                            toast.error('Add your income sources — salary, freelance, or investments', { id: 'step2-guide' });
+                            return;
+                        }
+                        if (totalMonthlyExpenses === 0) {
+                            toast('💡 Tip: Add your expenses for a better financial picture', { id: 'step2-guide' });
+                        }
+                        navigate('/assessment/step-3');
+                    }}
+                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)]"
+                >
+                    Next <ArrowRight className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Modal */}

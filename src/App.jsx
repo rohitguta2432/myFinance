@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/layout/Layout';
 import Home from './features/dashboard/pages/Home';
 import Step1PersonalRisk from './features/assessment/pages/Step1PersonalRisk';
@@ -29,6 +30,35 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3500,
+          style: {
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            color: '#e2e8f0',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderLeft: '3px solid #0DF259',
+            borderRadius: '14px',
+            fontSize: '13px',
+            padding: '14px 18px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(13,242,89,0.08)',
+            maxWidth: '380px',
+          },
+          error: {
+            iconTheme: { primary: '#fbbf24', secondary: 'rgba(15, 23, 42, 0.85)' },
+            style: {
+              borderLeft: '3px solid #fbbf24',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(251,191,36,0.08)',
+            },
+          },
+          success: {
+            iconTheme: { primary: '#0DF259', secondary: 'rgba(15, 23, 42, 0.85)' },
+          },
+        }}
+      />
     </QueryClientProvider>
   );
 }

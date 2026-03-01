@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation } from '../hooks/useBalanceSheet';
 
@@ -60,7 +61,7 @@ const Step3AssetsLiabilities = () => {
     const netWorth = totalAssets - totalLiabilities;
 
     return (
-        <div className="flex flex-col h-full pb-32">
+        <div className="flex flex-col h-full">
             {/* Net Worth Card */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface-dark to-black p-6 shadow-lg mb-6 border border-white/5">
                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl"></div>
@@ -128,14 +129,26 @@ const Step3AssetsLiabilities = () => {
                 </button>
             </div>
 
-            {/* Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10 pb-6 px-4 z-40 max-w-4xl mx-auto right-0">
+            {/* Inline Split Button — Left Aligned */}
+            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-slate-400">Step 3/6</span>
+                </div>
                 <button
-                    onClick={() => navigate('/assessment/step-4')}
-                    className="w-full bg-primary text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98]"
+                    onClick={() => {
+                        if (totalAssets === 0 && totalLiabilities === 0) {
+                            toast.error('Add your assets or liabilities — savings, FDs, loans, etc.', { id: 'step3-guide' });
+                            return;
+                        }
+                        if (totalAssets === 0) {
+                            toast('💡 Tip: Add your assets for a complete net worth picture', { id: 'step3-guide' });
+                        }
+                        navigate('/assessment/step-4');
+                    }}
+                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)]"
                 >
-                    Next: Financial Goals
-                    <ArrowRight className="w-5 h-5" />
+                    Next <ArrowRight className="w-4 h-4" />
                 </button>
             </div>
 

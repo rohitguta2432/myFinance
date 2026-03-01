@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckCircle, Info, Loader2 } from 'lucide-react';
+import { ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
 
@@ -27,6 +28,9 @@ const Step5InsuranceGap = () => {
     }, [insuranceData]);
 
     const handleNext = async () => {
+        if (!insurance.hasLifeInsurance && !insurance.hasHealthInsurance) {
+            toast('💡 Tip: Review your insurance coverage for a complete assessment', { id: 'step5-guide' });
+        }
         try {
             await saveInsuranceApi(insurance);
         } catch (err) {
@@ -60,7 +64,7 @@ const Step5InsuranceGap = () => {
     const totalScore = Math.round(lifeScore + healthScore);
 
     return (
-        <div className="flex flex-col h-full pb-32">
+        <div className="flex flex-col h-full">
 
             <div className="flex-1 space-y-6 overflow-y-auto pb-4">
 
@@ -217,21 +221,23 @@ const Step5InsuranceGap = () => {
 
             </div>
 
-            {/* Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-white/10 p-5 z-40 rounded-t-3xl">
-                <div className="max-w-4xl mx-auto">
-                    <button
-                        onClick={handleNext}
-                        disabled={isSaving}
-                        className="w-full bg-primary text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98] disabled:opacity-60"
-                    >
-                        {isSaving ? (
-                            <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
-                        ) : (
-                            <>Next: Tax Optimization <ArrowRight className="w-5 h-5" /></>
-                        )}
-                    </button>
+            {/* Inline Split Button — Left Aligned */}
+            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-slate-400">Step 5/6</span>
                 </div>
+                <button
+                    onClick={handleNext}
+                    disabled={isSaving}
+                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
+                >
+                    {isSaving ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                    ) : (
+                        <>Next <ArrowRight className="w-4 h-4" /></>
+                    )}
+                </button>
             </div>
         </div>
     );

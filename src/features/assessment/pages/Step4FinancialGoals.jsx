@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useGoalsQuery, useAddGoalMutation } from '../hooks/useGoals';
 
@@ -91,7 +92,7 @@ const Step4FinancialGoals = () => {
     }, 0);
 
     return (
-        <div className="flex flex-col h-full pb-32">
+        <div className="flex flex-col h-full">
             {/* Carousel */}
             <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                 <div className="flex gap-4 w-max">
@@ -162,25 +163,24 @@ const Step4FinancialGoals = () => {
                 })}
             </div>
 
-            {/* Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-6 z-40">
-                <div className="bg-surface-dark border-t border-white/5 p-5 rounded-t-3xl max-w-4xl mx-auto right-0 left-0">
-                    <div className="flex flex-col gap-4">
-                        {goals.length > 0 && (
-                            <div className="flex justify-between items-center text-slate-300 text-sm px-1">
-                                <span>Total Monthly Investment Needed:</span>
-                                <span className="text-white font-bold text-lg">₹ {Math.round(totalSIPRequired).toLocaleString()}</span>
-                            </div>
-                        )}
-                        <button
-                            onClick={() => navigate('/assessment/step-5')}
-                            className="w-full bg-primary text-background-dark font-bold text-base py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-[0_0_20px_rgba(13,242,89,0.3)] active:scale-[0.98]"
-                        >
-                            Next: Insurance Coverage
-                            <ArrowRight className="w-5 h-5" />
-                        </button>
-                    </div>
+            {/* Inline Split Button — Left Aligned */}
+            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-slate-400">Step 4/6</span>
                 </div>
+                <button
+                    onClick={() => {
+                        if (goals.length === 0) {
+                            toast.error('Add at least one financial goal — home, retirement, education, etc.', { id: 'step4-guide' });
+                            return;
+                        }
+                        navigate('/assessment/step-5');
+                    }}
+                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)]"
+                >
+                    Next <ArrowRight className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Modal */}
