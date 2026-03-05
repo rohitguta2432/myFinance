@@ -54,11 +54,35 @@ export const useAssessmentStore = create(
 
             // Step 5: Insurance Gap
             insurance: {
-                life: 0,
-                health: 0,
+                corporateHealth: '',
+                corporateHealthMembers: '',
+                corporateLife: '',
+                personalHealth: [], // { id, type, sumInsured, premium, copay }
+                personalLife: [],   // { id, type, sumAssured, premium, spouseAge }
+                checklist: {
+                    criticalIllness: false,
+                    personalAccident: false,
+                    disability: false,
+                    maternity: false,
+                }
             },
-            setInsurance: (type, amount) => set((state) => ({
-                insurance: { ...state.insurance, [type]: amount }
+            updateInsurance: (updates) => set((state) => ({
+                insurance: { ...state.insurance, ...updates }
+            })),
+            addPersonalHealth: (policy) => set((state) => ({
+                insurance: { ...state.insurance, personalHealth: [...state.insurance.personalHealth, policy] }
+            })),
+            removePersonalHealth: (id) => set((state) => ({
+                insurance: { ...state.insurance, personalHealth: state.insurance.personalHealth.filter(p => p.id !== id) }
+            })),
+            addPersonalLife: (policy) => set((state) => ({
+                insurance: { ...state.insurance, personalLife: [...state.insurance.personalLife, policy] }
+            })),
+            removePersonalLife: (id) => set((state) => ({
+                insurance: { ...state.insurance, personalLife: state.insurance.personalLife.filter(p => p.id !== id) }
+            })),
+            toggleChecklist: (key) => set((state) => ({
+                insurance: { ...state.insurance, checklist: { ...state.insurance.checklist, [key]: !state.insurance.checklist[key] } }
             })),
 
             // Step 6: Tax Optimization

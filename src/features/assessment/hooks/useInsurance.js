@@ -13,8 +13,19 @@ export const useInsuranceQuery = () => {
         queryFn: getInsurance,
         staleTime: 5 * 60 * 1000,
         onSuccess: (data) => {
-            store.setInsurance('life', data.life);
-            store.setInsurance('health', data.health);
+            const hasComplexData = store.insurance.personalHealth.length > 0 ||
+                store.insurance.personalLife.length > 0 ||
+                store.insurance.corporateHealth ||
+                store.insurance.corporateLife;
+
+            if (!hasComplexData) {
+                if (data.health > 0) {
+                    store.addPersonalHealth({ id: Date.now(), type: 'Existing Health', sumInsured: data.health, premium: 0, copay: 0 });
+                }
+                if (data.life > 0) {
+                    store.addPersonalLife({ id: Date.now() + 1, type: 'Existing Life', sumAssured: data.life, premium: 0, spouseAge: store.age || 30 });
+                }
+            }
         },
     });
 };
