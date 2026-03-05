@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation } from '../hooks/useBalanceSheet';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
-    const { assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
+    const { incomes, assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
 
     // API Integration
     const { data: balanceData } = useBalanceSheetQuery();
@@ -35,6 +35,12 @@ const Step3AssetsLiabilities = () => {
     const [purchaseValue, setPurchaseValue] = useState('');
     const [timeHorizon, setTimeHorizon] = useState('Short (0-2 years)');
     const [liquidity, setLiquidity] = useState('Immediate (instant access like savings account)');
+
+    // Liability Specific State
+    const [emi, setEmi] = useState('');
+    const [interestRate, setInterestRate] = useState('');
+    const [monthsLeft, setMonthsLeft] = useState('');
+    const [moratoriumMonths, setMoratoriumMonths] = useState('');
 
     const assetCategories = {
         'Savings & Investments': [
@@ -69,12 +75,24 @@ const Step3AssetsLiabilities = () => {
         ]
     };
 
+    const liabilityCategories = [
+        '🏠 Home Loan',
+        '💰 Personal Loan',
+        '💼 Business Loan',
+        '💳 Credit Card Debt',
+        '🚗 Vehicle Loan',
+        '🪙 Gold Loan',
+        '🎓 Education Loan',
+        '🏢 Loan Against Property',
+        '➕ Other'
+    ];
+
     const openModal = () => {
         if (activeTab === 'assets') {
             setCategory('Savings & Investments');
             setSubCategory(assetCategories['Savings & Investments'][0]);
         } else {
-            setCategory('Home Loan');
+            setCategory(liabilityCategories[0]);
             setSubCategory('');
         }
         setName('');
@@ -82,6 +100,10 @@ const Step3AssetsLiabilities = () => {
         setPurchaseValue('');
         setTimeHorizon('Short (0-2 years)');
         setLiquidity('Immediate (instant access like savings account)');
+        setEmi('');
+        setInterestRate('');
+        setMonthsLeft('');
+        setMoratoriumMonths('');
         setIsModalOpen(true);
     };
 
@@ -100,7 +122,11 @@ const Step3AssetsLiabilities = () => {
             amount: parseFloat(amount) || 0,
             purchaseValue: activeTab === 'assets' ? (parseFloat(purchaseValue) || 0) : undefined,
             timeHorizon: activeTab === 'assets' ? timeHorizon : undefined,
-            liquidity: activeTab === 'assets' ? liquidity : undefined
+            liquidity: activeTab === 'assets' ? liquidity : undefined,
+            emi: activeTab === 'liabilities' ? (parseFloat(emi) || 0) : undefined,
+            interestRate: activeTab === 'liabilities' ? (parseFloat(interestRate) || 0) : undefined,
+            monthsLeft: activeTab === 'liabilities' ? (parseInt(monthsLeft, 10) || 0) : undefined,
+            moratoriumMonths: activeTab === 'liabilities' && category === '🎓 Education Loan' ? (parseInt(moratoriumMonths, 10) || 0) : undefined,
         };
 
         if (activeTab === 'assets') {
@@ -117,6 +143,47 @@ const Step3AssetsLiabilities = () => {
     const totalAssets = assets.reduce((sum, item) => sum + item.amount, 0);
     const totalLiabilities = liabilities.reduce((sum, item) => sum + item.amount, 0);
     const netWorth = totalAssets - totalLiabilities;
+
+    const monthlyEmiTotal = liabilities.reduce((sum, item) => sum + (item.emi || 0), 0);
+
+    // Average Interest Rate Weighting by Outstanding Amount
+    const totalInterestWeighted = liabilities.reduce((sum, item) => sum + ((item.interestRate || 0) * (item.amount || 0)), 0);
+    const avgInterestRate = totalLiabilities > 0 ? (totalInterestWeighted / totalLiabilities) : 0;
+
+    const calculateMonthly = (item) => {
+        if (item.frequency === 'Monthly') return item.amount;
+        if (item.frequency === 'Quarterly') return item.amount / 3;
+        if (item.frequency === 'Yearly') return item.amount / 12;
+        return item.amount / 12; // One-time amortized
+    };
+    const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
+    const dtiRatio = totalMonthlyIncome > 0 ? (monthlyEmiTotal / totalMonthlyIncome) * 100 : 0;
+
+    const formatNetWorth = (amount) => {
+        const absAmount = Math.abs(amount);
+        let formatted;
+        let label = '';
+
+        if (absAmount >= 10000000) {
+            formatted = (absAmount / 10000000).toFixed(2);
+            label = 'Crores';
+        } else if (absAmount >= 100000) {
+            formatted = (absAmount / 100000).toFixed(2);
+            label = 'Lakhs';
+        } else {
+            formatted = absAmount.toLocaleString();
+        }
+
+        const sign = amount < 0 ? '-' : '';
+        const colorClass = amount < 0 ? 'text-red-400' : 'text-white';
+
+        return {
+            text: `${sign}₹ ${formatted} ${label}`.trim(),
+            colorClass
+        };
+    };
+
+    const netWorthFormat = formatNetWorth(netWorth);
 
     // Asset Allocation
     const getAssetClass = (subcat) => {
@@ -179,16 +246,16 @@ const Step3AssetsLiabilities = () => {
                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl"></div>
                 <div className="relative z-10 flex flex-col gap-1 text-center">
                     <p className="text-slate-400 text-sm font-medium tracking-wide uppercase">Total Net Worth</p>
-                    <h1 className="text-white text-4xl font-bold tracking-tight py-2">₹ {(netWorth / 100000).toFixed(2)} Lakhs</h1>
+                    <h1 className={`text-4xl font-bold tracking-tight py-2 ${netWorthFormat.colorClass}`}>{netWorthFormat.text}</h1>
                     <div className="flex items-center justify-center gap-4 mt-2">
                         <div className="text-xs">
                             <span className="text-slate-400 block">Assets</span>
-                            <span className="text-primary font-bold">₹ {(totalAssets / 1000).toFixed(1)}k</span>
+                            <span className="text-primary font-bold">₹ {(totalAssets / 100000).toFixed(2)}L</span>
                         </div>
                         <div className="h-6 w-px bg-white/10"></div>
                         <div className="text-xs">
                             <span className="text-slate-400 block">Liabilities</span>
-                            <span className="text-red-400 font-bold">₹ {(totalLiabilities / 1000).toFixed(1)}k</span>
+                            <span className="text-red-400 font-bold">₹ {(totalLiabilities / 100000).toFixed(2)}L</span>
                         </div>
                     </div>
                 </div>
@@ -265,6 +332,90 @@ const Step3AssetsLiabilities = () => {
                 </div>
             )}
 
+            {/* Liabilities Summary Card */}
+            {totalLiabilities > 0 && activeTab === 'liabilities' && (
+                <div className="bg-surface-dark border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.05)] rounded-2xl p-6 mb-6 animate-fade-in relative overflow-hidden">
+                    <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-red-500/10 blur-3xl"></div>
+                    <div className="relative z-10">
+                        <h3 className="text-white font-bold mb-4 font-mono tracking-wider flex items-center justify-center border-b border-red-500/20 pb-4">
+                            <span className="text-slate-500 mr-2">══</span>
+                            LIABILITIES SUMMARY
+                            <span className="text-slate-500 ml-2">══</span>
+                        </h3>
+
+                        <div className="space-y-4 font-mono text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-300">Total Outstanding</span>
+                                <span className="text-red-400 font-bold">₹ {totalLiabilities.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-300">Monthly EMI Total</span>
+                                <span className="text-white font-bold">₹ {monthlyEmiTotal.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-300">Avg Interest Rate</span>
+                                <span className="text-white font-bold">{avgInterestRate.toFixed(1)}%</span>
+                            </div>
+                        </div>
+
+                        {/* Debt-to-Income Gauge */}
+                        {totalMonthlyIncome > 0 && (
+                            <div className="mt-8 pt-6 border-t border-white/10">
+                                <h4 className="text-slate-300 text-sm font-semibold mb-6 text-center">Debt-to-Income Ratio</h4>
+
+                                <div className="relative h-2 bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 rounded-full mb-8 mx-4">
+                                    <div
+                                        className="absolute top-1/2 -translate-y-1/2 -ml-2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-surface-dark transition-all duration-1000"
+                                        style={{ left: `${Math.min(Math.max(dtiRatio * 2, 0), 100)}%` }} // Scaling 0-50% across 0-100% width
+                                    ></div>
+                                    <div
+                                        className="absolute -top-8 -translate-x-1/2 bg-surface-active px-2 py-1 rounded text-xs font-bold text-white transition-all duration-1000"
+                                        style={{ left: `${Math.min(Math.max(dtiRatio * 2, 0), 100)}%` }}
+                                    >
+                                        {dtiRatio.toFixed(1)}%
+                                    </div>
+                                    <div className="absolute -bottom-6 left-0 text-xs text-slate-400 font-medium">0%</div>
+                                    <div className="absolute -bottom-6 right-0 text-xs text-slate-400 font-medium">50%+</div>
+                                </div>
+
+                                <div className="bg-background-dark rounded-xl p-4 mt-2 border border-white/5">
+                                    {dtiRatio < 30 ? (
+                                        <div className="flex items-start gap-3">
+                                            <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                                            <div>
+                                                <h5 className="text-emerald-500 font-bold text-sm mb-1">Healthy (Below 30% threshold)</h5>
+                                                <p className="text-slate-400 text-xs">Your debt burden is manageable and leaves room for savings and investments.</p>
+                                            </div>
+                                        </div>
+                                    ) : dtiRatio <= 40 ? (
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                                            <div>
+                                                <h5 className="text-amber-500 font-bold text-sm mb-1">Monitor: Your EMIs are {dtiRatio.toFixed(0)}% of income.</h5>
+                                                <p className="text-slate-400 text-xs">Avoid taking more loans until this improves or your income increases.</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-start gap-3">
+                                            <div className="shrink-0 text-red-500 mt-0.5">🚨</div>
+                                            <div>
+                                                <h5 className="text-red-500 font-bold text-sm mb-2">Risky: Your EMIs are {dtiRatio.toFixed(0)}% of income.</h5>
+                                                <p className="text-slate-300 text-xs font-semibold mb-1">Consider:</p>
+                                                <ul className="text-slate-400 text-xs space-y-1 list-disc pl-4">
+                                                    <li>Debt consolidation at lower rates</li>
+                                                    <li>Extending loan tenure to reduce EMI</li>
+                                                    <li>Increasing income or reducing expenses</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Tabs */}
             <div className="bg-surface-active p-1 rounded-xl flex mb-6 flex-shrink-0">
                 <button
@@ -291,7 +442,15 @@ const Step3AssetsLiabilities = () => {
                             </div>
                             <div>
                                 <p className="font-bold text-sm text-white">{item.name}</p>
-                                <p className="text-xs text-slate-400">{item.category} {item.subCategory ? `• ${item.subCategory}` : ''}</p>
+                                <p className="text-xs text-slate-400">
+                                    {item.category} {item.subCategory ? `• ${item.subCategory}` : ''}
+                                </p>
+                                {activeTab === 'liabilities' && (
+                                    <p className="text-xs text-red-400/80 mt-1">
+                                        ₹{item.emi?.toLocaleString()}/mo @ {item.interestRate}%
+                                        {item.monthsLeft ? ` • ${item.monthsLeft} mo left` : ''}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -431,11 +590,9 @@ const Step3AssetsLiabilities = () => {
                                             onChange={(e) => setCategory(e.target.value)}
                                             className="w-full bg-background-dark border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         >
-                                            <option>Home Loan</option>
-                                            <option>Car Loan</option>
-                                            <option>Personal Loan</option>
-                                            <option>Credit Card Debt</option>
-                                            <option>Other Debt</option>
+                                            {liabilityCategories.map(cat => (
+                                                <option key={cat}>{cat}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
@@ -449,14 +606,69 @@ const Step3AssetsLiabilities = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Current Value (₹)</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">How much is still pending? (₹)</label>
                                         <input
                                             type="number"
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                             className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="0"
+                                            placeholder="e.g., 20,00,000"
                                         />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Monthly EMI (₹)</label>
+                                            <input
+                                                type="number"
+                                                value={emi}
+                                                onChange={(e) => setEmi(e.target.value)}
+                                                className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                placeholder="e.g., 25,363"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-1 mb-2">
+                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Interest Rate (%)</label>
+                                                <div className="group relative">
+                                                    <Info className="w-3.5 h-3.5 text-slate-500" />
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max bg-surface text-slate-300 text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                        Check your loan statement
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                value={interestRate}
+                                                onChange={(e) => setInterestRate(e.target.value)}
+                                                className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                placeholder="e.g., 9"
+                                                step="0.1"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Months Left</label>
+                                            <input
+                                                type="number"
+                                                value={monthsLeft}
+                                                onChange={(e) => setMonthsLeft(e.target.value)}
+                                                className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                placeholder="e.g., 120"
+                                            />
+                                        </div>
+                                        {category === '🎓 Education Loan' && (
+                                            <div>
+                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Moratorium Months?</label>
+                                                <input
+                                                    type="number"
+                                                    value={moratoriumMonths}
+                                                    onChange={(e) => setMoratoriumMonths(e.target.value)}
+                                                    className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                    placeholder="e.g., 6"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}

@@ -45,7 +45,7 @@ export const useAssessmentStore = create(
             removeLiability: (id) => set((state) => ({ liabilities: state.liabilities.filter((l) => l.id !== id) })),
 
             // Step 4: Financial Goals
-            goals: [], // { id, type, name, costs, horizon, inflation }
+            goals: [], // { id, type, name, cost, horizon, currentSavings, inflation, importance }
             addGoal: (goal) => set((state) => ({ goals: [...state.goals, goal] })),
             removeGoal: (id) => set((state) => ({ goals: state.goals.filter((g) => g.id !== id) })),
             updateGoal: (id, updates) => set((state) => ({
