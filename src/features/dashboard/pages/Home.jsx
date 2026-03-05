@@ -23,7 +23,7 @@ const Home = () => {
                     <div className="bg-primary/20 p-2 rounded-lg flex items-center justify-center">
                         <ShieldCheck className="text-primary w-5 h-5" />
                     </div>
-                    <h2 className="text-white text-lg font-bold tracking-tight">MyFinancial</h2>
+                    <span className="text-white text-lg font-bold tracking-tight">MyFinancial</span>
                 </div>
                 {/* Optional Menu Icon */}
                 <button className="text-white/60 hover:text-white transition-colors">
@@ -61,6 +61,7 @@ const Home = () => {
             </div>
 
             {/* Feature Cards Grid */}
+            <h2 className="sr-only">Core Features</h2>
             <div className="px-6 lg:px-8 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 lg:items-start lg:gap-6 mb-8 max-w-4xl mx-auto">
                 {/* Card 1: Post-Tax Return */}
                 <div className="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
