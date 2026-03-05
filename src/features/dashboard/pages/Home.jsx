@@ -11,14 +11,14 @@ const Home = () => {
             <div className="bg-primary/10 border-b border-primary/20 backdrop-blur-md sticky top-0 z-50 pt-safe-top">
                 <div className="px-4 py-3 flex items-start justify-center gap-2 text-center max-w-4xl mx-auto">
                     <ShieldCheck className="text-primary w-4 h-4 shrink-0 translate-y-[2px]" />
-                    <p className="text-primary text-xs font-medium leading-relaxed">
+                    <p className="text-white text-xs font-medium leading-relaxed">
                         No Name/Phone/Email Required · Data Stays on Device · Export Anytime
                     </p>
                 </div>
             </div>
 
             {/* Header / Nav */}
-            <div className="flex items-center justify-between p-6 max-w-4xl mx-auto">
+            <div className="flex items-center justify-between p-6 w-full max-w-7xl mx-auto lg:px-12">
                 <div className="flex items-center gap-2">
                     <div className="bg-primary/20 p-2 rounded-lg flex items-center justify-center">
                         <ShieldCheck className="text-primary w-5 h-5" />
@@ -33,10 +33,10 @@ const Home = () => {
 
             {/* Hero Section */}
             <div className="px-6 pt-2 pb-8 text-center">
-                <h1 className="text-white text-3xl lg:text-5xl leading-tight font-extrabold tracking-tight mb-4">
-                    Fix Your Finances Early, or Pay <span className="text-primary">10× Later</span>
+                <h1 className="text-white text-3xl lg:text-5xl leading-tight font-extrabold tracking-tight mb-4 max-w-4xl mx-auto">
+                    Fix Your Finances Early, or Pay <span className="text-primary whitespace-nowrap">10× Later</span>
                 </h1>
-                <p className="text-white/70 text-base lg:text-lg font-normal leading-relaxed max-w-sm lg:max-w-xl mx-auto">
+                <p className="text-white/70 text-base lg:text-lg font-normal leading-relaxed max-w-sm lg:max-w-2xl mx-auto">
                     Most professionals lose lakhs in opportunity cost by ignoring financial planning. Get your free Financial Position Summary in 10 minutes.
                 </p>
             </div>
@@ -61,7 +61,7 @@ const Home = () => {
             </div>
 
             {/* Feature Cards Grid */}
-            <div className="px-6 lg:px-8 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-6 mb-8 max-w-4xl mx-auto">
+            <div className="px-6 lg:px-8 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 lg:items-start lg:gap-6 mb-8 max-w-4xl mx-auto">
                 {/* Card 1: Post-Tax Return */}
                 <div className="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
