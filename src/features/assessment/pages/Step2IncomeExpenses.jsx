@@ -82,8 +82,23 @@ const Step2IncomeExpenses = () => {
 
     const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + calculateMonthly(item), 0);
+    const totalMonthlyEMIs = expenses
+        .filter(exp => exp.category === 'EMIs (loan payments)' || exp.category.toUpperCase().includes('EMI'))
+        .reduce((sum, item) => sum + calculateMonthly(item), 0);
+
+    // We want the primary expenses listed as (Total Expenses - EMIs) in the card since it breaks out EMIs specifically.
+    const nonEMIExpenses = totalMonthlyExpenses - totalMonthlyEMIs;
+
+    const discretionaryExpensesList = expenses.filter(exp => exp.type === 'Discretionary');
+    const totalDiscretionary = discretionaryExpensesList.reduce((sum, item) => sum + calculateMonthly(item), 0);
+
     const surplus = totalMonthlyIncome - totalMonthlyExpenses;
     const savingsRate = totalMonthlyIncome > 0 ? Math.round((surplus / totalMonthlyIncome) * 100) : 0;
+
+    // Calculate hypothetical metrics if discretionary is reduced by 30%
+    const hypotheticalTotalExpenses = totalMonthlyExpenses - (totalDiscretionary * 0.30);
+    const hypotheticalSurplus = totalMonthlyIncome - hypotheticalTotalExpenses;
+    const hypotheticalSavingsRate = totalMonthlyIncome > 0 ? Math.round((hypotheticalSurplus / totalMonthlyIncome) * 100) : 0;
 
     return (
         <div className="flex flex-col h-full pb-32">
@@ -147,6 +162,86 @@ const Step2IncomeExpenses = () => {
                     <Plus className="w-5 h-5" />
                     Add Expense
                 </button>
+
+                {/* Cash Flow Reality Check Card */}
+                {incomes.length > 0 && expenses.length > 0 && (
+                    <div className="mt-8 pt-8 border-t border-white/10 animate-fade-in">
+                        <div className="bg-gradient-to-br from-surface-dark to-surface border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                            {/* Decorative Top Bar */}
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-500"></div>
+
+                            <h3 className="text-center font-mono text-sm tracking-widest text-slate-400 mb-6 uppercase">
+                                ╓── Your Monthly Cash Flow ──╖
+                            </h3>
+
+                            <div className="space-y-3 font-mono text-sm sm:text-base">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-300">Income</span>
+                                    <span className="text-primary font-bold">₹{totalMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-300">Expenses</span>
+                                    <span className="text-red-400">₹{nonEMIExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-slate-400">
+                                    <span>EMIs (loans)</span>
+                                    <span>₹{totalMonthlyEMIs.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                </div>
+
+                                <div className="border-t border-dashed border-white/20 my-3 pt-3 flex justify-between items-center text-lg">
+                                    <span className="text-white font-bold">SURPLUS</span>
+                                    <span className="text-white font-bold">₹{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                </div>
+
+                                <div className="pt-2 flex justify-between items-center">
+                                    <span className="text-slate-300">Savings Rate:</span>
+                                    <span className={`font-bold ${savingsRate >= 20 ? 'text-primary' : 'text-red-400'}`}>{savingsRate}%</span>
+                                </div>
+                            </div>
+
+                            <div className="mt-6">
+                                {savingsRate >= 20 ? (
+                                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+                                        <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                        <p className="text-sm text-primary font-medium">
+                                            Excellent! You're saving more than 70% of Indians.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
+                                        <div className="flex gap-3">
+                                            <span className="text-xl shrink-0 mt-0.5">🚨</span>
+                                            <p className="text-sm text-red-200">
+                                                <span className="font-bold text-red-400">Your savings rate is below the recommended 20%.</span>
+                                            </p>
+                                        </div>
+
+                                        {discretionaryExpensesList.length > 0 && (
+                                            <div className="pl-9 space-y-2">
+                                                <p className="text-xs text-slate-400">Review non-essential expenses like:</p>
+                                                <div className="space-y-1">
+                                                    {discretionaryExpensesList.slice(0, 3).map(exp => (
+                                                        <div key={exp.id} className="flex justify-between text-xs font-mono">
+                                                            <span className="text-slate-300 truncate pr-2">{exp.category}:</span>
+                                                            <span className="text-slate-400 shrink-0">₹{calculateMonthly(exp).toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-xs font-medium text-white/80 pt-2 border-t border-red-500/20">
+                                                    Reducing these by 30% would boost savings to <span className="text-primary font-bold">{hypotheticalSavingsRate}%</span>.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <h3 className="text-center font-mono text-sm tracking-widest text-slate-400 mt-6 uppercase">
+                                ╙────────────────────────────╜
+                            </h3>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Inline Split Button — Left Aligned */}
