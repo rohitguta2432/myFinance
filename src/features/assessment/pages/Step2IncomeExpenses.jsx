@@ -201,6 +201,7 @@ const Step2IncomeExpenses = () => {
                                         <>
                                             <option>Salary</option>
                                             <option>Business Income</option>
+                                            <option>Agriculture Income</option>
                                             <option>Freelancing</option>
                                             <option>Rental Income</option>
                                             <option>Dividend Income</option>
