@@ -1,0 +1,6 @@
+sending incremental file list
+./
+rsync_output.txt
+
+sent 5,491 bytes  received 87 bytes  858.15 bytes/sec
+total size is 1,282,697  speedup is 229.96

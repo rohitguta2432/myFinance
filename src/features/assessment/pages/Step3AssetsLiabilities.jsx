@@ -250,12 +250,12 @@ const Step3AssetsLiabilities = () => {
                     <div className="flex items-center justify-center gap-4 mt-2">
                         <div className="text-xs">
                             <span className="text-slate-400 block">Assets</span>
-                            <span className="text-primary font-bold">₹ {(totalAssets / 100000).toFixed(2)}L</span>
+                            <span className="text-primary font-bold">{formatNetWorth(totalAssets).text}</span>
                         </div>
                         <div className="h-6 w-px bg-white/10"></div>
                         <div className="text-xs">
                             <span className="text-slate-400 block">Liabilities</span>
-                            <span className="text-red-400 font-bold">₹ {(totalLiabilities / 100000).toFixed(2)}L</span>
+                            <span className="text-red-400 font-bold">{formatNetWorth(totalLiabilities).text}</span>
                         </div>
                     </div>
                 </div>
