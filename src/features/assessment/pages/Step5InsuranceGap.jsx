@@ -45,7 +45,7 @@ const Step5InsuranceGap = () => {
     // Living Expenses Cover
     const calculateLivingExpensesCover = () => {
         // Annual Living Expenses
-        const annualExpenses = expenses.reduce((sum, item) => {
+        const annualExpenses = (expenses || []).reduce((sum, item) => {
             const amount = parseFloat(item.amount) || 0;
             return sum + (item.frequency === 'yearly' ? amount : item.frequency === 'weekly' ? amount * 52 : amount * 12);
         }, 0);
@@ -53,7 +53,7 @@ const Step5InsuranceGap = () => {
         // Use user age or spouse age if married. Let's assume average age of couple is same as user if spouseAge isn't collected explicitly everywhere, but we have it in personal life policies.
         // Let's find max spouse age from personal life policies, or fallback to user age
         let partnerAge = age;
-        insurance.personalLife.forEach(p => {
+        (insurance?.personalLife || []).forEach(p => {
             if (p.spouseAge) partnerAge = Math.max(partnerAge, parseInt(p.spouseAge));
         });
 
@@ -69,7 +69,7 @@ const Step5InsuranceGap = () => {
     // Goals Cover (Present Value of All Goals Gap)
     const calculateTotalGoalsCover = () => {
         let totalPv = 0;
-        goals.forEach(goal => {
+        (goals || []).forEach(goal => {
             const numCost = parseFloat(goal.cost) || 0;
             const numHorizon = parseInt(goal.horizon) || 0;
             const numSavings = parseFloat(goal.currentSavings) || 0;
@@ -91,12 +91,12 @@ const Step5InsuranceGap = () => {
 
     // Outstanding Liabilities
     const calculateLiabilitiesCover = () => {
-        return liabilities.reduce((sum, l) => sum + (parseFloat(l.amount) || 0), 0);
+        return (liabilities || []).reduce((sum, l) => sum + (parseFloat(l.amount) || 0), 0);
     };
 
     // Deductible Assets (Savings, FDs, Liquid MFs, Stocks)
     const calculateDeductibleAssets = () => {
-        return assets.reduce((sum, a) => {
+        return (assets || []).reduce((sum, a) => {
             const cat = a.category ? a.category.toLowerCase() : '';
             if (cat.includes('savings') || cat.includes('fixed') || cat.includes('deposit') || cat.includes('mutual') || cat.includes('liqui') || cat.includes('stock') || cat.includes('equity')) {
                 return sum + (parseFloat(a.amount) || 0);
@@ -132,11 +132,11 @@ const Step5InsuranceGap = () => {
     const recommendedHealthCover = calculateRecommendedHealthCover();
 
     // Actual Covers
-    const actualCorpHealth = parseFloat(insurance.corporateHealth) || 0;
-    const actualCorpLife = parseFloat(insurance.corporateLife) || 0;
+    const actualCorpHealth = parseFloat(insurance?.corporateHealth) || 0;
+    const actualCorpLife = parseFloat(insurance?.corporateLife) || 0;
 
-    const actualPersonalHealth = insurance.personalHealth.reduce((sum, p) => sum + (parseFloat(p.sumInsured) || 0), 0);
-    const actualPersonalLife = insurance.personalLife.reduce((sum, p) => sum + (parseFloat(p.sumAssured) || 0), 0);
+    const actualPersonalHealth = (insurance?.personalHealth || []).reduce((sum, p) => sum + (parseFloat(p.sumInsured) || 0), 0);
+    const actualPersonalLife = (insurance?.personalLife || []).reduce((sum, p) => sum + (parseFloat(p.sumAssured) || 0), 0);
 
     const totalHealthCover = actualCorpHealth + actualPersonalHealth;
     const totalLifeCover = actualCorpLife + actualPersonalLife;
@@ -227,7 +227,7 @@ const Step5InsuranceGap = () => {
                                 <input
                                     type="number"
                                     placeholder="e.g. 500000"
-                                    value={insurance.corporateHealth}
+                                    value={insurance?.corporateHealth || ''}
                                     onChange={e => updateInsurance({ corporateHealth: e.target.value })}
                                     className="w-full bg-background-dark border border-white/10 rounded-xl p-3 text-white focus:border-primary/50"
                                 />
@@ -237,7 +237,7 @@ const Step5InsuranceGap = () => {
                                 <input
                                     type="number"
                                     placeholder="e.g. 4"
-                                    value={insurance.corporateHealthMembers}
+                                    value={insurance?.corporateHealthMembers || ''}
                                     onChange={e => updateInsurance({ corporateHealthMembers: e.target.value })}
                                     className="w-full bg-background-dark border border-white/10 rounded-xl p-3 text-white focus:border-primary/50"
                                 />
@@ -247,7 +247,7 @@ const Step5InsuranceGap = () => {
                                 <input
                                     type="number"
                                     placeholder="e.g. 1000000"
-                                    value={insurance.corporateLife}
+                                    value={insurance?.corporateLife || ''}
                                     onChange={e => updateInsurance({ corporateLife: e.target.value })}
                                     className="w-full bg-background-dark border border-white/10 rounded-xl p-3 text-white focus:border-primary/50"
                                 />
@@ -291,7 +291,7 @@ const Step5InsuranceGap = () => {
                             </button>
                         </div>
 
-                        {insurance.personalHealth.length === 0 ? (
+                        {!(insurance?.personalHealth && insurance.personalHealth.length > 0) ? (
                             <div className="text-center py-6 bg-background-dark rounded-xl border border-white/5 border-dashed">
                                 <HeartPulse className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
                                 <p className="text-sm text-slate-500">No personal health insurance added</p>
@@ -362,7 +362,7 @@ const Step5InsuranceGap = () => {
                             </button>
                         </div>
 
-                        {insurance.personalLife.length === 0 ? (
+                        {!(insurance?.personalLife && insurance.personalLife.length > 0) ? (
                             <div className="text-center py-6 bg-background-dark rounded-xl border border-white/5 border-dashed">
                                 <Shield className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
                                 <p className="text-sm text-slate-500">No personal life insurance added</p>
@@ -441,11 +441,11 @@ const Step5InsuranceGap = () => {
                         ].map(item => (
                             <label key={item.id} className="flex items-center justify-between p-3 bg-background-dark border border-white/5 hover:border-white/10 rounded-xl cursor-pointer transition">
                                 <span className="text-sm font-medium text-slate-300">{item.label}</span>
-                                <div className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out ${insurance.checklist[item.id] ? 'bg-primary' : 'bg-white/10'}`}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${insurance.checklist[item.id] ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                <div className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out ${insurance?.checklist?.[item.id] ? 'bg-primary' : 'bg-white/10'}`}>
+                                    <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${insurance?.checklist?.[item.id] ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                 </div>
                                 {/* Hidden checkbox to trigger toggle */}
-                                <input type="checkbox" className="hidden" checked={insurance.checklist[item.id] || false} onChange={() => toggleChecklist(item.id)} />
+                                <input type="checkbox" className="hidden" checked={insurance?.checklist?.[item.id] || false} onChange={() => toggleChecklist(item.id)} />
                             </label>
                         ))}
                     </div>
