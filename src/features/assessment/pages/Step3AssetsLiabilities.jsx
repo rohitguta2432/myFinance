@@ -471,24 +471,34 @@ const Step3AssetsLiabilities = () => {
                 </button>
             </div>
 
-            {/* Inline Split Button — Left Aligned */}
-            <div className="mt-8 mb-4 flex items-center gap-3 justify-end flex-shrink-0">
-                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
-                    <CheckCircle2 className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-slate-400">Step 3/6</span>
+            {/* Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-lg border-t border-white/5 p-4 z-50">
+                <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+                    <button
+                        onClick={() => navigate('/assessment/step-2')}
+                        className="px-6 py-3 bg-surface-dark hover:bg-surface-active text-white font-bold text-sm rounded-xl transition-all"
+                    >
+                        Back
+                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-semibold text-slate-400">Step 3/6</span>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (totalAssets === 0 && totalLiabilities === 0) {
+                                    toast.error('Add your assets or liabilities — savings, FDs, loans, etc.', { id: 'step3-guide' });
+                                    return;
+                                }
+                                navigate('/assessment/step-4');
+                            }}
+                            className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)]"
+                        >
+                            Next <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => {
-                        if (totalAssets === 0 && totalLiabilities === 0) {
-                            toast.error('Add your assets or liabilities — savings, FDs, loans, etc.', { id: 'step3-guide' });
-                            return;
-                        }
-                        navigate('/assessment/step-4');
-                    }}
-                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)]"
-                >
-                    Next <ArrowRight className="w-4 h-4" />
-                </button>
             </div>
 
             {/* Modal */}

@@ -500,29 +500,33 @@ const Step1PersonalRisk = () => {
                 )}
             </section>
 
-            {/* Inline Split Button — Left Aligned */}
-            <div className="mt-8 mb-10 flex items-center gap-3 justify-end">
-                <div className="flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
-                    <CheckCircle2 className={`w-4 h-4 ${isFormValid ? 'text-primary' : 'text-slate-500'}`} />
-                    <span className="text-sm font-semibold text-slate-400">Step 1/6</span>
+            {/* Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-lg border-t border-white/5 p-4 z-50">
+                <div className="max-w-[1200px] mx-auto flex items-center justify-end">
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
+                            <CheckCircle2 className={`w-4 h-4 ${isFormValid ? 'text-primary' : 'text-slate-500'}`} />
+                            <span className="text-sm font-semibold text-slate-400">Step 1/6</span>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (!isFormValid) {
+                                    toast.error('Please complete all fields — age, city, employment, and risk questions', { id: 'validation' });
+                                    return;
+                                }
+                                handleNext();
+                            }}
+                            disabled={isSaving}
+                            className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
+                        >
+                            {isSaving ? (
+                                <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                            ) : (
+                                <>Next <ArrowRight className="w-4 h-4" /></>
+                            )}
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => {
-                        if (!isFormValid) {
-                            toast.error('Please complete all fields — age, city, employment, and risk questions', { id: 'validation' });
-                            return;
-                        }
-                        handleNext();
-                    }}
-                    disabled={isSaving}
-                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
-                >
-                    {isSaving ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
-                    ) : (
-                        <>Next <ArrowRight className="w-4 h-4" /></>
-                    )}
-                </button>
             </div>
         </div>
     );

@@ -497,19 +497,29 @@ const Step5InsuranceGap = () => {
 
             </div>
 
-            {/* Bottom Nav */}
-            <div className="shrink-0 p-4 border-t border-white/5 bg-surface/80 backdrop-blur-md flex items-center justify-end gap-3 sticky bottom-0">
-                <div className="flex items-center gap-2 px-4 py-3 bg-background-dark border border-white/10 rounded-xl shadow-inner">
-                    <CheckCircle2 className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-slate-400">Step 5/6</span>
+            {/* Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-lg border-t border-white/5 p-4 z-50">
+                <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+                    <button
+                        onClick={() => navigate('/assessment/step-4')}
+                        className="px-6 py-3 bg-surface-dark hover:bg-surface-active text-white font-bold text-sm rounded-xl transition-all"
+                    >
+                        Back
+                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl shadow-inner">
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-semibold text-slate-400">Step 5/6</span>
+                        </div>
+                        <button
+                            onClick={handleNext}
+                            disabled={isSaving}
+                            className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Next'} <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={handleNext}
-                    disabled={isSaving}
-                    className="px-6 py-3 bg-primary hover:bg-primary-dark active:scale-[0.98] text-background-dark font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(13,242,89,0.25)] disabled:opacity-60"
-                >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Next'} <ArrowRight className="w-4 h-4" />
-                </button>
             </div>
 
             {/* Health Modal */}
