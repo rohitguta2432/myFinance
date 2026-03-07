@@ -1,49 +1,41 @@
 # IMPL: Backend Architecture & Database Design
 
 ## Goal
-Design the backend architecture for the MyFinance application using Java 21, Spring Boot 3.x (latest), and PostgreSQL. The design will be driven by the data requirements observed in the Stitch frontend screens (Steps 1-9).
+Design the backend architecture for the MyFinance application using Java 21, Spring Boot 3.x, and PostgreSQL. The design is explicitly aligned with the 6-step assessment flow and is actively implemented in the current MVP.
 
 ## Technology Stack
 -   **Language:** Java 21
--   **Framework:** Spring Boot 3.4+
+-   **Framework:** Spring Boot 3.4.2
 -   **Database:** PostgreSQL 16+
 -   **ORM:** Spring Data JPA (Hibernate)
--   **Migration:** Flyway or Liquibase
--   **API:** RESTful
+-   **API:** RESTful (JSON)
 
-## Data Analysis (Draft)
+## Data Analysis & Implemented Schema
 
-Based on the 6-step assessment flow:
+Based on the 6-step assessment flow, the backend implements the following `Entity` models mapped directly to PostgreSQL tables.
 
-1.  **User/Profile (Step 1):** Age, Marital Status, Dependents, Risk Tolerance (Conservative/Moderate/Aggressive).
-2.  **Income & Expenses (Step 2):** Monthly Income (Salary, Business, Other), Monthly Expenses (Rent/EMI, Food, Transport, Lifestyle).
+*(Note: In the current single-session MVP, `user_id` mapping is bypassed. Entities use `BIGINT` auto-generated Long IDs.)*
+
+1.  **User/Profile (Step 1):** Map to `profiles` table. Includes Age, City, Marital Status, Dependents (Child/Adult), Employment Type, Residency Status, Risk Tolerance, Risk Score, and a serialized JSON string of `riskAnswers`.
+2.  **Income & Expenses (Step 2):** 
+    -   `incomes` table: Source Name, Amount, Frequency, Tax Deducted, TDS Percentage.
+    -   `expenses` table: Category, Amount, Frequency, Is Essential flag.
 3.  **Assets & Liabilities (Step 3):**
-    -   **Assets:** Bank Balance, Investments (Stocks/MFs), Gold, Real Estate, EPF/PPF.
-    -   **Liabilities:** Home Loan, Car Loan, Personal Loan, Credit Card Debt.
-4.  **Goals (Step 4):** Goal Name (e.g., Retirement, House, Car), Target Amount, Time Horizon (Years).
-5.  **Insurance (Step 5):** Life Insurance Cover, Health Insurance Cover.
-6.  **Tax (Step 6):** Existing 80C Investments, Health Premium (80D), NPS (80CCD).
-
-## Proposed Schema
-
-### Tables
-
--   `users`: Core user identity.
--   `financial_profiles`: 1:1 with users. Stores Step 1 & 2 data (Age, Income, Expenses).
--   `assets`: 1:N with users. Type (enum), Value, Description.
--   `liabilities`: 1:N with users. Type (enum), Outstanding Amount, EMI.
--   `goals`: 1:N with users. Name, Target Amount, Target Date/Years.
--   `insurances`: 1:N with users. Type (Life/Health), Coverage Amount, Premium.
--   `tax_details`: 1:1 with users. 80C, 80D, etc.
+    -   `assets` table: Asset Type (Equity, Real Estate, etc.), Name, Current Value, Allocation Percentage.
+    -   `liabilities` table: Liability Type (Home Loan, etc.), Name, Outstanding Amount, Monthly EMI, Interest Rate.
+4.  **Goals (Step 4):** `goals` table. Goal Type, Name, Target Amount, Current Cost, Time Horizon (Years), Inflation Rate.
+5.  **Insurance (Step 5):** `insurance_policies` table. Insurance Type (Life/Health), Policy Name, Coverage Amount, Premium Amount, Renewal Date.
+6.  **Tax (Step 6):** `tax_plans` table. Selected Regime, PPF/ELSS, EPF/VPF, Tuition Fees, LIC, Home Loan Principal, Health Premium, Parent's Health Premium, Calculated Tax (Old), Calculated Tax (New).
 
 ## API Structure
 
--   `POST /api/v1/assessment/step1` (Profile)
--   `POST /api/v1/assessment/step2` (Income/Expense)
--   ...
--   `GET /api/v1/dashboard/summary` (Calculated Net Worth, Health Score)
+The `AssessmentController` (`/api/v1/assessment`) exposes these REST endpoints:
 
-## Next Steps
-1.  Refine field names based on actual HTML form inputs.
-2.  Create a detailed SQL/ERD artifact.
-3.  Generate Spring Boot project structure.
+-   `GET/POST /profile` (Step 1)
+-   `GET /financials`, `POST /income`, `POST /expense` (Step 2)
+-   `GET /balance-sheet`, `POST /asset`, `POST /liability` (Step 3)
+-   `GET/POST /goals` (Step 4)
+-   `GET/POST /insurance` (Step 5)
+-   `GET/POST /tax` (Step 6)
+
+*Refer to `api_specification.md` and `database_design.md` for exact DTO payloads and SQL schemas.*

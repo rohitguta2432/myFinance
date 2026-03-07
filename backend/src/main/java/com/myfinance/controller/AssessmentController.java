@@ -44,6 +44,18 @@ public class AssessmentController {
         return ResponseEntity.ok(service.addExpense(dto));
     }
 
+    @DeleteMapping("/income/{id}")
+    public ResponseEntity<Void> deleteIncome(@PathVariable Long id) {
+        service.deleteIncome(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/expense/{id}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
+        service.deleteExpense(id);
+        return ResponseEntity.ok().build();
+    }
+
     // ─── Step 3: Balance Sheet ──────────────────────────────────────────────────
 
     @GetMapping("/balance-sheet")
@@ -61,6 +73,18 @@ public class AssessmentController {
         return ResponseEntity.ok(service.addLiability(dto));
     }
 
+    @DeleteMapping("/asset/{id}")
+    public ResponseEntity<Void> deleteAsset(@PathVariable Long id) {
+        service.deleteAsset(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/liability/{id}")
+    public ResponseEntity<Void> deleteLiability(@PathVariable Long id) {
+        service.deleteLiability(id);
+        return ResponseEntity.ok().build();
+    }
+
     // ─── Step 4: Goals ──────────────────────────────────────────────────────────
 
     @GetMapping("/goals")
@@ -71,6 +95,12 @@ public class AssessmentController {
     @PostMapping("/goal")
     public ResponseEntity<GoalDTO> addGoal(@RequestBody GoalDTO dto) {
         return ResponseEntity.ok(service.addGoal(dto));
+    }
+
+    @DeleteMapping("/goal/{id}")
+    public ResponseEntity<Void> deleteGoal(@PathVariable Long id) {
+        service.deleteGoal(id);
+        return ResponseEntity.ok().build();
     }
 
     // ─── Step 5: Insurance ──────────────────────────────────────────────────────

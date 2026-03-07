@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getGoals, addGoal } from '../services/assessmentApi';
+import { getGoals, addGoal, deleteGoal } from '../services/assessmentApi';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 
 /**
@@ -24,6 +24,19 @@ export const useAddGoalMutation = () => {
         mutationFn: addGoal,
         onSuccess: (savedGoal) => {
             store.addGoal(savedGoal);
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
+        },
+    });
+};
+
+export const useDeleteGoalMutation = () => {
+    const queryClient = useQueryClient();
+    const store = useAssessmentStore();
+
+    return useMutation({
+        mutationFn: deleteGoal,
+        onSuccess: (_, id) => {
+            store.removeGoal(id);
             queryClient.invalidateQueries({ queryKey: ['goals'] });
         },
     });

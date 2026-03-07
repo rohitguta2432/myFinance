@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp, CheckCircle2, ShieldAlert, AlertTriangle, AlertCircle, Lock, Building2, Stethoscope, Briefcase as BusinessIcon, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useGoalsQuery, useAddGoalMutation } from '../hooks/useGoals';
+import { useGoalsQuery, useAddGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
 
 const GOAL_TYPES = [
     { id: 'home', label: 'Home Purchase', icon: Home, defaultCost: 7500000, defaultHorizon: 15 },
@@ -30,6 +30,7 @@ const Step4FinancialGoals = () => {
     // API Integration
     const { data: goalsData } = useGoalsQuery();
     const { mutateAsync: addGoalApi } = useAddGoalMutation();
+    const { mutateAsync: deleteGoalApi, isPending: isDeletingGoal } = useDeleteGoalMutation();
 
     useEffect(() => {
         if (goalsData?.length) {
@@ -274,8 +275,20 @@ const Step4FinancialGoals = () => {
                                 </div>
                             </div>
 
-                            <button onClick={() => removeGoal(goal.id)} className="absolute top-4 right-20 text-slate-500 hover:text-red-400 p-1 text-xs underline">
-                                Delete
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await deleteGoalApi(goal.id);
+                                        toast.success('Goal deleted successfully');
+                                    } catch (error) {
+                                        console.error('Failed to delete goal:', error);
+                                        toast.error('Failed to delete goal');
+                                    }
+                                }}
+                                disabled={isDeletingGoal}
+                                className="absolute top-4 right-20 text-slate-500 hover:text-red-400 p-1 text-xs underline disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isDeletingGoal ? 'Deleting...' : 'Delete'}
                             </button>
                         </div>
                     );

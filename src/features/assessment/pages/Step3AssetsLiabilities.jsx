@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation } from '../hooks/useBalanceSheet';
+import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
@@ -13,6 +13,8 @@ const Step3AssetsLiabilities = () => {
     const { data: balanceData } = useBalanceSheetQuery();
     const { mutateAsync: addAssetApi } = useAddAssetMutation();
     const { mutateAsync: addLiabilityApi } = useAddLiabilityMutation();
+    const { mutateAsync: deleteAssetApi, isPending: isDeletingAsset } = useDeleteAssetMutation();
+    const { mutateAsync: deleteLiabilityApi, isPending: isDeletingLiability } = useDeleteLiabilityMutation();
 
     // Hydrate store from API
     useEffect(() => {
@@ -241,21 +243,48 @@ const Step3AssetsLiabilities = () => {
                 <p className="text-slate-400 text-sm">Let's map what you own and what you owe.</p>
             </div>
 
-            {/* Net Worth Card */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface-dark to-black p-6 shadow-lg mb-6 border border-white/5 flex-shrink-0">
-                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl"></div>
-                <div className="relative z-10 flex flex-col gap-1 text-center">
-                    <p className="text-slate-400 text-sm font-medium tracking-wide uppercase">Total Net Worth</p>
-                    <h1 className={`text-4xl font-bold tracking-tight py-2 ${netWorthFormat.colorClass}`}>{netWorthFormat.text}</h1>
-                    <div className="flex items-center justify-center gap-4 mt-2">
-                        <div className="text-xs">
-                            <span className="text-slate-400 block">Assets</span>
-                            <span className="text-primary font-bold">{formatNetWorth(totalAssets).text}</span>
+            {/* Premium Net Worth Card */}
+            <div className="relative overflow-hidden rounded-[2rem] p-[1px] mb-8 flex-shrink-0 group shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 z-0 rounded-[2rem]"></div>
+                <div className="absolute -top-32 -right-32 w-72 h-72 bg-primary/30 rounded-full blur-[100px] z-0 group-hover:bg-primary/40 transition-colors duration-1000"></div>
+                <div className="absolute -bottom-32 -left-32 w-72 h-72 bg-blue-500/20 rounded-full blur-[100px] z-0 group-hover:bg-blue-500/30 transition-colors duration-1000"></div>
+
+                <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full w-full rounded-[2rem] border border-white/10 p-8 flex flex-col overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+
+                    <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-8">
+                        {/* Main Value */}
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#0ab842]"></div>
+                                <p className="text-slate-400 text-xs font-bold tracking-widest uppercase">Total Net Worth</p>
+                            </div>
+                            <h1 className={`text-5xl md:text-6xl font-black tracking-tight ${netWorthFormat.colorClass} drop-shadow-lg`}>
+                                {netWorthFormat.text}
+                            </h1>
                         </div>
-                        <div className="h-6 w-px bg-white/10"></div>
-                        <div className="text-xs">
-                            <span className="text-slate-400 block">Liabilities</span>
-                            <span className="text-red-400 font-bold">{formatNetWorth(totalLiabilities).text}</span>
+
+                        {/* Breakdown Pills */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-colors px-5 py-4 w-full sm:w-auto rounded-2xl border border-white/5 backdrop-blur-md">
+                                <div className="p-2.5 bg-primary/20 rounded-xl">
+                                    <TrendingUp className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Assets</span>
+                                    <span className="text-white font-bold tracking-wide">{formatNetWorth(totalAssets).text}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-colors px-5 py-4 w-full sm:w-auto rounded-2xl border border-white/5 backdrop-blur-md">
+                                <div className="p-2.5 bg-red-500/20 rounded-xl">
+                                    <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Liabilities</span>
+                                    <span className="text-white font-bold tracking-wide">{formatNetWorth(totalLiabilities).text}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -455,7 +484,23 @@ const Step3AssetsLiabilities = () => {
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-white">₹ {item.amount.toLocaleString()}</span>
-                            <button onClick={() => activeTab === 'assets' ? removeAsset(item.id) : removeLiability(item.id)} className="text-slate-500 hover:text-red-400">
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        if (activeTab === 'assets') {
+                                            await deleteAssetApi(item.id);
+                                        } else {
+                                            await deleteLiabilityApi(item.id);
+                                        }
+                                        toast.success(`${activeTab === 'assets' ? 'Asset' : 'Liability'} deleted successfully`);
+                                    } catch (error) {
+                                        console.error('Failed to delete item:', error);
+                                        toast.error(`Failed to delete ${activeTab === 'assets' ? 'asset' : 'liability'}`);
+                                    }
+                                }}
+                                disabled={isDeletingAsset || isDeletingLiability}
+                                className="text-slate-500 hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>

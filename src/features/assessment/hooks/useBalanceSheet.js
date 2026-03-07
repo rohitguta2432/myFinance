@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBalanceSheet, addAsset, addLiability } from '../services/assessmentApi';
+import { getBalanceSheet, addAsset, addLiability, deleteAsset, deleteLiability } from '../services/assessmentApi';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 
 /**
@@ -40,6 +40,32 @@ export const useAddLiabilityMutation = () => {
         mutationFn: addLiability,
         onSuccess: (savedLiability) => {
             store.addLiability(savedLiability);
+            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+        },
+    });
+};
+
+export const useDeleteAssetMutation = () => {
+    const queryClient = useQueryClient();
+    const store = useAssessmentStore();
+
+    return useMutation({
+        mutationFn: deleteAsset,
+        onSuccess: (_, id) => {
+            store.removeAsset(id);
+            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+        },
+    });
+};
+
+export const useDeleteLiabilityMutation = () => {
+    const queryClient = useQueryClient();
+    const store = useAssessmentStore();
+
+    return useMutation({
+        mutationFn: deleteLiability,
+        onSuccess: (_, id) => {
+            store.removeLiability(id);
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
         },
     });

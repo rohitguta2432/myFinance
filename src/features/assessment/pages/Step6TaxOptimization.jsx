@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, CheckCircle2, AlertTriangle, Loader2, Sparkles, X } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle2, AlertTriangle, Loader2, Sparkles, X, Crown, TrendingUp, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useTaxQuery, useTaxMutation } from '../hooks/useTax';
@@ -489,19 +489,47 @@ const Step6TaxOptimization = () => {
                             </p>
                         </div>
 
-                        {/* Upsell Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-                            <div className="bg-gradient-to-br from-surface-dark to-black border border-amber-500/30 rounded-xl p-5 relative overflow-hidden group cursor-pointer hover:border-amber-400/50 transition-all">
-                                <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
-                                <div className="bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide">Premium</div>
-                                <h4 className="text-white font-bold text-sm mb-1">Tax Harvesting</h4>
-                                <p className="text-xs text-slate-400">Save up to ₹10,000 extra by booking 1L LTCG tax-free annually.</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-surface-dark to-black border border-purple-500/30 rounded-xl p-5 relative overflow-hidden group cursor-pointer hover:border-purple-400/50 transition-all">
-                                <div className="absolute -right-4 -top-4 w-16 h-16 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all"></div>
-                                <div className="bg-purple-500 text-white text-[10px] font-bold px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide">Premium</div>
-                                <h4 className="text-white font-bold text-sm mb-1">Family Income Distribution</h4>
-                                <p className="text-xs text-slate-400">Restructure investments among family members to stay in lower tax brackets.</p>
+                        {/* Premium Upsell Cards */}
+                        <div className="mt-8">
+                            <h3 className="text-slate-400 font-bold uppercase tracking-wider text-sm flex items-center gap-2 mb-4">
+                                <Crown className="w-4 h-4 text-amber-500" /> Unlock Advanced Optimization
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                                {/* Tax Harvesting Card */}
+                                <div className="relative group rounded-3xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-amber-500/10 transition-shadow duration-500">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-transparent to-orange-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/30 blur-[40px] rounded-full group-hover:bg-amber-500/40 transition-colors duration-500"></div>
+
+                                    <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-3xl p-6 flex flex-col border border-white/10 group-hover:border-amber-500/40 transition-colors duration-300">
+                                        <div className="flex items-start justify-between mb-5">
+                                            <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                                <TrendingUp className="w-6 h-6 text-amber-500" />
+                                            </div>
+                                            <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.4)] transform group-hover:scale-105 transition-transform duration-300">Premium</div>
+                                        </div>
+                                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-amber-400 transition-colors duration-300">Tax Harvesting</h4>
+                                        <p className="text-sm text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Save up to <span className="text-amber-400 font-bold">₹10,000 extra</span> by booking 1L LTCG tax-free annually.</p>
+                                    </div>
+                                </div>
+
+                                {/* Family Income Distribution Card */}
+                                <div className="relative group rounded-3xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/10 transition-shadow duration-500">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-transparent to-pink-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/30 blur-[40px] rounded-full group-hover:bg-purple-500/40 transition-colors duration-500"></div>
+
+                                    <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-3xl p-6 flex flex-col border border-white/10 group-hover:border-purple-500/40 transition-colors duration-300">
+                                        <div className="flex items-start justify-between mb-5">
+                                            <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
+                                                <Users className="w-6 h-6 text-purple-400" />
+                                            </div>
+                                            <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.4)] transform group-hover:scale-105 transition-transform duration-300">Premium</div>
+                                        </div>
+                                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-purple-400 transition-colors duration-300">Family Income Distribution</h4>
+                                        <p className="text-sm text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Restructure investments among family members to stay in <span className="text-purple-400 font-bold">lower tax brackets</span>.</p>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 

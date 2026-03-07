@@ -9,30 +9,33 @@ Capture demographic and risk-related information to classify the user's investme
 ## Business Rules
 | Rule | Detail |
 |---|---|
-| Age validation | Must be ≥ 18 |
-| City tier mapping | Metro / Tier 1 / Tier 2 / Tier 3 — affects cost-of-living assumptions |
-| Risk score calculation | Weighted scoring of 5 risk questions (0–10 scale) |
-| Risk tolerance bands | 0–3.33 → **Conservative**, 3.34–6.66 → **Moderate**, 6.67–10 → **Aggressive** |
-| Employment impact | Self-employed users get a slightly more conservative adjustment |
+| Age validation | Slider ranges from 18 to 75+. Mandatory minimum age is 18 to proceed. |
+| Dependents Logic | Tracks total `dependents`. If `dependents ≥ 1`, conditionally asks for `childDependents` (under 18). `childDependents` cannot exceed `dependents`. |
+| Risk score calculation | 5 multiple-choice questions (options scored 1-3). Raw score (5-15) is scaled to a 0-10 mapped score: `Math.round(((rawRiskScore - 5) / 10) * 10)`. |
+| Risk tolerance bands | `mappedScore <= 3` → **Conservative**, `mappedScore <= 6` → **Moderate**, `mappedScore > 6` → **Aggressive**. |
+| Asset Allocation | **Conservative**: Equity 20%, Debt 60%, Gold 10%, REITs 10%<br>**Moderate**: Equity 50%, Debt 30%, Gold 5%, REITs 15%<br>**Aggressive**: Equity 70%, Debt 15%, Gold 5%, REITs 10% |
 
 ## Data Model
-| Field | Type | Constraints |
+| Field | Type | Constraints / Options |
 |---|---|---|
-| `age` | INTEGER | ≥ 18 |
-| `city_tier` | VARCHAR(20) | `METRO`, `TIER_1`, `TIER_2`, `TIER_3` |
-| `marital_status` | VARCHAR(20) | `SINGLE`, `MARRIED` |
-| `dependents` | INTEGER | Default 0 |
-| `employment_type` | VARCHAR(50) | `SALARIED`, `SELF_EMPLOYED` |
-| `residency_status` | VARCHAR(50) | `RESIDENT`, `NRI` |
-| `risk_score` | DECIMAL(4,2) | 0.00–10.00 (server-calculated) |
-| `risk_tolerance` | VARCHAR(20) | `CONSERVATIVE`, `MODERATE`, `AGGRESSIVE` |
+| `age` | INTEGER | ≥ 18 (Max 75+ via UI slider) |
+| `city` | VARCHAR | Free text input |
+| `maritalStatus` | VARCHAR | `single`, `married`, `divorced`, `widowed` |
+| `dependents` | INTEGER | ≥ 0 (Counter UI) |
+| `childDependents` | INTEGER | ≥ 0, ≤ `dependents` (Conditionally shown if dependents ≥ 1) |
+| `employmentType` | VARCHAR | `Salaried`, `Self-Employed`, `Business`, `Retired`, `Unemployed` |
+| `residencyStatus`| VARCHAR | `Resident`, `NRI`, `OCI` |
+| `riskAnswers` | JSON | Key-value mapper for 5 questions (1-3 score each) |
+| `riskTolerance` | VARCHAR | `conservative`, `moderate`, `aggressive` (Calculated on frontend) |
 
 ## API Endpoints
-- `GET /api/v1/assessment/profile` — Retrieve saved profile
-- `POST /api/v1/assessment/profile` — Create or update profile
+- (Uses Next.js / Supabase setup, or local storage depending on implementation phase)
+- Currently triggers `saveProfileApi` (falling back to LocalStorage persist if API fails)
 
 ## Acceptance Criteria
 - [ ] User can fill all fields and proceed to Step 2
-- [ ] Risk tolerance is auto-calculated from the 5 risk questions
-- [ ] Profile is persisted to `profiles` table
-- [ ] Returning users see pre-populated data
+- [ ] Next button is disabled until all mandatory fields (including 5 risk questions) are answered
+- [ ] Child dependents UI logically follows general dependents UI
+- [ ] Risk tolerance is auto-calculated and displayed with the corresponding theme color and asset breakdown
+- [ ] Profile state is saved via `useAssessmentStore` and persisted
+

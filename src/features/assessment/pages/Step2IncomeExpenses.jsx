@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation } from '../hooks/useFinancials';
+import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation } from '../hooks/useFinancials';
 
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
@@ -13,6 +13,8 @@ const Step2IncomeExpenses = () => {
     const { data: financialsData } = useFinancialsQuery();
     const { mutateAsync: addIncomeApi } = useAddIncomeMutation();
     const { mutateAsync: addExpenseApi } = useAddExpenseMutation();
+    const { mutateAsync: deleteIncomeApi, isPending: isDeletingIncome } = useDeleteIncomeMutation();
+    const { mutateAsync: deleteExpenseApi, isPending: isDeletingExpense } = useDeleteExpenseMutation();
 
     // Hydrate store from API
     useEffect(() => {
@@ -123,7 +125,14 @@ const Step2IncomeExpenses = () => {
                                 </p>
                             </div>
                         </div>
-                        <button onClick={() => removeIncome(inc.id)} className="text-red-400 hover:text-red-500">
+                        <button
+                            onClick={async () => {
+                                removeIncome(inc.id);
+                                try { await deleteIncomeApi(inc.id); } catch (e) { console.warn('Delete API failed', e); }
+                            }}
+                            disabled={isDeletingIncome}
+                            className="text-red-400 hover:text-red-500 disabled:opacity-50"
+                        >
                             <X className="w-4 h-4" />
                         </button>
                     </div>
@@ -149,7 +158,14 @@ const Step2IncomeExpenses = () => {
                                 <p className="text-xs text-slate-400">{exp.frequency} • ₹ {exp.amount.toLocaleString()}</p>
                             </div>
                         </div>
-                        <button onClick={() => removeExpense(exp.id)} className="text-red-400 hover:text-red-500">
+                        <button
+                            onClick={async () => {
+                                removeExpense(exp.id);
+                                try { await deleteExpenseApi(exp.id); } catch (e) { console.warn('Delete API failed', e); }
+                            }}
+                            disabled={isDeletingExpense}
+                            className="text-red-400 hover:text-red-500 disabled:opacity-50"
+                        >
                             <X className="w-4 h-4" />
                         </button>
                     </div>

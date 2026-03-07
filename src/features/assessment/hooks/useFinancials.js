@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getFinancials, addIncome, addExpense } from '../services/assessmentApi';
+import { getFinancials, addIncome, addExpense, deleteIncome, deleteExpense } from '../services/assessmentApi';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 
 /**
@@ -43,6 +43,32 @@ export const useAddExpenseMutation = () => {
         mutationFn: addExpense,
         onSuccess: (savedExpense) => {
             store.addExpense(savedExpense);
+            queryClient.invalidateQueries({ queryKey: ['financials'] });
+        },
+    });
+};
+
+export const useDeleteIncomeMutation = () => {
+    const queryClient = useQueryClient();
+    const store = useAssessmentStore();
+
+    return useMutation({
+        mutationFn: deleteIncome,
+        onSuccess: (_, id) => {
+            store.removeIncome(id);
+            queryClient.invalidateQueries({ queryKey: ['financials'] });
+        },
+    });
+};
+
+export const useDeleteExpenseMutation = () => {
+    const queryClient = useQueryClient();
+    const store = useAssessmentStore();
+
+    return useMutation({
+        mutationFn: deleteExpense,
+        onSuccess: (_, id) => {
+            store.removeExpense(id);
             queryClient.invalidateQueries({ queryKey: ['financials'] });
         },
     });

@@ -104,6 +104,14 @@ public class AssessmentService {
         return toExpenseDTO(expenseRepo.save(expense));
     }
 
+    public void deleteIncome(Long id) {
+        incomeRepo.deleteById(id);
+    }
+
+    public void deleteExpense(Long id) {
+        expenseRepo.deleteById(id);
+    }
+
     private IncomeDTO toIncomeDTO(Income i) {
         return IncomeDTO.builder()
                 .id(i.getId())
@@ -155,6 +163,14 @@ public class AssessmentService {
         return toLiabilityDTO(liabilityRepo.save(liability));
     }
 
+    public void deleteAsset(Long id) {
+        assetRepo.deleteById(id);
+    }
+
+    public void deleteLiability(Long id) {
+        liabilityRepo.deleteById(id);
+    }
+
     private AssetDTO toAssetDTO(Asset a) {
         return AssetDTO.builder()
                 .id(a.getId())
@@ -192,6 +208,10 @@ public class AssessmentService {
                 .inflationRate(dto.getInflationRate())
                 .build();
         return toGoalDTO(goalRepo.save(goal));
+    }
+
+    public void deleteGoal(Long id) {
+        goalRepo.deleteById(id);
     }
 
     private GoalDTO toGoalDTO(Goal g) {

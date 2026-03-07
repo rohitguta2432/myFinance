@@ -198,6 +198,14 @@ export const addExpense = async (data) => {
     return mapExpenseFromDTO(dto);
 };
 
+export const deleteIncome = async (id) => {
+    await api.delete(`/income/${id}`);
+};
+
+export const deleteExpense = async (id) => {
+    await api.delete(`/expense/${id}`);
+};
+
 // Step 3: Balance Sheet
 export const getBalanceSheet = async () => {
     const dto = await api.get('/balance-sheet');
@@ -217,6 +225,14 @@ export const addLiability = async (data) => {
     return mapLiabilityFromDTO(dto);
 };
 
+export const deleteAsset = async (id) => {
+    await api.delete(`/asset/${id}`);
+};
+
+export const deleteLiability = async (id) => {
+    await api.delete(`/liability/${id}`);
+};
+
 // Step 4: Goals
 export const getGoals = async () => {
     const dtoList = await api.get('/goals');
@@ -226,6 +242,10 @@ export const getGoals = async () => {
 export const addGoal = async (data) => {
     const dto = await api.post('/goal', mapGoalToDTO(data));
     return mapGoalFromDTO(dto);
+};
+
+export const deleteGoal = async (id) => {
+    await api.delete(`/goal/${id}`);
 };
 
 // Step 5: Insurance
