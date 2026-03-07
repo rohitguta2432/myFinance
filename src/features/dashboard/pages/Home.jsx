@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, User, Star, TrendingUp, Scale, Flag, ArrowRight, Menu } from 'lucide-react';
-
+import ThemeToggle from '../../../components/ui/ThemeToggle';
 const Home = () => {
     const navigate = useNavigate();
 
@@ -25,10 +25,8 @@ const Home = () => {
                     </div>
                     <span className="text-white text-lg font-bold tracking-tight">MyFinancial</span>
                 </div>
-                {/* Optional Menu Icon */}
-                <button className="text-white/60 hover:text-white transition-colors">
-                    <Menu className="w-6 h-6" />
-                </button>
+                {/* Theme Toggle */}
+                <ThemeToggle />
             </div>
 
             {/* Hero Section */}

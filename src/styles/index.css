@@ -1,12 +1,61 @@
 @import "tailwindcss";
 
+:root {
+  /* Default/Dark Theme Core Colors */
+  --bg-main: #102216;
+  --surface-main: #162e1e;
+  --surface-active: #1f3d2a;
+  
+  /* Text and Border mappings */
+  --theme-text-white: #ffffff;
+  --theme-text-slate-200: #e2e8f0;
+  --theme-text-slate-300: #cbd5e1;
+  --theme-text-slate-400: #94a3b8;
+  --theme-border-white: #ffffff;
+  
+  /* Utilities */
+  --theme-white: #ffffff;
+}
+
+/* Light Mode Overrides */
+:root[data-theme="light"] {
+  /* Light Theme Core Colors */
+  --bg-main: #f5f8f6;
+  --surface-main: #ffffff;
+  --surface-active: #e2e8f0;
+  
+  /* Text and Border mappings inverted */
+  --theme-text-white: #111827; /* Near black text instead of white */
+  --theme-text-slate-200: #475569;
+  --theme-text-slate-300: #64748b;
+  --theme-text-slate-400: #475569; /* Darker slate for readability */
+  --theme-border-white: #000000; /* Dark borders for opacity */
+  
+  /* Utilities */
+  --theme-white: #ffffff; /* Keep bg-white as white in light mode? No, if we want bg-white to invert to black we change it. Let's keep it white and see. Wait, text-white uses --color-white! So we MUST change --theme-white to dark if we want text-white to be dark. */
+}
+
+/* Let's redefine. Tailwind uses --color-white for text-white, bg-white, border-white. */
+:root[data-theme="light"] {
+  --theme-white: #111827; /* text-white becomes nearly black */
+}
+
 @theme {
-  --color-primary: #0df259;
-  --color-primary-dark: #0ab842;
+  --color-primary: #0ab842; /* Slightly darker green for better contrast in both themes */
+  --color-primary-dark: #099435;
   --color-background-light: #f5f8f6;
-  --color-background-dark: #102216;
-  --color-surface-dark: #162e1e;
-  --color-surface-active: #1f3d2a;
+  
+  /* Dynamic mappings mapped to root variables */
+  --color-background-dark: var(--bg-main);
+  --color-surface-dark: var(--surface-main);
+  --color-surface-active: var(--surface-active);
+  
+  /* Overwrite specific Tailwind default colors used heavily in the app */
+  --color-white: var(--theme-white);
+  --color-slate-200: var(--theme-text-slate-200);
+  --color-slate-300: var(--theme-text-slate-300);
+  --color-slate-400: var(--theme-text-slate-400);
+
   --font-family-display: "Inter", sans-serif;
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, DollarSign, Wallet, Flag, Shield, Calculator, CheckCircle } from 'lucide-react';
-
+import ThemeToggle from '../ui/ThemeToggle';
 const Layout = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -46,9 +46,12 @@ const Layout = () => {
                         >
                             <ArrowLeft className="w-6 h-6" />
                         </button>
-                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">
+                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
                             {title}
                         </h2>
+                        <div className="shrink-0 flex items-center justify-center size-10">
+                            <ThemeToggle />
+                        </div>
                     </div>
                     {/* Progress Bar — hidden on lg where sidebar shows */}
                     <div className="flex flex-col gap-2 px-6 pb-4 max-w-4xl mx-auto lg:hidden">
