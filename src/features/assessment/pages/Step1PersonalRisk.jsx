@@ -447,7 +447,7 @@ const Step1PersonalRisk = () => {
                 {allRiskAnswered && riskProfile && (
                     <div className="relative mt-8 animate-fade-in-up">
                         <div className="absolute inset-0 bg-primary/20 blur-xl rounded-2xl"></div>
-                        <div className="relative rounded-xl bg-gradient-to-br from-surface-dark to-black border border-primary/40 p-5 shadow-2xl">
+                        <div className="relative rounded-xl bg-surface-dark border border-white/10 p-5 shadow-2xl backdrop-blur-md">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background-dark shadow-[0_0_15px_rgba(13,242,89,0.4)]">

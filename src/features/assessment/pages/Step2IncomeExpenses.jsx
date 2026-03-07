@@ -182,7 +182,7 @@ const Step2IncomeExpenses = () => {
                 {/* Cash Flow Reality Check Card */}
                 {incomes.length > 0 && expenses.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-white/10 animate-fade-in">
-                        <div className="bg-gradient-to-br from-surface-dark to-surface border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                        <div className="bg-surface-dark border-2 border-primary/20 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                             {/* Decorative Top Bar */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-500"></div>
 

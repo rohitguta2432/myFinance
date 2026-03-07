@@ -296,7 +296,7 @@ const Step4FinancialGoals = () => {
 
                 {/* All Goals Summary */}
                 {goals.length >= 2 && (
-                    <div className="mt-8 bg-gradient-to-br from-surface-dark to-surface border border-primary/20 rounded-2xl overflow-hidden shadow-lg">
+                    <div className="mt-8 bg-surface-dark border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg">
                         <div className="bg-primary/10 p-3 border-b border-primary/10">
                             <h3 className="font-bold text-primary text-center tracking-widest text-sm">ALL GOALS SUMMARY</h3>
                         </div>

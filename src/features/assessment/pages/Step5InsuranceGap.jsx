@@ -452,11 +452,11 @@ const Step5InsuranceGap = () => {
                 </section>
 
                 {/* FINAL ACTION SUMMARY */}
-                <section className="bg-gradient-to-br from-[#121826] to-[#0D1520] rounded-3xl p-[2px] shadow-2xl relative mt-10">
+                <section className="bg-surface-dark border-2 border-primary/20 rounded-3xl shadow-2xl relative mt-10 p-6">
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-background-dark font-black text-[10px] uppercase tracking-widest py-1 px-4 rounded-full shadow-lg">
                         Action Summary
                     </div>
-                    <div className="bg-surface-dark rounded-[22px] p-6 h-full">
+                    <div className="h-full">
                         <h3 className="font-bold text-white text-center mb-6 mt-2 tracking-wide text-lg flex justify-center items-center gap-2">
                             <FileText className="w-5 h-5 text-primary" /> RECOMMENDED ACTIONS
                         </h3>
