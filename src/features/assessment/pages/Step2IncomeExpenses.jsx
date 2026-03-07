@@ -170,9 +170,13 @@ const Step2IncomeExpenses = () => {
                             {/* Decorative Top Bar */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-500"></div>
 
-                            <h3 className="text-center font-mono text-sm tracking-widest text-slate-400 mb-6 uppercase">
-                                ╓── Your Monthly Cash Flow ──╖
-                            </h3>
+                            <div className="flex items-center justify-center gap-3 mb-6 opacity-80">
+                                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/20"></div>
+                                <h3 className="text-center font-semibold text-xs tracking-[0.2em] text-slate-300 uppercase">
+                                    Your Monthly Cash Flow
+                                </h3>
+                                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/20"></div>
+                            </div>
 
                             <div className="space-y-3 font-mono text-sm sm:text-base">
                                 <div className="flex justify-between items-center">
@@ -235,10 +239,6 @@ const Step2IncomeExpenses = () => {
                                     </div>
                                 )}
                             </div>
-
-                            <h3 className="text-center font-mono text-sm tracking-widest text-slate-400 mt-6 uppercase">
-                                ╙────────────────────────────╜
-                            </h3>
                         </div>
                     </div>
                 )}
