@@ -30,10 +30,12 @@ export const useAssessmentStore = create(
             incomes: [], // { id, source, amount, frequency }
             addIncome: (income) => set((state) => ({ incomes: [...state.incomes, income] })),
             removeIncome: (id) => set((state) => ({ incomes: state.incomes.filter((i) => i.id !== id) })),
+            updateIncome: (id, updates) => set((state) => ({ incomes: state.incomes.map((i) => (i.id === id ? { ...i, ...updates } : i)) })),
 
             expenses: [], // { id, category, amount, frequency, type }
             addExpense: (expense) => set((state) => ({ expenses: [...state.expenses, expense] })),
             removeExpense: (id) => set((state) => ({ expenses: state.expenses.filter((e) => e.id !== id) })),
+            updateExpense: (id, updates) => set((state) => ({ expenses: state.expenses.map((e) => (e.id === id ? { ...e, ...updates } : e)) })),
 
             // Step 3: Assets & Liabilities
             assets: [], // { id, category, name, amount }
@@ -66,24 +68,31 @@ export const useAssessmentStore = create(
                     maternity: false,
                 }
             },
-            updateInsurance: (updates) => set((state) => ({
-                insurance: { ...state.insurance, ...updates }
-            })),
-            addPersonalHealth: (policy) => set((state) => ({
-                insurance: { ...state.insurance, personalHealth: [...state.insurance.personalHealth, policy] }
-            })),
-            removePersonalHealth: (id) => set((state) => ({
-                insurance: { ...state.insurance, personalHealth: state.insurance.personalHealth.filter(p => p.id !== id) }
-            })),
-            addPersonalLife: (policy) => set((state) => ({
-                insurance: { ...state.insurance, personalLife: [...state.insurance.personalLife, policy] }
-            })),
-            removePersonalLife: (id) => set((state) => ({
-                insurance: { ...state.insurance, personalLife: state.insurance.personalLife.filter(p => p.id !== id) }
-            })),
-            toggleChecklist: (key) => set((state) => ({
-                insurance: { ...state.insurance, checklist: { ...state.insurance.checklist, [key]: !state.insurance.checklist[key] } }
-            })),
+            updateInsurance: (updates) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                return { insurance: { ...ins, ...updates } };
+            }),
+            addPersonalHealth: (policy) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                return { insurance: { ...ins, personalHealth: [...(ins.personalHealth || []), policy] } };
+            }),
+            removePersonalHealth: (id) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                return { insurance: { ...ins, personalHealth: (ins.personalHealth || []).filter(p => p.id !== id) } };
+            }),
+            addPersonalLife: (policy) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                return { insurance: { ...ins, personalLife: [...(ins.personalLife || []), policy] } };
+            }),
+            removePersonalLife: (id) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                return { insurance: { ...ins, personalLife: (ins.personalLife || []).filter(p => p.id !== id) } };
+            }),
+            toggleChecklist: (key) => set((state) => {
+                const ins = state.insurance || { corporateHealth: '', corporateHealthMembers: '', corporateLife: '', personalHealth: [], personalLife: [], checklist: { criticalIllness: false, personalAccident: false, disability: false, maternity: false } };
+                const checklist = ins.checklist || { criticalIllness: false, personalAccident: false, disability: false, maternity: false };
+                return { insurance: { ...ins, checklist: { ...checklist, [key]: !checklist[key] } } };
+            }),
 
             // Step 6: Tax Optimization
             taxRegime: 'new', // 'old', 'new'

@@ -403,29 +403,34 @@ const Step6TaxOptimization = () => {
                             {/* Old Regime Card */}
                             <div
                                 onClick={() => setTaxRegime('old')}
-                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col ${taxRegime === 'old' ? 'bg-surface-active border-primary shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
+                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative flex flex-col ${taxRegime === 'old' ? 'bg-surface-active border-primary shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
                             >
                                 {recommendedRegime === 'old' && (
-                                    <div className="absolute top-0 right-0 bg-primary text-black font-bold text-[10px] px-3 py-1 rounded-bl-lg">RECOMMENDED</div>
+                                    <div className="absolute -top-[2px] -right-[2px] bg-primary text-black font-extrabold tracking-widest text-[10px] px-4 py-1.5 rounded-bl-xl rounded-tr-2xl flex items-center justify-center leading-none">RECOMMENDED</div>
                                 )}
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className={`font-bold uppercase tracking-widest text-sm ${taxRegime === 'old' ? 'text-primary' : 'text-slate-400'}`}>OLD REGIME</h4>
                                     {taxRegime === 'old' && <CheckCircle2 className="w-5 h-5 text-primary" />}
                                 </div>
 
-                                <div className="space-y-2 font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
-                                    <div className="flex justify-between"><span>Gross Income</span><span>₹{grossTotalIncome.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) Std Ded.</span><span>-₹50,000</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) 80C</span><span>-₹{final80C.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) 80D</span><span>-₹{final80D.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) HRA</span><span>-₹{Math.round(finalHraExemption).toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) Others</span><span>-₹{finalOtherDeductions.toLocaleString()}</span></div>
-
-                                    <div className="border-t border-dashed border-white/20 my-2 pt-2 flex justify-between font-bold text-white">
-                                        <span>Net Taxable</span><span>₹{oldTax.taxable.toLocaleString()}</span>
+                                <div className="flex flex-col font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
+                                    <div className="space-y-2 flex-grow">
+                                        <div className="flex justify-between items-center gap-2"><span className="whitespace-nowrap">Gross Income</span><span className="text-right truncate">₹{grossTotalIncome.toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Std Ded.</span><span className="text-right truncate">-₹50,000</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) 80C</span><span className="text-right truncate">-₹{final80C.toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) 80D</span><span className="text-right truncate">-₹{final80D.toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) HRA</span><span className="text-right truncate">-₹{Math.round(finalHraExemption).toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Others</span><span className="text-right truncate">-₹{finalOtherDeductions.toLocaleString()}</span></div>
                                     </div>
-                                    <div className="flex justify-between mt-4"><span>Tax Calculated</span><span>₹{Math.round(oldTax.baseTax).toLocaleString()}</span></div>
-                                    <div className="flex justify-between"><span>(+) Cess (4%)</span><span>₹{Math.round(oldTax.cess).toLocaleString()}</span></div>
+
+                                    <div className="mt-4">
+                                        <div className="border-t border-dashed border-white/20 pb-2 mb-2"></div>
+                                        <div className="flex justify-between items-center font-bold text-white mb-4">
+                                            <span className="whitespace-nowrap">Net Taxable</span><span className="text-right truncate">₹{oldTax.taxable.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-2"><span className="whitespace-nowrap">Tax Calculated</span><span className="text-right truncate">₹{Math.round(oldTax.baseTax).toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center"><span className="whitespace-nowrap">(+) Cess (4%)</span><span className="text-right truncate">₹{Math.round(oldTax.cess).toLocaleString()}</span></div>
+                                    </div>
                                 </div>
 
                                 <div className="border-t border-white/10 mt-4 pt-4">
@@ -440,26 +445,31 @@ const Step6TaxOptimization = () => {
                             {/* New Regime Card */}
                             <div
                                 onClick={() => setTaxRegime('new')}
-                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col ${taxRegime === 'new' ? 'bg-surface-active border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
+                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative flex flex-col ${taxRegime === 'new' ? 'bg-surface-active border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
                             >
                                 {recommendedRegime === 'new' && (
-                                    <div className="absolute top-0 right-0 bg-blue-500 text-white font-bold text-[10px] px-3 py-1 rounded-bl-lg">RECOMMENDED</div>
+                                    <div className="absolute -top-[2px] -right-[2px] bg-blue-500 text-white font-extrabold tracking-widest text-[10px] px-4 py-1.5 rounded-bl-xl rounded-tr-2xl flex items-center justify-center leading-none">RECOMMENDED</div>
                                 )}
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className={`font-bold uppercase tracking-widest text-sm ${taxRegime === 'new' ? 'text-blue-400' : 'text-slate-400'}`}>NEW REGIME</h4>
                                     {taxRegime === 'new' && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
                                 </div>
 
-                                <div className="space-y-2 font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
-                                    <div className="flex justify-between"><span>Gross Income</span><span>₹{grossTotalIncome.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-red-300"><span>(-) Std Ded.</span><span>-₹75,000</span></div>
-                                    <div className="flex justify-between text-red-300 opacity-50"><span className="line-through">(-) 80C/80D/HRA</span><span>Not Allowed</span></div>
-
-                                    <div className="border-t border-dashed border-white/20 my-2 pt-2 flex justify-between font-bold text-white mt-10">
-                                        <span>Net Taxable</span><span>₹{newTax.taxable.toLocaleString()}</span>
+                                <div className="flex flex-col font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
+                                    <div className="space-y-2 flex-grow">
+                                        <div className="flex justify-between items-center gap-2"><span className="whitespace-nowrap">Gross Income</span><span className="text-right truncate">₹{grossTotalIncome.toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Std Ded.</span><span className="text-right truncate">-₹75,000</span></div>
+                                        <div className="flex justify-between items-center gap-2 text-red-300 opacity-50"><span className="line-through whitespace-nowrap">(-) Others</span><span className="text-[10px] text-right truncate">Not Allowed</span></div>
                                     </div>
-                                    <div className="flex justify-between mt-4"><span>Tax Calculated</span><span>₹{Math.round(newTax.baseTax).toLocaleString()}</span></div>
-                                    <div className="flex justify-between"><span>(+) Cess (4%)</span><span>₹{Math.round(newTax.cess).toLocaleString()}</span></div>
+
+                                    <div className="mt-4">
+                                        <div className="border-t border-dashed border-white/20 pb-2 mb-2"></div>
+                                        <div className="flex justify-between items-center font-bold text-white mb-4">
+                                            <span className="whitespace-nowrap">Net Taxable</span><span className="text-right truncate">₹{newTax.taxable.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-2"><span className="whitespace-nowrap">Tax Calculated</span><span className="text-right truncate">₹{Math.round(newTax.baseTax).toLocaleString()}</span></div>
+                                        <div className="flex justify-between items-center"><span className="whitespace-nowrap">(+) Cess (4%)</span><span className="text-right truncate">₹{Math.round(newTax.cess).toLocaleString()}</span></div>
+                                    </div>
                                 </div>
 
                                 <div className="border-t border-white/10 mt-4 pt-4">

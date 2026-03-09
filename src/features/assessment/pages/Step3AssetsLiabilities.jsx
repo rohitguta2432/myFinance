@@ -188,33 +188,66 @@ const Step3AssetsLiabilities = () => {
     const netWorthFormat = formatNetWorth(netWorth);
 
     // Asset Allocation
-    const getAssetClass = (subcat) => {
-        if (!subcat) return 'Debt';
-        if (['Hybrid', 'Stocks/Shares', 'Mutual Funds — Equity'].some(s => subcat.includes(s))) return 'Equity';
-        if (['Real Estate (Residential)', 'Real Estate (Commercial)', 'REITs/InvITs'].some(s => subcat.includes(s))) return 'Real Estate';
-        if (['Gold/ Silver (Digital/Sovereign Gold Bonds)'].some(s => subcat.includes(s))) return 'Gold';
-        return 'Debt'; // Catch-all for Bank, FD, RD, EPF, PPF, NPS, Bonds, etc. as requested
+    const getAssetClass = (subcategory) => {
+        if (!subcategory) return 'Other';
+
+        const equityList = [
+            '📊 Mutual Funds — Hybrid',
+            '📈 Stocks/Shares',
+            '📊 Mutual Funds — Equity'
+        ];
+
+        const debtList = [
+            '🏦 Bank/Savings Account',
+            '📊 Fixed Deposit (FD)',
+            '💰 Recurring Deposit (RD)',
+            '🏢 EPF (Provident Fund)',
+            '📈 PPF (Public Provident Fund)',
+            '🎯 NPS (National Pension System)',
+            '📉 Mutual Funds — Debt',
+            '📄 Bonds/Debentures'
+        ];
+
+        const realEstateList = [
+            '🏠 Real Estate (Residential)',
+            '🏢 Real Estate (Commercial)',
+            '🏢REITs/InvITs'
+        ];
+
+        const goldList = [
+            '💎 Gold/ Silver (Digital/Sovereign Gold Bonds)'
+        ];
+
+        if (equityList.includes(subcategory)) return 'Equity';
+        if (debtList.includes(subcategory)) return 'Debt';
+        if (realEstateList.includes(subcategory)) return 'Real Estate';
+        if (goldList.includes(subcategory)) return 'Gold';
+
+        return 'Other';
     };
 
-    let equityTotal = 0, debtTotal = 0, realEstateTotal = 0, goldTotal = 0;
+    let equityTotal = 0, debtTotal = 0, realEstateTotal = 0, goldTotal = 0, otherTotal = 0;
     assets.forEach(a => {
         const cls = getAssetClass(a.subCategory || a.category);
         if (cls === 'Equity') equityTotal += a.amount;
         else if (cls === 'Debt') debtTotal += a.amount;
         else if (cls === 'Real Estate') realEstateTotal += a.amount;
         else if (cls === 'Gold') goldTotal += a.amount;
+        else otherTotal += a.amount;
     });
 
     const equityPct = totalAssets ? (equityTotal / totalAssets) * 100 : 0;
     const debtPct = totalAssets ? (debtTotal / totalAssets) * 100 : 0;
     const realEstatePct = totalAssets ? (realEstateTotal / totalAssets) * 100 : 0;
     const goldPct = totalAssets ? (goldTotal / totalAssets) * 100 : 0;
+    const otherPct = totalAssets ? (otherTotal / totalAssets) * 100 : 0;
 
     const conicGradient = totalAssets > 0 ? `conic-gradient(
         #3b82f6 0% ${equityPct}%,
         #10b981 ${equityPct}% ${equityPct + debtPct}%,
         #8b5cf6 ${equityPct + debtPct}% ${equityPct + debtPct + realEstatePct}%,
-        #f59e0b ${equityPct + debtPct + realEstatePct}% 100%
+        #f59e0b ${equityPct + debtPct + realEstatePct}% ${equityPct + debtPct + realEstatePct + goldPct}%,
+        #64748b ${equityPct + debtPct + realEstatePct + goldPct}% 100%
     )` : 'conic-gradient(#334155 0% 100%)';
 
     const getMismatchAlert = () => {
@@ -315,6 +348,12 @@ const Step3AssetsLiabilities = () => {
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-500"></div><span className="text-slate-300">Gold</span></div>
                                 <span className="text-white font-semibold">{goldPct.toFixed(1)}% <span className="text-slate-500 font-normal ml-1">(₹{goldTotal.toLocaleString()})</span></span>
                             </div>
+                            {otherTotal > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-500"></div><span className="text-slate-300">Other</span></div>
+                                    <span className="text-white font-semibold">{otherPct.toFixed(1)}% <span className="text-slate-500 font-normal ml-1">(₹{otherTotal.toLocaleString()})</span></span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -486,17 +525,14 @@ const Step3AssetsLiabilities = () => {
                             <span className="font-bold text-white">₹ {item.amount.toLocaleString()}</span>
                             <button
                                 onClick={async () => {
-                                    try {
-                                        if (activeTab === 'assets') {
-                                            await deleteAssetApi(item.id);
-                                        } else {
-                                            await deleteLiabilityApi(item.id);
-                                        }
-                                        toast.success(`${activeTab === 'assets' ? 'Asset' : 'Liability'} deleted successfully`);
-                                    } catch (error) {
-                                        console.error('Failed to delete item:', error);
-                                        toast.error(`Failed to delete ${activeTab === 'assets' ? 'asset' : 'liability'}`);
+                                    if (activeTab === 'assets') {
+                                        removeAsset(item.id);
+                                        try { await deleteAssetApi(item.id); } catch (error) { console.warn('Asset API delete failed, removed locally:', error.message); }
+                                    } else {
+                                        removeLiability(item.id);
+                                        try { await deleteLiabilityApi(item.id); } catch (error) { console.warn('Liability API delete failed, removed locally:', error.message); }
                                     }
+                                    toast.success(`${activeTab === 'assets' ? 'Asset' : 'Liability'} deleted successfully`);
                                 }}
                                 disabled={isDeletingAsset || isDeletingLiability}
                                 className="text-slate-500 hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"

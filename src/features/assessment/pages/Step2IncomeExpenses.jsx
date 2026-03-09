@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation } from '../hooks/useFinancials';
+import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
+import { Pencil } from 'lucide-react';
 
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
-    const { incomes, addIncome, removeIncome, expenses, addExpense, removeExpense } = useAssessmentStore();
+    const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense } = useAssessmentStore();
 
     // API Integration
     const { data: financialsData } = useFinancialsQuery();
@@ -15,6 +16,8 @@ const Step2IncomeExpenses = () => {
     const { mutateAsync: addExpenseApi } = useAddExpenseMutation();
     const { mutateAsync: deleteIncomeApi, isPending: isDeletingIncome } = useDeleteIncomeMutation();
     const { mutateAsync: deleteExpenseApi, isPending: isDeletingExpense } = useDeleteExpenseMutation();
+    const { mutateAsync: updateIncomeApi } = useUpdateIncomeMutation();
+    const { mutateAsync: updateExpenseApi } = useUpdateExpenseMutation();
 
     // Hydrate store from API
     useEffect(() => {
@@ -30,6 +33,7 @@ const Step2IncomeExpenses = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('expense'); // 'income' or 'expense'
+    const [editingId, setEditingId] = useState(null);
 
     // Form State
     const [category, setCategory] = useState('');
@@ -39,19 +43,33 @@ const Step2IncomeExpenses = () => {
     const [taxDeducted, setTaxDeducted] = useState(false);
     const [tdsPercentage, setTdsPercentage] = useState(10);
 
-    const openModal = (type) => {
+    const openModal = (type, item = null) => {
         setModalType(type);
-        setCategory(type === 'income' ? 'Salary' : 'Rent/Mortgage');
-        setAmount('');
-        setFrequency('Monthly');
-        setTaxDeducted(false);
-        setTdsPercentage(10);
+        if (item) {
+            setEditingId(item.id);
+            setCategory(type === 'income' ? item.source : item.category);
+            setAmount(item.amount.toString());
+            setFrequency(item.frequency);
+            if (type === 'income') {
+                setTaxDeducted(item.taxDeducted || false);
+                setTdsPercentage(item.tdsPercentage || 10);
+            } else {
+                setIsEssential(item.type === 'Essential' || item.type === 'essential');
+            }
+        } else {
+            setEditingId(null);
+            setCategory(type === 'income' ? 'Salary' : 'Rent/Mortgage');
+            setAmount('');
+            setFrequency('Monthly');
+            setTaxDeducted(false);
+            setTdsPercentage(10);
+            setIsEssential(true);
+        }
         setIsModalOpen(true);
     };
 
     const handleSave = async () => {
-        const newItem = {
-            id: Date.now(),
+        const baseItem = {
             category,
             amount: parseFloat(amount) || 0,
             frequency,
@@ -60,16 +78,31 @@ const Step2IncomeExpenses = () => {
 
         if (modalType === 'income') {
             const incomeItem = {
-                ...newItem,
+                ...baseItem,
+                id: editingId || Date.now(),
                 source: category,
                 taxDeducted,
                 tdsPercentage: taxDeducted ? parseFloat(tdsPercentage) || 0 : 0
             };
-            addIncome(incomeItem); // optimistic local update
-            try { await addIncomeApi(incomeItem); } catch (e) { console.warn('Income API save failed:', e.message); }
+            if (editingId) {
+                updateIncome(editingId, incomeItem);
+                try { await updateIncomeApi(incomeItem); } catch (e) { console.warn('Income API update failed:', e.message); }
+            } else {
+                addIncome(incomeItem); // optimistic local update
+                try { await addIncomeApi(incomeItem); } catch (e) { console.warn('Income API save failed:', e.message); }
+            }
         } else {
-            addExpense(newItem); // optimistic local update
-            try { await addExpenseApi(newItem); } catch (e) { console.warn('Expense API save failed:', e.message); }
+            const expenseItem = {
+                ...baseItem,
+                id: editingId || Date.now()
+            };
+            if (editingId) {
+                updateExpense(editingId, expenseItem);
+                try { await updateExpenseApi(expenseItem); } catch (e) { console.warn('Expense API update failed:', e.message); }
+            } else {
+                addExpense(expenseItem); // optimistic local update
+                try { await addExpenseApi(expenseItem); } catch (e) { console.warn('Expense API save failed:', e.message); }
+            }
         }
         setIsModalOpen(false);
     };
@@ -125,16 +158,24 @@ const Step2IncomeExpenses = () => {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={async () => {
-                                removeIncome(inc.id);
-                                try { await deleteIncomeApi(inc.id); } catch (e) { console.warn('Delete API failed', e); }
-                            }}
-                            disabled={isDeletingIncome}
-                            className="text-red-400 hover:text-red-500 disabled:opacity-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => openModal('income', inc)}
+                                className="text-slate-400 hover:text-primary transition-colors"
+                            >
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    removeIncome(inc.id);
+                                    try { await deleteIncomeApi(inc.id); } catch (e) { console.warn('Delete API failed', e); }
+                                }}
+                                disabled={isDeletingIncome}
+                                className="text-red-400 hover:text-red-500 disabled:opacity-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 ))}
 
@@ -158,16 +199,24 @@ const Step2IncomeExpenses = () => {
                                 <p className="text-xs text-slate-400">{exp.frequency} • ₹ {exp.amount.toLocaleString()}</p>
                             </div>
                         </div>
-                        <button
-                            onClick={async () => {
-                                removeExpense(exp.id);
-                                try { await deleteExpenseApi(exp.id); } catch (e) { console.warn('Delete API failed', e); }
-                            }}
-                            disabled={isDeletingExpense}
-                            className="text-red-400 hover:text-red-500 disabled:opacity-50"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => openModal('expense', exp)}
+                                className="text-slate-400 hover:text-primary transition-colors"
+                            >
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    removeExpense(exp.id);
+                                    try { await deleteExpenseApi(exp.id); } catch (e) { console.warn('Delete API failed', e); }
+                                }}
+                                disabled={isDeletingExpense}
+                                className="text-red-400 hover:text-red-500 disabled:opacity-50"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 ))}
 
@@ -304,7 +353,7 @@ const Step2IncomeExpenses = () => {
                     <div className="relative bg-surface-dark w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up">
                         <div className="w-12 h-1 bg-surface-active rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Add {modalType === 'income' ? 'Income' : 'Expense'}</h3>
+                            <h3 className="text-xl font-bold text-white">{editingId ? 'Edit' : 'Add'} {modalType === 'income' ? 'Income' : 'Expense'}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
                                 <X className="w-6 h-6" />
                             </button>
@@ -432,7 +481,7 @@ const Step2IncomeExpenses = () => {
                                 onClick={handleSave}
                                 className="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-4 rounded-xl mt-4 shadow-[0_0_15px_rgba(13,242,89,0.3)] active:scale-[0.98] transition-all"
                             >
-                                Save {modalType === 'income' ? 'Income' : 'Expense'}
+                                {editingId ? 'Update' : 'Save'} {modalType === 'income' ? 'Income' : 'Expense'}
                             </button>
                         </div>
                     </div>

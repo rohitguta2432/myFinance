@@ -100,8 +100,9 @@ const mapLiabilityToDTO = (data) => ({
     liabilityType: data.category,
     name: data.name,
     outstandingAmount: parseFloat(data.amount) || 0,
-    monthlyEmi: null,
-    interestRate: null,
+    monthlyEmi: parseFloat(data.emi) || 0,
+    interestRate: parseFloat(data.interestRate) || 0,
+    monthsLeft: data.monthsLeft ? parseInt(data.monthsLeft, 10) : null
 });
 
 const mapLiabilityFromDTO = (dto) => ({
@@ -109,6 +110,9 @@ const mapLiabilityFromDTO = (dto) => ({
     category: dto.liabilityType,
     name: dto.name,
     amount: dto.outstandingAmount,
+    emi: dto.monthlyEmi,
+    interestRate: dto.interestRate,
+    monthsLeft: dto.monthsLeft
 });
 
 const mapGoalToDTO = (data) => ({
@@ -204,6 +208,18 @@ export const deleteIncome = async (id) => {
 
 export const deleteExpense = async (id) => {
     await api.delete(`/expense/${id}`);
+};
+
+export const updateIncome = async (data) => {
+    const { id, ...rest } = data;
+    const dto = await api.put(`/income/${id}`, mapIncomeToDTO(rest));
+    return mapIncomeFromDTO(dto);
+};
+
+export const updateExpense = async (data) => {
+    const { id, ...rest } = data;
+    const dto = await api.put(`/expense/${id}`, mapExpenseToDTO(rest));
+    return mapExpenseFromDTO(dto);
 };
 
 // Step 3: Balance Sheet
