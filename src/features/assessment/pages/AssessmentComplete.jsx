@@ -71,7 +71,7 @@ const AssessmentComplete = () => {
 
                 {/* Call to Action */}
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className={`w-full bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-background-dark font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(13,242,89,0.3)] duration-1000 ${showContent ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
                     style={{ transitionDelay: '1000ms' }}
                 >

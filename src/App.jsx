@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/layout/Layout';
 import Home from './features/dashboard/pages/Home';
+import FinancialDashboard from './features/dashboard/pages/FinancialDashboard';
 import Step1PersonalRisk from './features/assessment/pages/Step1PersonalRisk';
 import Step2IncomeExpenses from './features/assessment/pages/Step2IncomeExpenses';
 import Step3AssetsLiabilities from './features/assessment/pages/Step3AssetsLiabilities';
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/assessment/step-5" element={<Step5InsuranceGap />} />
             <Route path="/assessment/step-6" element={<Step6TaxOptimization />} />
             <Route path="/assessment/complete" element={<AssessmentComplete />} />
+            <Route path="/dashboard" element={<FinancialDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>
