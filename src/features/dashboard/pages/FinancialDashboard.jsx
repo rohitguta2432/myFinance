@@ -8,6 +8,7 @@ import { usePriorityActions } from '../../../hooks/usePriorityActions';
 import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
 import BenchmarkComparison from '../components/BenchmarkComparison';
 import LockedPremiumInsights from '../components/LockedPremiumInsights';
+import FinancialTimeMachine from '../components/FinancialTimeMachine';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -323,6 +324,9 @@ const FinancialDashboard = () => {
                         </div>
                     );
                 })()}
+
+                {/* ── Financial Time Machine ── */}
+                <FinancialTimeMachine />
 
                 {/* ── Red Flags ── */}
                 {topFlags.length > 0 && (

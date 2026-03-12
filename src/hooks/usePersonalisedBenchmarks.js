@@ -9,7 +9,7 @@ import {
     getSavingsRateBenchmark,
     getEmiRatioBenchmark,
     getEquityBenchmark,
-    getLifeInsuranceBenchmark,
+    getHealthInsuranceBenchmark,
     getTrafficLightInverted,
     getBarPercent,
 } from '../utils/benchmarkTables';
@@ -172,32 +172,25 @@ export const usePersonalisedBenchmarks = () => {
             note: `Age ${parseInt(age) || 30} glide path`,
         });
 
-        // ── 5. Life Insurance ──
-        // Spec: Red < 50%, Amber 50-80%, Green ≥ 80%
-        const li = getLifeInsuranceBenchmark(profile);
-        const liCoverPct = li.requiredCover > 0 ? (existingTermCover / li.requiredCover) * 100 : 0;
-        const liStageLabels = {
-            single_no_dep: 'Single, no dependents',
-            married_no_kids: 'Married, no kids',
-            married_young_kids: 'Young kids (<10)',
-            married_older_kids: 'Older kids (10-18)',
-            kids_settled: 'Kids settled',
-            retired: 'Retired',
-        };
+        // ── 5. Health Cover ──
+        // Spec: Red < min, Amber min–target, Green ≥ target
+        const hi = getHealthInsuranceBenchmark(parseInt(age) || 30, cityTier);
+        const healthTrafficLight = existingHealthCover >= hi.target ? 'green'
+            : existingHealthCover >= hi.min ? 'amber'
+            : 'red';
         benchmarks.push({
-            id: 'life_insurance',
-            label: 'Life Insurance',
-            icon: '🔒',
-            userValue: `${liCoverPct.toFixed(0)}%`,
-            userRaw: liCoverPct,
-            benchMin: `50%`,
-            benchTarget: `80%`,
-            benchExcellent: `100%`,
-            barPercent: getBarPercent(liCoverPct, 80),
-            trafficLight: liCoverPct >= 80 ? 'green' : liCoverPct >= 50 ? 'amber' : 'red',
+            id: 'health_cover',
+            label: 'Health Cover',
+            icon: '🏥',
+            userValue: fmt(existingHealthCover),
+            userRaw: existingHealthCover,
+            benchMin: fmt(hi.min),
+            benchTarget: fmt(hi.target),
+            benchExcellent: fmt(hi.ideal),
+            barPercent: getBarPercent(existingHealthCover, hi.target),
+            trafficLight: healthTrafficLight,
             isInverted: false,
-            note: `${liStageLabels[li.stage] || li.stage} · Need ${fmt(li.requiredCover)}`,
-            requiredCover: li.requiredCover,
+            note: `${cityTier === 'metro' ? 'Metro' : cityTier === 'tier1' ? 'Tier-1' : cityTier === 'tier2' ? 'Tier-2' : 'Tier-3'} city`,
         });
 
         return {
