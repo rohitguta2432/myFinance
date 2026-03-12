@@ -2,8 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, User, Star, TrendingUp, Scale, Flag, ArrowRight, Menu } from 'lucide-react';
 import ThemeToggle from '../../../components/ui/ThemeToggle';
+import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
+import FinancialDashboard from './FinancialDashboard';
+
 const Home = () => {
     const navigate = useNavigate();
+    const { isComplete } = useAssessmentStore();
+
+    // Smart routing: returning users see the dashboard directly
+    if (isComplete) return <FinancialDashboard />;
 
     return (
         <div className="bg-background-dark text-white min-h-screen flex flex-col font-display selection:bg-primary selection:text-background-dark pb-20">

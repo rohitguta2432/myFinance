@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Zap, TrendingUp, AlertTriangle, ChevronRight, Info, ArrowUpRight, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Shield, Lock, Zap, TrendingUp, AlertTriangle, ChevronRight, Info, ArrowUpRight, CheckCircle2, XCircle, AlertCircle, Wallet, PiggyBank, BarChart3, RefreshCw } from 'lucide-react';
 import { useFinancialHealthScore } from '../../../hooks/useFinancialHealthScore';
 import { useHookText } from '../../../hooks/useHookText';
+import { useRedFlags } from '../../../hooks/useRedFlags';
+import { usePriorityActions } from '../../../hooks/usePriorityActions';
+import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -44,40 +47,33 @@ const ScoreRing = ({ score, label, color }) => {
     );
 };
 
-/* ─── Pillar Bar ─── */
+/* ─── Pillar Bar (compact for inline display) ─── */
 const PillarBar = ({ pillar, index, isWorst }) => {
     const pct = (pillar.score / pillar.maxScore) * 100;
     const barColor = pct <= 40 ? '#ef4444' : pct <= 65 ? '#f59e0b' : '#0DF259';
 
     return (
-        <div className={`relative bg-surface-dark rounded-2xl p-4 border transition-all duration-300 ${isWorst ? 'border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.1)]' : 'border-white/5 hover:border-white/10'}`}>
-            {isWorst && (
-                <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-red-500 text-[9px] font-bold text-white uppercase tracking-widest rounded-full">
-                    Primary Risk
+        <div className={`relative rounded-xl px-3 py-2.5 border transition-all duration-300 ${isWorst ? 'border-red-500/30 bg-red-500/5' : 'border-white/5 hover:border-white/10'}`}>
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                    <span className="text-lg">{pillar.icon}</span>
+                    <h3 className="font-bold text-white text-sm">{pillar.name}</h3>
+                    {isWorst && (
+                        <span className="px-1.5 py-0.5 bg-red-500 text-[8px] font-bold text-white uppercase tracking-widest rounded-full leading-none">Risk</span>
+                    )}
                 </div>
-            )}
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                    <span className="text-2xl">{pillar.icon}</span>
-                    <div>
-                        <h3 className="font-bold text-white text-sm tracking-wide">{pillar.name}</h3>
-                        <p className="text-[11px] text-slate-500">{pillar.shortInsight}</p>
-                    </div>
-                </div>
-                <div className="text-right">
-                    <div className="flex items-baseline gap-0.5">
-                        <span className="text-xl font-black tabular-nums" style={{ color: barColor }}>{pillar.score}</span>
-                        <span className="text-xs text-slate-500">/{pillar.maxScore}</span>
-                    </div>
+                <div className="flex items-baseline gap-0.5">
+                    <span className="text-base font-black tabular-nums" style={{ color: barColor }}>{pillar.score}</span>
+                    <span className="text-[10px] text-slate-500">/{pillar.maxScore}</span>
                 </div>
             </div>
-            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div
                     className="h-full rounded-full transition-all duration-1000 ease-out"
                     style={{
                         width: `${pct}%`,
                         background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
-                        boxShadow: `0 0 12px ${barColor}40`,
+                        boxShadow: `0 0 8px ${barColor}30`,
                     }}
                 />
             </div>
@@ -148,6 +144,9 @@ const FinancialDashboard = () => {
     const navigate = useNavigate();
     const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData } = useFinancialHealthScore();
     const hookTexts = useHookText(sortedPillars, rawData);
+    const { topFlags, hiddenCount: flagsHidden, totalTriggered: flagsTriggered } = useRedFlags();
+    const { topActions, hiddenCount: actionsHidden, totalTriggered: actionsTriggered } = usePriorityActions();
+    const { city } = useAssessmentStore();
 
     const {
         emergencyFundMonths = 0,
@@ -160,44 +159,13 @@ const FinancialDashboard = () => {
         lifeCoverRatio = 0,
         equityPct = 0,
         targetEquityPct = 50,
+        monthlySurplus = 0,
+        grossIncome = 0,
     } = rawData || {};
 
-    // Build red flags from raw data
-    const redFlags = [];
-    if (emergencyFundMonths < 6) {
-        redFlags.push({ title: 'Emergency Fund Below 6 Months', current: `${emergencyFundMonths.toFixed(1)} mo`, benchmark: '6 months', severity: emergencyFundMonths < 3 ? 'critical' : 'warn' });
-    }
-    if (emiToIncomeRatio > 30) {
-        redFlags.push({ title: 'EMI-to-Income Ratio Elevated', current: `${emiToIncomeRatio.toFixed(0)}%`, benchmark: '<30%', severity: emiToIncomeRatio > 40 ? 'critical' : 'warn' });
-    }
-    if (lifeCoverRatio < 1) {
-        redFlags.push({ title: 'Under-Insured Life Cover', current: `${(lifeCoverRatio * 100).toFixed(0)}%`, benchmark: '100%', severity: lifeCoverRatio < 0.5 ? 'critical' : 'warn' });
-    }
-    if (savingsRate < 20) {
-        redFlags.push({ title: 'Savings Rate Below Target', current: `${savingsRate.toFixed(0)}%`, benchmark: '20-30%', severity: savingsRate < 10 ? 'critical' : 'warn' });
-    }
-    if (equityPct < targetEquityPct * 0.5) {
-        redFlags.push({ title: 'Equity Exposure Gap', current: `${equityPct.toFixed(0)}%`, benchmark: `${targetEquityPct.toFixed(0)}%`, severity: 'warn' });
-    }
 
-    // Sort flags by severity — critical first
-    const severityOrder = { critical: 0, warn: 1, info: 2 };
-    redFlags.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
-    // Priority actions (top 3)
-    const priorityActions = sortedPillars.slice(0, 3).map(p => {
-        const gain = Math.round(p.deficit * 0.5);
-        let action = '';
-        switch (p.id) {
-            case 'survival': action = `Build emergency fund to ${Math.max(6, Math.ceil(emergencyFundMonths))} months`; break;
-            case 'protection': action = `Increase life cover to close the insurance gap`; break;
-            case 'debt': action = `Reduce EMI burden from ${emiToIncomeRatio.toFixed(0)}% to under 30%`; break;
-            case 'wealth': action = `Increase savings rate & rebalance equity allocation`; break;
-            case 'retirement': action = `Start/increase retirement SIP contributions`; break;
-            default: action = `Improve ${p.name} score`;
-        }
-        return { pillar: p, action, pointGain: gain };
-    });
+
 
     // Format helpers
     const formatInLakh = (v) => {
@@ -218,87 +186,276 @@ const FinancialDashboard = () => {
                         <h1 className="font-bold text-lg tracking-wide">Financial Health</h1>
                     </div>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/assessment/step-1')}
                         className="text-xs text-slate-400 hover:text-white transition-colors px-3 py-1.5 bg-surface-dark rounded-lg border border-white/5"
                     >
-                        ← Home
+                        ↻ Retake Assessment
                     </button>
                 </div>
             </div>
 
             <div className="max-w-[1200px] mx-auto px-4 py-6 pb-24 space-y-6">
 
-                {/* ── Score Ring Section ── */}
+                {/* ── Greeting + Date ── */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-black tracking-tight">Your Financial Snapshot</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            {city ? `📍 ${city}` : ''} · Last assessed {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                    </div>
+                </div>
+
+                {/* ── Quick Stats Strip ── */}
+                <div className="grid grid-cols-3 gap-3">
+                    {[
+                        { label: 'Net Worth', value: formatInLakh(netWorth), icon: Wallet, color: netWorth > 0 ? 'text-primary' : 'text-red-400' },
+                        { label: 'Monthly Surplus', value: formatInLakh(monthlySurplus), icon: PiggyBank, color: monthlySurplus > 0 ? 'text-primary' : 'text-red-400' },
+                        { label: 'Savings Rate', value: `${savingsRate.toFixed(0)}%`, icon: BarChart3, color: savingsRate >= 20 ? 'text-primary' : savingsRate >= 10 ? 'text-amber-400' : 'text-red-400' },
+                    ].map((stat, i) => {
+                        const Icon = stat.icon;
+                        return (
+                            <div key={i} className="bg-surface-dark rounded-xl border border-white/5 p-3 flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                                    <Icon className={`w-4 h-4 ${stat.color}`} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">{stat.label}</p>
+                                    <p className={`text-sm font-bold tabular-nums ${stat.color}`}>{stat.value}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* ── Score Overview — Ring + Pillars in One Block ── */}
                 <div className="bg-surface-dark rounded-3xl p-6 border border-white/5 shadow-xl">
-                    <div className="flex flex-col lg:flex-row items-center gap-6">
-                        <ScoreRing score={totalScore} label={scoreLabel.label} color={scoreLabel.color} />
-                        <div className="flex-1 text-center lg:text-left">
-                            <h2 className="text-2xl font-black tracking-tight mb-1">Your Financial Health Score</h2>
-                            <p className="text-sm text-slate-400 mb-4">
-                                Assessed across 5 pillars — Survival, Protection, Debt, Wealth & Retirement
-                            </p>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Left: Score Ring + Label */}
+                        <div className="flex flex-col items-center lg:items-start gap-3 lg:w-[240px] shrink-0">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Financial Health Score</p>
+                            <ScoreRing score={totalScore} label={scoreLabel.label} color={scoreLabel.color} />
                             {mostCritical && (
-                                <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl">
-                                    <AlertTriangle className="w-4 h-4 text-red-400" />
-                                    <span className="text-xs">
-                                        <span className="text-red-400 font-bold">PRIMARY RISK:</span>{' '}
-                                        <span className="text-slate-300">{mostCritical.name} — {mostCritical.longInsight}</span>
+                                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg mt-1">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                                    <span className="text-[10px] text-slate-300 leading-tight">
+                                        <span className="text-red-400 font-bold">RISK:</span> {mostCritical.name}
                                     </span>
                                 </div>
                             )}
                         </div>
+
+                        {/* Divider */}
+                        <div className="hidden lg:block w-px bg-white/5 self-stretch" />
+                        <div className="lg:hidden h-px bg-white/5 w-full" />
+
+                        {/* Right: Pillar Breakdown */}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Score Breakdown by Pillar</h3>
+                                <span className="text-[10px] text-slate-600">Sorted by priority</span>
+                            </div>
+                            <div className="grid gap-3">
+                                {sortedPillars.map((p, i) => (
+                                    <PillarBar key={p.id} pillar={p} index={i} isWorst={i === 0} />
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* ── Pillar Scores ── */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Pillar Scores</h3>
-                        <span className="text-[10px] text-slate-600">Sorted by priority</span>
-                    </div>
-                    <div className="grid gap-3">
-                        {sortedPillars.map((p, i) => (
-                            <PillarBar key={p.id} pillar={p} index={i} isWorst={i === 0} />
-                        ))}
-                    </div>
-                </div>
+                {/* ── Emergency Fund Insight ── */}
+                {(() => {
+                    const targetMonths = 6;
+                    const targetAmount = monthlyExpenses * targetMonths;
+                    const shortfall = Math.max(0, targetAmount - liquidAssets);
+                    const coverageDays = monthlyExpenses > 0 ? (liquidAssets / monthlyExpenses) * 30 : 0;
+                    const coverageLabel = emergencyFundMonths < 1
+                        ? `${Math.round(coverageDays)} Days`
+                        : `${emergencyFundMonths.toFixed(1)} Months`;
+                    const isHealthy = emergencyFundMonths >= targetMonths;
+                    const borderColor = isHealthy ? 'border-primary/20' : emergencyFundMonths < 3 ? 'border-red-500/30' : 'border-amber-500/30';
+                    const bgColor = isHealthy ? 'bg-primary/5' : emergencyFundMonths < 3 ? 'bg-red-500/5' : 'bg-amber-500/5';
+                    const accentColor = isHealthy ? 'text-primary' : emergencyFundMonths < 3 ? 'text-red-400' : 'text-amber-400';
+
+                    return (
+                        <div className={`${bgColor} ${borderColor} border rounded-2xl p-5`}>
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl shrink-0">
+                                    🛡️
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 className="font-bold text-white text-sm">Emergency Fund:</h3>
+                                        <span className={`font-black text-sm ${accentColor}`}>
+                                            {coverageLabel} Only
+                                        </span>
+                                        {!isHealthy && (
+                                            <span className="text-xs text-red-400 font-semibold">
+                                                &amp; {formatInLakh(shortfall)} shortfall
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-400 leading-relaxed mb-2.5">
+                                        You have <span className={`font-semibold ${accentColor}`}>{coverageLabel.toLowerCase()}</span> of
+                                        expenses covered. Minimum safe level is <span className="text-white font-semibold">{targetMonths} months</span>.
+                                    </p>
+                                    {!isHealthy && (
+                                        <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                            <span className="text-sm mt-px">📌</span>
+                                            <p className="text-xs text-slate-300 leading-relaxed">
+                                                Park <span className="text-white font-bold">{formatInLakh(shortfall)}</span> more in a liquid MF or savings account.
+                                            </p>
+                                        </div>
+                                    )}
+                                    {isHealthy && (
+                                        <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                            <span className="text-sm mt-px">✅</span>
+                                            <p className="text-xs text-slate-300 leading-relaxed">
+                                                Your emergency fund covers <span className="text-primary font-bold">{coverageLabel.toLowerCase()}</span> — well above the 6-month minimum. Great job!
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* ── Red Flags ── */}
-                {redFlags.length > 0 && (
+                {topFlags.length > 0 && (
                     <div>
-                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-3">
-                            Top Financial Red Flags
-                        </h3>
-                        <div className="space-y-2">
-                            {redFlags.slice(0, 4).map((flag, i) => (
-                                <RedFlag key={i} {...flag} />
-                            ))}
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                                Top {topFlags.length} Red Flags
+                            </h3>
+                            {flagsTriggered > 3 && (
+                                <span className="text-[10px] text-slate-600">{flagsTriggered} total detected</span>
+                            )}
                         </div>
+                        <div className="space-y-3">
+                            {topFlags.map((flag, i) => {
+                                const sevColors = {
+                                    CRITICAL: { bg: 'bg-red-500/8', border: 'border-red-500/25', badge: 'bg-red-500', text: 'text-red-400', icon: XCircle },
+                                    WARNING: { bg: 'bg-amber-500/8', border: 'border-amber-500/20', badge: 'bg-amber-500', text: 'text-amber-400', icon: AlertTriangle },
+                                    INFO: { bg: 'bg-blue-500/8', border: 'border-blue-500/20', badge: 'bg-blue-500', text: 'text-blue-400', icon: Info },
+                                };
+                                const s = sevColors[flag.severity] || sevColors.WARNING;
+                                const Icon = s.icon;
+                                return (
+                                    <div key={flag.id} className={`${s.bg} ${s.border} border rounded-xl p-4`}>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                                                <Icon className={`w-4 h-4 ${s.text}`} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                    <span className={`px-1.5 py-0.5 ${s.badge} text-[8px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
+                                                        {flag.severity}
+                                                    </span>
+                                                    <h4 className="text-sm font-bold text-white">{flag.title}</h4>
+                                                </div>
+                                                <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                                    {flag.explanation}
+                                                </p>
+                                                <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                                    <span className="text-sm mt-px">📌</span>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        {flag.action}
+                                                    </p>
+                                                </div>
+                                                {flag.impact > 0 && (
+                                                    <p className="text-[10px] text-slate-600 mt-1.5">
+                                                        Financial impact: <span className={`font-semibold ${s.text}`}>{formatInLakh(flag.impact)}</span>
+                                                        {flag.urgency > 1 && <span className="ml-2">⚡ {flag.urgency}× urgency</span>}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {flagsHidden > 0 && (
+                            <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                    <span className="text-[11px] text-slate-500">
+                                        +{flagsHidden} more flag{flagsHidden > 1 ? 's' : ''} detected
+                                    </span>
+                                </div>
+                                <span className="text-[10px] text-primary font-semibold">Unlock Premium →</span>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* ── Priority Actions ── */}
+                {topActions.length > 0 && (
                 <div>
-                    <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-3">
-                        Priority Actions
-                    </h3>
-                    <div className="space-y-2">
-                        {priorityActions.map((item, i) => (
-                            <div key={i} className="bg-surface-dark border border-white/5 rounded-xl p-4 flex items-center gap-4 hover:border-primary/20 transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                                    {item.pillar.icon}
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                            Priority Actions
+                        </h3>
+                        {actionsTriggered > 3 && (
+                            <span className="text-[10px] text-slate-600">{actionsTriggered} actions identified</span>
+                        )}
+                    </div>
+                    <div className="space-y-3">
+                        {topActions.map((act, i) => (
+                            <div key={act.id} className="bg-surface-dark border border-white/5 rounded-xl p-4 hover:border-primary/20 transition-colors">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-lg shrink-0">
+                                        {act.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="px-1.5 py-0.5 bg-emerald-500/15 text-[8px] font-bold text-emerald-400 uppercase tracking-widest rounded-full leading-none">
+                                                #{i + 1}
+                                            </span>
+                                            <h4 className="text-sm font-bold text-white">{act.title}</h4>
+                                        </div>
+                                        <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                            {act.description}
+                                        </p>
+                                        <div className="flex items-center gap-3 text-[10px]">
+                                            <span className="text-slate-500">
+                                                Impact: <span className="text-emerald-400 font-semibold">{formatInLakh(act.impact)}</span>
+                                            </span>
+                                            {act.urgency > 1 && (
+                                                <span className="text-amber-400">
+                                                    ⚡ {act.urgency}× urgency
+                                                </span>
+                                            )}
+                                            {act.feasibility < 1 && (
+                                                <span className="text-rose-400">
+                                                    ⚠ Low feasibility
+                                                </span>
+                                            )}
+                                            {act.actionCost > 0 && (
+                                                <span className="text-slate-600">
+                                                    Cost: {formatInLakh(act.actionCost)}/mo
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 mt-2" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-white font-medium">{item.action}</p>
-                                    <p className="text-[11px] text-slate-500 mt-0.5">
-                                        Est. improvement: <span className="text-primary font-bold">+{item.pointGain} pts</span>
-                                    </p>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
                             </div>
                         ))}
                     </div>
+                    {actionsHidden > 0 && (
+                        <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                <span className="text-[11px] text-slate-500">
+                                    +{actionsHidden} more action{actionsHidden > 1 ? 's' : ''} identified
+                                </span>
+                            </div>
+                            <span className="text-[10px] text-primary font-semibold">Unlock Premium →</span>
+                        </div>
+                    )}
                 </div>
+                )}
 
                 {/* ── Your Numbers vs Benchmarks ── */}
                 <div>

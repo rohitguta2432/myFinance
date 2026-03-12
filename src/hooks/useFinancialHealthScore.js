@@ -354,6 +354,8 @@ export const useFinancialHealthScore = () => {
             age,
             retirementGoal,
             lifeCoverRatio,
+            monthlySurplus: monthlySavings,
+            grossIncome: monthlyIncome,
         };
 
         return {
