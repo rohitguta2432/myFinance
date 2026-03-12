@@ -10,9 +10,6 @@ import {
     getEmiRatioBenchmark,
     getEquityBenchmark,
     getLifeInsuranceBenchmark,
-    getHealthInsuranceBenchmark,
-    getRetirementBenchmark,
-    getTrafficLight,
     getTrafficLightInverted,
     getBarPercent,
 } from '../utils/benchmarkTables';
@@ -80,6 +77,7 @@ export const usePersonalisedBenchmarks = () => {
         const benchmarks = [];
 
         // ── 1. Emergency Fund ──
+        // Spec: Red < 3, Amber 3-6, Green ≥ 6
         const ef = getEmergencyFundBenchmark(profile);
         const efNote = (() => {
             const parts = [employmentType || 'Salaried'];
@@ -93,16 +91,17 @@ export const usePersonalisedBenchmarks = () => {
             icon: '🛡️',
             userValue: `${emergencyFundMonths.toFixed(1)} mo`,
             userRaw: emergencyFundMonths,
-            benchMin: `${ef.min} mo`,
-            benchTarget: `${ef.target} mo`,
+            benchMin: `3 mo`,
+            benchTarget: `6 mo`,
             benchExcellent: `${ef.excellent} mo`,
-            barPercent: getBarPercent(emergencyFundMonths, ef.target),
-            trafficLight: getTrafficLight(emergencyFundMonths, ef.min, ef.target),
+            barPercent: getBarPercent(emergencyFundMonths, 6),
+            trafficLight: emergencyFundMonths >= 6 ? 'green' : emergencyFundMonths >= 3 ? 'amber' : 'red',
             isInverted: false,
             note: efNote,
         });
 
         // ── 2. Savings Rate ──
+        // Spec: Red < 15%, Amber 15-25%, Green > 25%
         const sr = getSavingsRateBenchmark(age, annualIncome);
         const srNote = (() => {
             const a = parseInt(age) || 30;
@@ -115,16 +114,17 @@ export const usePersonalisedBenchmarks = () => {
             icon: '💰',
             userValue: `${savingsRate.toFixed(0)}%`,
             userRaw: savingsRate,
-            benchMin: `${sr.min}%`,
-            benchTarget: `${sr.target}%`,
+            benchMin: `15%`,
+            benchTarget: `25%`,
             benchExcellent: `>${sr.excellent}%`,
-            barPercent: getBarPercent(savingsRate, sr.target),
-            trafficLight: getTrafficLight(savingsRate, sr.min, sr.target),
+            barPercent: getBarPercent(savingsRate, 25),
+            trafficLight: savingsRate > 25 ? 'green' : savingsRate >= 15 ? 'amber' : 'red',
             isInverted: false,
             note: srNote,
         });
 
         // ── 3. EMI-to-Income Ratio (Inverted) ──
+        // Spec: Age-specific thresholds, INVERTED (lower is better)
         const emi = getEmiRatioBenchmark(age, householdType);
         const emiNote = (() => {
             const parts = [`Age ${parseInt(age) || 30}`];
@@ -132,9 +132,8 @@ export const usePersonalisedBenchmarks = () => {
             else if (householdType === 'single' && maritalStatus === 'married') parts.push('single-income (-5%)');
             return parts.join(', ');
         })();
-        // For inverted: user value of 0 is perfect, anything above safe is amber/red
         const emiBarPct = emiToIncomeRatio <= 0
-            ? 120  // No EMI = perfect
+            ? 120
             : Math.min(120, Math.max(5, ((emi.safe) / Math.max(1, emiToIncomeRatio)) * 100));
         benchmarks.push({
             id: 'emi_ratio',
@@ -152,7 +151,12 @@ export const usePersonalisedBenchmarks = () => {
         });
 
         // ── 4. Equity Exposure ──
+        // Spec: Red if > 20% below target, Amber if 5-10% below, Green ≥ target
         const eq = getEquityBenchmark(age);
+        const eqDeviation = eq.target - equityPct;
+        const eqTrafficLight = eqDeviation <= 0 ? 'green'
+            : eqDeviation <= 10 ? 'amber'
+            : 'red';
         benchmarks.push({
             id: 'equity_exposure',
             label: 'Equity Allocation',
@@ -163,12 +167,13 @@ export const usePersonalisedBenchmarks = () => {
             benchTarget: `${eq.target}%`,
             benchExcellent: `${eq.idealRange[0]}–${eq.idealRange[1]}%`,
             barPercent: getBarPercent(equityPct, eq.target),
-            trafficLight: getTrafficLight(equityPct, eq.min, eq.target),
+            trafficLight: eqTrafficLight,
             isInverted: false,
             note: `Age ${parseInt(age) || 30} glide path`,
         });
 
         // ── 5. Life Insurance ──
+        // Spec: Red < 50%, Amber 50-80%, Green ≥ 80%
         const li = getLifeInsuranceBenchmark(profile);
         const liCoverPct = li.requiredCover > 0 ? (existingTermCover / li.requiredCover) * 100 : 0;
         const liStageLabels = {
@@ -185,49 +190,14 @@ export const usePersonalisedBenchmarks = () => {
             icon: '🔒',
             userValue: `${liCoverPct.toFixed(0)}%`,
             userRaw: liCoverPct,
-            benchMin: `${li.dangerous}%`,
-            benchTarget: `${li.adequate}%`,
+            benchMin: `50%`,
+            benchTarget: `80%`,
             benchExcellent: `100%`,
-            barPercent: getBarPercent(liCoverPct, li.adequate),
-            trafficLight: liCoverPct >= li.adequate ? 'green' : liCoverPct >= li.dangerous ? 'amber' : 'red',
+            barPercent: getBarPercent(liCoverPct, 80),
+            trafficLight: liCoverPct >= 80 ? 'green' : liCoverPct >= 50 ? 'amber' : 'red',
             isInverted: false,
             note: `${liStageLabels[li.stage] || li.stage} · Need ${fmt(li.requiredCover)}`,
             requiredCover: li.requiredCover,
-        });
-
-        // ── 6. Health Insurance ──
-        const hi = getHealthInsuranceBenchmark(age, cityTier);
-        const cityTierLabels = { metro: 'Metro', tier1: 'Tier-1', tier2: 'Tier-2', tier3: 'Tier-3' };
-        benchmarks.push({
-            id: 'health_insurance',
-            label: 'Health Cover',
-            icon: '🏥',
-            userValue: fmt(existingHealthCover),
-            userRaw: existingHealthCover,
-            benchMin: fmt(hi.min),
-            benchTarget: fmt(hi.target),
-            benchExcellent: fmt(hi.ideal),
-            barPercent: getBarPercent(existingHealthCover, hi.target),
-            trafficLight: getTrafficLight(existingHealthCover, hi.min, hi.target),
-            isInverted: false,
-            note: `${cityTierLabels[cityTier]} city, age ${parseInt(age) || 30}${parseInt(age) >= 40 ? ' (×' + (parseInt(age) >= 50 ? '1.5' : '1.3') + ')' : ''}`,
-        });
-
-        // ── 7. Retirement Wealth Multiplier ──
-        const ret = getRetirementBenchmark(age);
-        benchmarks.push({
-            id: 'retirement',
-            label: 'Retirement',
-            icon: '🏖️',
-            userValue: `${nwMultiplier.toFixed(1)}×`,
-            userRaw: nwMultiplier,
-            benchMin: `${ret.critical}×`,
-            benchTarget: `${ret.target}×`,
-            benchExcellent: `>${ret.ahead}×`,
-            barPercent: getBarPercent(nwMultiplier, ret.target),
-            trafficLight: nwMultiplier >= ret.onTrackRange[0] ? 'green' : nwMultiplier >= ret.critical ? 'amber' : 'red',
-            isInverted: false,
-            note: `Age ${parseInt(age) || 30} · NW / Annual Income`,
         });
 
         return {

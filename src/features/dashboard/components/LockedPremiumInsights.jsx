@@ -21,7 +21,7 @@ const LockedInsightCard = ({ card }) => {
             <div className="relative z-0">
                 <div className="flex items-center gap-2 mb-3">
                     <span className="text-lg">{card.icon}</span>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">{card.title}</h4>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">{card.id.replace('LC_', '').replaceAll('_', ' ')}</h4>
                 </div>
 
                 {/* Blurred figure — large, prominent */}
@@ -39,7 +39,7 @@ const LockedInsightCard = ({ card }) => {
 };
 
 const LockedPremiumInsights = () => {
-    const cards = useLockedInsights();
+    const { cards, maxFigureFormatted } = useLockedInsights();
 
     if (!cards || cards.length === 0) return null;
 
@@ -59,6 +59,11 @@ const LockedPremiumInsights = () => {
                     <LockedInsightCard key={card.id} card={card} />
                 ))}
             </div>
+
+            {/* CTA with largest figure */}
+            <button className="mt-4 w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-bold text-black rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all active:scale-[0.98]">
+                Unlock Full Analysis — {maxFigureFormatted} waiting
+            </button>
         </div>
     );
 };

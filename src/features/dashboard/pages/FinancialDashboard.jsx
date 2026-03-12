@@ -419,6 +419,14 @@ const FinancialDashboard = () => {
                                         <p className="text-xs text-slate-400 leading-relaxed mb-2">
                                             {act.description}
                                         </p>
+                                        {act.howTo && (
+                                            <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2 mb-2">
+                                                <span className="text-sm mt-px">▶</span>
+                                                <p className="text-xs text-slate-300 leading-relaxed">
+                                                    {act.howTo}
+                                                </p>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-3 text-[10px]">
                                             <span className="text-slate-500">
                                                 Impact: <span className="text-emerald-400 font-semibold">{formatInLakh(act.impact)}</span>

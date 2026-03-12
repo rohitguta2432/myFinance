@@ -276,9 +276,10 @@ const Step5InsuranceGap = () => {
                     </section>
                 )}
 
-                {/* SECTION B: Personal Health */}
-                <section className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
-                    <div className="p-5 border-b border-white/5">
+                {/* SECTION B & C: Personal Health + Life — Side by Side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <section className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-5 border-b border-white/5 flex-1">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="bg-teal-500/10 p-2 rounded-xl text-teal-400">
@@ -347,9 +348,8 @@ const Step5InsuranceGap = () => {
                     </div>
                 </section>
 
-                {/* SECTION C: Personal Life */}
-                <section className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
-                    <div className="p-5 border-b border-white/5">
+                <section className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-5 border-b border-white/5 flex-1">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="bg-blue-500/10 p-2 rounded-xl text-blue-400">
@@ -426,6 +426,7 @@ const Step5InsuranceGap = () => {
                         </div>
                     </div>
                 </section>
+                </div>
 
                 {/* SECTION D: Quick Checklist */}
                 <section className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-lg">

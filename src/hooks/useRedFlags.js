@@ -3,7 +3,7 @@ import { useAssessmentStore } from '../features/assessment/store/useAssessmentSt
 import { useFinancialHealthScore } from './useFinancialHealthScore';
 
 /**
- * Red Flags Scoring Engine
+ * Red Flags Scoring Engine — 15 Red Flags
  *
  * FORMULA:  Flag Priority Score = Financial Impact (₹) × Urgency Multiplier
  *
@@ -14,40 +14,53 @@ import { useFinancialHealthScore } from './useFinancialHealthScore';
 
 const SEVERITY_RANK = { CRITICAL: 0, WARNING: 1, INFO: 2 };
 
-// Fixed tie-breaking order when severity + impact are equal
 const TIEBREAK_ORDER = {
-    INS_LIFE_CRITICAL_P1: 0,
-    INS_LIFE_LOW_P2: 1,
-    SRV_EMERGENCY_FUND_P1: 2,
-    DBT_EMI_RATIO_P1: 3,
-    DBT_EMI_RATIO_P2: 4,
-    INS_HEALTH_NONE_P1: 5,
-    INS_CI_RIDER_P2: 6,
-    RET_CORPUS_CRITICAL_P1: 7,
-    TAX_NPS_UNCLAIMED_P2: 8,
-    TAX_LTCG_HARVEST_P2: 9,
-    WLT_EQUITY_LOW_P1: 10,
-    WLT_FD_TAX_DRAG_P2: 11,
-    WLT_RE_CONCENTRATION_P2: 12,
-    DBT_DTI_P2: 13,
-    DBT_CREDIT_CARD_P1: 14,
+    RF_LIFE_GAP: 0,
+    RF_EMERGENCY_FUND: 1,
+    RF_EMI_BURDEN: 2,
+    RF_HEALTH_COVER: 3,
+    RF_RETIREMENT_ESCALATION: 4,
+    RF_TAX_OUTGO: 5,
+    RF_PORTFOLIO_MISALIGNED: 6,
+    RF_NO_TERM: 7,
+    RF_NEGATIVE_SURPLUS: 8,
+    RF_NO_CI_COVER: 9,
+    RF_DTI_ELEVATED: 10,
+    RF_RETIREMENT_GAP: 11,
+    RF_UNDERINSURED_DEPS: 12,
+    RF_LOW_SAVINGS: 13,
+    RF_LTCG_HARVEST: 14,
 };
 
-/** Check if we're within N days of March 31 (FY end) */
+/** Days to March 31 (FY end) */
 const getDaysToFYEnd = () => {
     const now = new Date();
     const fy = now.getMonth() >= 3 ? now.getFullYear() + 1 : now.getFullYear();
-    const fyEnd = new Date(fy, 2, 31); // March 31
+    const fyEnd = new Date(fy, 2, 31);
     const diff = (fyEnd - now) / (1000 * 60 * 60 * 24);
     return Math.max(0, Math.round(diff));
 };
 
-/** Format ₹ in lakhs/crores for display */
-const formatRupee = (v) => {
+/** Format ₹ in lakhs/crores */
+const fmt = (v) => {
     if (v >= 10000000) return `₹${(v / 10000000).toFixed(2)} Cr`;
-    if (v >= 100000) return `₹${(v / 100000).toFixed(1)} L`;
+    if (v >= 100000) return `₹${(v / 100000).toFixed(1)}L`;
     if (v >= 1000) return `₹${Math.round(v).toLocaleString('en-IN')}`;
     return `₹${Math.round(v)}`;
+};
+
+/** Marginal tax rate (Old Regime slabs with cess) */
+const getMarginalRate = (income) => {
+    if (income > 1500000) return 0.312; // 30% + 4% cess
+    if (income > 1000000) return 0.208; // 20% + 4% cess
+    if (income > 500000) return 0.052;  // 5% + 4% cess
+    return 0;
+};
+
+/** DSCR = Net Cash Flow / Total EMIs */
+const getDSCR = (monthlyIncome, monthlyExpenses, monthlyEMI) => {
+    if (monthlyEMI <= 0) return 99;
+    return (monthlyIncome - monthlyExpenses) / monthlyEMI;
 };
 
 export const useRedFlags = () => {
@@ -69,348 +82,339 @@ export const useRedFlags = () => {
             existingHealthCover = 0,
             requiredCover = 0,
             equityPct = 0,
+            targetEquityPct = 50,
             totalAssets = 0,
             netWorth = 0,
             lifeCoverRatio = 0,
             fiRatio = 0,
+            savingsRate = 0,
+            monthlySurplus = 0,
+            liquidAssets = 0,
             age = 30,
             retirementAge = 60,
         } = rawData;
 
-        const { assets = [], liabilities = [], insurance = {} } = store;
+        const {
+            assets = [],
+            liabilities = [],
+            insurance = {},
+            city = '',
+            taxRegime = 'new',
+            investments80C = 0,
+        } = store;
 
-        // ── Derived metrics for flags ──
-
-        const netMonthlyIncome = monthlyIncome - monthlyExpenses; // take-home proxy after expenses
+        // ── Derived metrics ──
         const annualSalary = annualIncome;
         const incomeMultiple = annualIncome > 0 ? existingTermCover / annualIncome : 0;
+        const marginalRate = getMarginalRate(annualIncome);
+        const daysToFYEnd = getDaysToFYEnd();
+        const fyUrgency = daysToFYEnd <= 30 ? 3 : daysToFYEnd <= 90 ? 2 : 1;
+        const yearsToRetirement = Math.max(0, retirementAge - age);
+        const annualExpenses = monthlyExpenses * 12;
+        const dscr = getDSCR(monthlyIncome, monthlyExpenses, monthlyEMI);
+
+        // HLV = Annual Income × (Retirement Age − Current Age)
+        const hlv = annualIncome * yearsToRetirement;
+
+        // Retirement corpus
+        const requiredCorpus = annualExpenses > 0 ? annualExpenses * 25 : 0;
+        const projectedCorpus = netWorth * Math.pow(1.12, yearsToRetirement);
+        const retirementGap = Math.max(0, requiredCorpus - projectedCorpus);
 
         // Asset class breakdowns
         const fdTotal = assets
             .filter(a => (a.subCategory || '').includes('Fixed Deposit'))
             .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 
-        const npsTotal = assets
-            .filter(a => (a.subCategory || '').includes('NPS'))
-            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-
         const realEstateTotal = assets
             .filter(a => (a.subCategory || '').includes('Real Estate'))
             .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 
-        const creditCardDebt = liabilities
-            .filter(l => (l.category || '').includes('Credit Card'))
-            .reduce((s, l) => s + (parseFloat(l.amount) || 0), 0);
-
-        const creditCardEMI = liabilities
-            .filter(l => (l.category || '').includes('Credit Card'))
-            .reduce((s, l) => s + (parseFloat(l.emi) || 0), 0);
-
-        // Financial assets (excluding real estate & vehicles)
-        const financialAssets = assets
-            .filter(a => !(a.subCategory || '').includes('Real Estate') && !(a.subCategory || '').includes('Vehicle'))
-            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-
-        // FD interest estimation (7% avg)
-        const fdInterestAnnual = fdTotal * 0.07;
-
-        // Marginal tax rate estimation
-        const getMarginalRate = (income) => {
-            if (income > 1500000) return 0.312; // 30% + cess
-            if (income > 1000000) return 0.208; // 20% + cess
-            if (income > 500000) return 0.052;  // 5% + cess
-            return 0;
-        };
-        const marginalRate = getMarginalRate(annualIncome);
-
-        // Urgency check
-        const daysToFYEnd = getDaysToFYEnd();
-        const fyUrgency = daysToFYEnd <= 30 ? 3 : daysToFYEnd <= 90 ? 2 : 1;
-
-        // Retirement corpus calculation
-        const yearsToRetirement = Math.max(0, retirementAge - age);
-        const annualExpenses = monthlyExpenses * 12;
-        const requiredCorpus = annualExpenses > 0 ? annualExpenses * 25 : 0; // 25× rule
-        const projectedCorpus = netWorth * Math.pow(1.12, yearsToRetirement); // 12% growth assumption
-        const retirementPct = requiredCorpus > 0 ? (projectedCorpus / requiredCorpus) * 100 : 100;
-
-        // HLV for life insurance
-        const hlv = annualIncome * (retirementAge - age);
-
-        // CI cover placeholder (check if any insurance mentions critical illness)
-        const ciCover = 0; // No explicit CI data in current store
-
-        // ── BUILD ALL 15 FLAGS ──
-
-        const allFlags = [];
-
-        // P1-01: Emergency Fund < 3 months → CRITICAL
-        if (emergencyFundMonths < 3) {
-            const impact = monthlyExpenses * (6 - emergencyFundMonths);
-            allFlags.push({
-                id: 'SRV_EMERGENCY_FUND_P1',
-                severity: 'CRITICAL',
-                title: `Emergency Fund: ${emergencyFundMonths < 1 ? Math.round(emergencyFundMonths * 30) + ' days' : emergencyFundMonths.toFixed(1) + ' months'}`,
-                metric: `Emergency Fund: ${emergencyFundMonths.toFixed(1)} months`,
-                explanation: `One job loss = financial collapse in ${emergencyFundMonths < 1 ? Math.round(emergencyFundMonths * 30) + ' days' : Math.round(emergencyFundMonths * 30) + ' days'}. You have no buffer for income disruption, medical emergency, or unexpected expense.`,
-                action: `Park ${formatRupee(impact)} more in a liquid MF or savings account.`,
-                impact,
-                urgency: 1,
-                score: impact * 1,
-            });
-        }
-
-        // P1-02: EMI > 50% of take-home → CRITICAL
-        if (emiToIncomeRatio > 50) {
-            const excessDebt = (monthlyEMI - 0.4 * monthlyIncome) * 12;
-            allFlags.push({
-                id: 'DBT_EMI_RATIO_P1',
-                severity: 'CRITICAL',
-                title: `EMI Ratio: ${emiToIncomeRatio.toFixed(0)}%`,
-                metric: `EMI Ratio: ${emiToIncomeRatio.toFixed(0)}%`,
-                explanation: `Over half your income is committed to debt. You have zero margin for income reduction, interest rate increase, or any new expense.`,
-                action: `Reduce annual debt burden by ${formatRupee(Math.abs(excessDebt))} through prepayment or consolidation.`,
-                impact: Math.abs(excessDebt),
-                urgency: 1,
-                score: Math.abs(excessDebt) * 1,
-            });
-        }
-
-        // P1-03: Life cover < 5× income → CRITICAL
-        if (annualIncome > 0 && incomeMultiple < 5) {
-            const gap = requiredCover - existingTermCover;
-            allFlags.push({
-                id: 'INS_LIFE_CRITICAL_P1',
-                severity: 'CRITICAL',
-                title: `Life Cover: ${(lifeCoverRatio * 100).toFixed(0)}% adequate`,
-                metric: `Life Cover: ${incomeMultiple.toFixed(1)}× income`,
-                explanation: `Your family receives ${formatRupee(existingTermCover)} if you die tomorrow — against a required ${formatRupee(requiredCover)} to sustain their lifestyle.`,
-                action: `Get additional term cover of ${formatRupee(Math.max(0, gap))} immediately.`,
-                impact: Math.max(0, gap),
-                urgency: 1,
-                score: Math.max(0, gap) * 1,
-            });
-        }
-
-        // P1-04: No health insurance or < ₹5L → CRITICAL
-        if (existingHealthCover < 500000) {
-            const metroBenchmark = 800000; // ₹8L
-            const exposure = metroBenchmark - existingHealthCover;
-            allFlags.push({
-                id: 'INS_HEALTH_NONE_P1',
-                severity: 'CRITICAL',
-                title: `Health Cover: ${existingHealthCover > 0 ? formatRupee(existingHealthCover) : 'None'}`,
-                metric: `Health Cover: ${formatRupee(existingHealthCover)}`,
-                explanation: `One hospitalisation — ICU + surgery — costs ₹3–8L in metro cities. You are financially unprotected.`,
-                action: `Get a health insurance policy with minimum ${formatRupee(1000000)} cover.`,
-                impact: Math.max(0, exposure),
-                urgency: 1,
-                score: Math.max(0, exposure) * 1,
-            });
-        }
-
-        // P1-05: Equity exposure < 15% → CRITICAL
-        if (equityPct < 15 && totalAssets > 0) {
-            const inflationLoss = (0.06 - 0.045) * financialAssets; // 6% inflation - 4.5% post-tax FD
-            allFlags.push({
-                id: 'WLT_EQUITY_LOW_P1',
-                severity: 'CRITICAL',
-                title: `Equity: ${equityPct.toFixed(0)}% of portfolio`,
-                metric: `Equity: ${equityPct.toFixed(0)}%`,
-                explanation: `Inflation at 6% destroys FD returns (post-tax ~4.5%). Your wealth is losing real value every year.`,
-                action: `Shift ${formatRupee(inflationLoss > 0 ? inflationLoss * 10 : financialAssets * 0.2)} into diversified equity funds via STP.`,
-                impact: Math.max(0, inflationLoss),
-                urgency: 1,
-                score: Math.max(0, inflationLoss) * 1,
-            });
-        }
-
-        // P1-06: Retirement corpus < 5% of required → CRITICAL
-        if (retirementPct < 5 && yearsToRetirement > 0) {
-            const corpusGap = Math.max(0, requiredCorpus - projectedCorpus);
-            allFlags.push({
-                id: 'RET_CORPUS_CRITICAL_P1',
-                severity: 'CRITICAL',
-                title: `Retirement: ${retirementPct.toFixed(0)}% on track`,
-                metric: `Retirement: ${retirementPct.toFixed(0)}% on track`,
-                explanation: `At current pace you retire at age ${retirementAge + Math.round(yearsToRetirement * 0.3)}. You will run out of money ${Math.round(yearsToRetirement * 0.4)} years into retirement.`,
-                action: `Start a monthly SIP of ${formatRupee(corpusGap / (yearsToRetirement * 12 * 15))} towards retirement.`,
-                impact: Math.max(0, corpusGap),
-                urgency: 1,
-                score: Math.max(0, corpusGap) * 1,
-            });
-        }
-
-        // P2-07: EMI 40-50% of take-home → WARNING
-        if (emiToIncomeRatio >= 40 && emiToIncomeRatio <= 50) {
-            const excessDebt = (monthlyEMI - 0.35 * monthlyIncome) * 12;
-            allFlags.push({
-                id: 'DBT_EMI_RATIO_P2',
-                severity: 'WARNING',
-                title: `EMI Ratio: ${emiToIncomeRatio.toFixed(0)}%`,
-                metric: `EMI Ratio: ${emiToIncomeRatio.toFixed(0)}%`,
-                explanation: `Your debt load is high — one income shock or rate hike pushes you into the danger zone.`,
-                action: `Aim to reduce EMI burden by ${formatRupee(Math.abs(excessDebt))} annually.`,
-                impact: Math.abs(excessDebt),
-                urgency: 1,
-                score: Math.abs(excessDebt) * 1,
-            });
-        }
-
-        // P2-08: Life cover 5-10× income → WARNING
-        if (annualIncome > 0 && incomeMultiple >= 5 && incomeMultiple < 10) {
-            const additionalNeeded = hlv - existingTermCover;
-            if (additionalNeeded > 0) {
-                allFlags.push({
-                    id: 'INS_LIFE_LOW_P2',
-                    severity: 'WARNING',
-                    title: `Life Cover: ${incomeMultiple.toFixed(0)}× income`,
-                    metric: `Life Cover: ${incomeMultiple.toFixed(0)}× income`,
-                    explanation: `Your family is partially protected but the cover will be insufficient to sustain lifestyle beyond 7-8 years.`,
-                    action: `Increase term cover by ${formatRupee(additionalNeeded)} to match HLV.`,
-                    impact: additionalNeeded,
-                    urgency: 1,
-                    score: additionalNeeded * 1,
-                });
-            }
-        }
-
-        // P2-09: No critical illness rider, age > 38 → WARNING
-        if (age > 38 && ciCover < 100000) {
-            const ciExposure = 2000000 - ciCover; // ₹20L benchmark
-            allFlags.push({
-                id: 'INS_CI_RIDER_P2',
-                severity: 'WARNING',
-                title: `CI Cover: ${ciCover > 0 ? formatRupee(ciCover) : 'None'}`,
-                metric: `CI Cover: None`,
-                explanation: `Cancer and cardiac events are the #1 cause of financial ruin. Treatment costs ₹15–30L and takes you out of income for 6–18 months.`,
-                action: `Add a critical illness rider of ${formatRupee(ciExposure)} to your term plan.`,
-                impact: Math.max(0, ciExposure),
-                urgency: 1,
-                score: Math.max(0, ciExposure) * 1,
-            });
-        }
-
-        // P2-10: DTI 35-50% → WARNING
-        if (dti >= 35 && dti <= 50) {
-            const excessDebtAbove30 = monthlyEMI > 0 ? (dti / 100 - 0.30) * monthlyIncome * 12 * 0.10 : 0; // 10% interest
-            allFlags.push({
-                id: 'DBT_DTI_P2',
-                severity: 'WARNING',
-                title: `DTI: ${dti.toFixed(0)}%`,
-                metric: `DTI: ${dti.toFixed(0)}%`,
-                explanation: `Your total debt relative to income is elevated — standard banks cap loan approvals at 40-50% DTI.`,
-                action: `Reduce DTI below 30% by paying off high-interest debt first.`,
-                impact: Math.max(0, excessDebtAbove30),
-                urgency: 1,
-                score: Math.max(0, excessDebtAbove30) * 1,
-            });
-        }
-
-        // P2-11: Zero NPS investment, income > ₹10L → WARNING
-        if (npsTotal === 0 && annualIncome > 1000000) {
-            const taxSaved = 50000 * marginalRate * 1.04;
-            allFlags.push({
-                id: 'TAX_NPS_UNCLAIMED_P2',
-                severity: 'WARNING',
-                title: `NPS: Not utilised`,
-                metric: `NPS: Not utilised`,
-                explanation: `₹50,000 NPS investment gives ${formatRupee(taxSaved)} in tax savings at ${(marginalRate * 100).toFixed(1)}% rate — this is the highest ROI deduction available.`,
-                action: `Invest ₹50,000 in NPS Tier-1 before March 31 for ${formatRupee(taxSaved)} tax benefit.`,
-                impact: taxSaved,
-                urgency: fyUrgency,
-                score: taxSaved * fyUrgency,
-            });
-        }
-
-        // P2-12: FD interest > ₹1.5L, marginal rate 30% → WARNING
-        if (fdInterestAnnual > 150000 && marginalRate >= 0.30) {
-            const taxDrag = fdInterestAnnual * marginalRate;
-            allFlags.push({
-                id: 'WLT_FD_TAX_DRAG_P2',
-                severity: 'WARNING',
-                title: `FD Tax Drain: ${formatRupee(taxDrag)}/yr`,
-                metric: `FD Tax Drain: ${formatRupee(taxDrag)}/yr`,
-                explanation: `Your FD interest is fully taxable at ${(marginalRate * 100).toFixed(1)}% — post-tax return is ~4.4% vs 6% inflation. Real loss every year.`,
-                action: `Move ${formatRupee(fdTotal)} from FDs to debt mutual funds for tax-efficient returns.`,
-                impact: taxDrag,
-                urgency: 1,
-                score: taxDrag * 1,
-            });
-        }
-
-        // P2-13: Real estate > 70% of net worth → WARNING
-        if (totalAssets > 0 && (realEstateTotal / totalAssets) * 100 > 70) {
-            const rePct = (realEstateTotal / totalAssets) * 100;
-            const financialNeeded = realEstateTotal - (totalAssets * 0.5); // to reach 50% RE ratio
-            allFlags.push({
-                id: 'WLT_RE_CONCENTRATION_P2',
-                severity: 'WARNING',
-                title: `RE Concentration: ${rePct.toFixed(0)}%`,
-                metric: `RE Concentration: ${rePct.toFixed(0)}%`,
-                explanation: `Over 70% of your wealth is in one illiquid asset. A medical emergency cannot be funded by selling 1 bedroom.`,
-                action: `Build ${formatRupee(Math.max(0, financialNeeded))} in financial assets to reduce concentration risk.`,
-                impact: Math.max(0, financialNeeded),
-                urgency: 1,
-                score: Math.max(0, financialNeeded) * 1,
-            });
-        }
-
-        // P2-14: Credit card rollover → WARNING
-        if (creditCardDebt > 0) {
-            const annualInterest = creditCardDebt * 0.035 * 12; // 3.5% per month
-            allFlags.push({
-                id: 'DBT_CREDIT_CARD_P1',
-                severity: 'WARNING',
-                title: `CC Debt: ${formatRupee(creditCardDebt)}`,
-                metric: `CC Debt: ${formatRupee(creditCardDebt)}`,
-                explanation: `Credit card interest is 36–42% p.a. — the most expensive debt possible. This compounds against you every day.`,
-                action: `Pay off ${formatRupee(creditCardDebt)} credit card debt immediately or convert to personal loan at lower rate.`,
-                impact: annualInterest,
-                urgency: 1,
-                score: annualInterest * 1,
-            });
-        }
-
-        // P2-15: LTCG unused exemption — INFO (trigger: if equity assets exist and near FY end)
         const equityAssets = assets
             .filter(a => (a.subCategory || '').includes('Stocks') || (a.subCategory || '').includes('Equity'))
             .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 
+        const totalLiabilities = liabilities
+            .reduce((s, l) => s + (parseFloat(l.amount) || 0), 0);
+
+        const debtToAsset = netWorth > 0 ? (totalLiabilities / netWorth) * 100 : 0;
+
+        // Monthly surplus after goals (EMIs + committed SIPs)
+        const monthlySIPs = assets
+            .filter(a => (a.subCategory || '').includes('SIP'))
+            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0) / 12; // annual to monthly approximation
+
+        const freeCashFlow = monthlyIncome - monthlyExpenses - monthlyEMI;
+
+        // CI cover (critical illness)
+        const ciCover = 0; // No explicit CI data in current store
+
+        // City benchmark for health
+        const metroBenchmark = city && ['Mumbai', 'Delhi', 'Bangalore', 'Bengaluru', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune'].includes(city) ? 1500000 : 1000000;
+
+        // Tax deduction total
+        const isOldRegime = taxRegime === 'old';
+        const totalDeductions = isOldRegime ? investments80C : 0;
+
+        // ── BUILD ALL 15 RED FLAGS ──
+        const allFlags = [];
+
+        // ── 1. Life Insurance Gap ──
+        if (annualIncome > 0 && requiredCover > existingTermCover) {
+            const gap = requiredCover - existingTermCover;
+            if (gap > 0) {
+                allFlags.push({
+                    id: 'RF_LIFE_GAP',
+                    severity: gap > annualIncome * 5 ? 'CRITICAL' : 'WARNING',
+                    title: `Life Insurance Gap — ${fmt(gap)} gap`,
+                    explanation: `Your existing term cover of ${fmt(existingTermCover)} is below the HLV-calculated requirement of ${fmt(requiredCover)} for age ${age} on ${fmt(annualIncome)} annual income.`,
+                    action: `Buy an additional pure term plan of ${fmt(gap)} immediately. Avoid ULIPs or endowment plans — they don't count toward cover.`,
+                    impact: gap,
+                    urgency: 1,
+                    score: gap * 1,
+                });
+            }
+        }
+
+        // ── 2. Emergency Fund Insufficient ──
+        if (emergencyFundMonths < 6) {
+            const targetAmount = monthlyExpenses * 6;
+            const shortfall = Math.max(0, targetAmount - liquidAssets);
+            allFlags.push({
+                id: 'RF_EMERGENCY_FUND',
+                severity: emergencyFundMonths < 3 ? 'CRITICAL' : 'WARNING',
+                title: `Emergency Fund Insufficient — ${fmt(shortfall)} shortfall`,
+                explanation: `You have ${emergencyFundMonths.toFixed(1)} months of expenses covered. Minimum safe level is 6 months. You currently hold ${fmt(liquidAssets)} liquid.`,
+                action: `Park ${fmt(shortfall)} more in a liquid mutual fund or savings account. Do not use FDs or equity MFs — they don't qualify as liquid.`,
+                impact: shortfall,
+                urgency: 1,
+                score: shortfall * 1,
+            });
+        }
+
+        // ── 3. High EMI Burden ──
+        if (emiToIncomeRatio > 40) {
+            const excessEMI = monthlyEMI - (monthlyIncome * 0.40);
+            allFlags.push({
+                id: 'RF_EMI_BURDEN',
+                severity: emiToIncomeRatio > 50 ? 'CRITICAL' : 'WARNING',
+                title: `High EMI Burden — DTI at ${emiToIncomeRatio.toFixed(0)}%`,
+                explanation: `Your monthly EMI of ${fmt(monthlyEMI)} is ${emiToIncomeRatio.toFixed(0)}% of gross income. ${emiToIncomeRatio <= 50 ? `While under the 50% limit, your DSCR is ${dscr.toFixed(1)}× — leaving thin buffer if income drops.` : 'Over half your income is committed to debt repayment.'}`,
+                action: `Avoid taking any new loans in the next 12 months. Prioritise prepaying the highest-interest loan first.`,
+                impact: Math.abs(excessEMI) * 12,
+                urgency: 1,
+                score: Math.abs(excessEMI) * 12,
+            });
+        }
+
+        // ── 4. Health Cover Inadequate ──
+        if (existingHealthCover < metroBenchmark) {
+            const healthGap = metroBenchmark - existingHealthCover;
+            allFlags.push({
+                id: 'RF_HEALTH_COVER',
+                severity: existingHealthCover < 500000 ? 'CRITICAL' : 'WARNING',
+                title: `Health Cover Inadequate — ${fmt(healthGap)} gap`,
+                explanation: `Your ${fmt(existingHealthCover)} cover is below the ${fmt(metroBenchmark)} ${city || 'Metro'} benchmark for age ${age}. A single hospitalisation in ${city || 'your city'} can exceed your entire cover.`,
+                action: `Increase family floater to ${fmt(metroBenchmark)} immediately. A super top-up of ${fmt(healthGap)} is ideal.`,
+                impact: healthGap,
+                urgency: 1,
+                score: healthGap * 1,
+            });
+        }
+
+        // ── 5. No Retirement Savings Escalation ──
+        if (requiredCorpus > 0 && fiRatio < 100 && yearsToRetirement > 0) {
+            const corpusShortfall = retirementGap;
+            const additionalSIP = corpusShortfall / (yearsToRetirement * 12 * 15);
+            const delayPenalty = additionalSIP * 12 * 0.10; // cost of 1 year delay at 10%
+            allFlags.push({
+                id: 'RF_RETIREMENT_ESCALATION',
+                severity: fiRatio < 30 ? 'CRITICAL' : 'WARNING',
+                title: `No Retirement Savings Escalation — FI Ratio at ${fiRatio.toFixed(0)}%`,
+                explanation: `You have built only ${fiRatio.toFixed(0)}% of the corpus needed to retire at ${retirementAge}. At current pace, you will face a ${fmt(corpusShortfall)} shortfall at retirement.`,
+                action: `Increase monthly retirement SIP by ${fmt(additionalSIP)} immediately. Every year of delay costs approximately ${fmt(delayPenalty)} in lost compounding.`,
+                impact: corpusShortfall,
+                urgency: 1,
+                score: corpusShortfall * 1,
+            });
+        }
+
+        // ── 6. High Tax Outgo (wrong regime) ──
+        if (taxRegime === 'new' && totalDeductions === 0 && annualIncome > 750000) {
+            // Estimate if Old Regime would save money
+            const potentialDeductions = Math.min(investments80C, 150000) + 50000; // 80C + NPS
+            const breakEvenDeduction = annualIncome > 1500000 ? 375000 : annualIncome > 1000000 ? 200000 : 100000;
+            if (potentialDeductions > breakEvenDeduction * 0.5) {
+                const extraTax = potentialDeductions * marginalRate;
+                allFlags.push({
+                    id: 'RF_TAX_OUTGO',
+                    severity: 'WARNING',
+                    title: `High Tax Outgo — Paying ${fmt(extraTax)} extra`,
+                    explanation: `You are on the New Regime but your eligible deductions total ${fmt(potentialDeductions)}, which could reduce your tax. Consider switching to Old Regime.`,
+                    action: `Declare Old Regime preference via Form 12BB with your employer before the next payroll cycle. Deadline: 31 March.`,
+                    impact: extraTax,
+                    urgency: fyUrgency,
+                    score: extraTax * fyUrgency,
+                });
+            }
+        }
+
+        // ── 7. Portfolio Misaligned ──
+        if (totalAssets > 0) {
+            const deviation = Math.abs(equityPct - targetEquityPct);
+            if (deviation > 10) {
+                const direction = equityPct < targetEquityPct ? 'underweight' : 'overweight';
+                allFlags.push({
+                    id: 'RF_PORTFOLIO_MISALIGNED',
+                    severity: deviation > 20 ? 'CRITICAL' : 'WARNING',
+                    title: `Portfolio Misaligned — ${deviation.toFixed(0)}% deviation from target`,
+                    explanation: `Your equity allocation is ${equityPct.toFixed(0)}% vs. the age-adjusted target of ${targetEquityPct}% for age ${age}. You are significantly ${direction} in equity.`,
+                    action: `Redirect monthly surplus into equity mutual funds until allocation reaches ${targetEquityPct - 5}%–${targetEquityPct + 5}%.`,
+                    impact: (deviation / 100) * totalAssets * 0.02, // 2% return diff
+                    urgency: 1,
+                    score: (deviation / 100) * totalAssets * 0.02,
+                });
+            }
+        }
+
+        // ── 8. No Pure Term Insurance ──
+        if (annualIncome > 0 && existingTermCover === 0) {
+            const needed = requiredCover || hlv;
+            const premiumEstimate = `${Math.round(needed / 10000000 * 8000)}–${Math.round(needed / 10000000 * 15000)}`;
+            allFlags.push({
+                id: 'RF_NO_TERM',
+                severity: 'CRITICAL',
+                title: 'No Pure Term Insurance — Cover not counted',
+                explanation: `Your existing life cover includes endowment/ULIP components. These count as ₹0 toward your life cover for gap calculation purposes.`,
+                action: `Buy a pure online term plan of ${fmt(needed)} immediately. Annual premium for age ${age}, non-smoker is approximately ₹${premiumEstimate}/yr.`,
+                impact: needed,
+                urgency: 1,
+                score: needed * 1,
+            });
+        }
+
+        // ── 9. Negative Real Surplus After Goals ──
+        if (freeCashFlow < 0) {
+            const gap = Math.abs(freeCashFlow);
+            allFlags.push({
+                id: 'RF_NEGATIVE_SURPLUS',
+                severity: 'CRITICAL',
+                title: `Negative Real Surplus After Goals — ${fmt(gap)} gap`,
+                explanation: `After EMIs, expenses, and committed SIPs, your monthly free cash flow is ${fmt(freeCashFlow)} — not enough to absorb even a minor emergency.`,
+                action: `Identify one discretionary expense category to reduce by ${fmt(gap)}/month. This creates meaningful breathing room and prevents goal-SIP cancellations.`,
+                impact: gap * 12,
+                urgency: 1,
+                score: gap * 12,
+            });
+        }
+
+        // ── 10. No Critical Illness Cover ──
+        if (age > 35 && ciCover < 100000) {
+            const ciExposure = 2000000 - ciCover;
+            const premiumEst = `${Math.round(ciExposure * 0.004)}–${Math.round(ciExposure * 0.008)}`;
+            allFlags.push({
+                id: 'RF_NO_CI_COVER',
+                severity: 'WARNING',
+                title: 'No Critical Illness Cover — Zero coverage',
+                explanation: `You have zero critical illness cover. A cancer or cardiac event could result in ₹15–30L in treatment costs not covered by regular health insurance.`,
+                action: `Add a critical illness rider or standalone CI plan for ${fmt(ciExposure)}. Annual premium is approximately ₹${premiumEst} at age ${age}.`,
+                impact: ciExposure,
+                urgency: 1,
+                score: ciExposure * 1,
+            });
+        }
+
+        // ── 11. Debt-to-Asset Ratio Elevated ──
+        if (debtToAsset > 50 && totalLiabilities > 0) {
+            const healthScoreImpact = Math.round((debtToAsset - 50) * 0.3);
+            allFlags.push({
+                id: 'RF_DTI_ELEVATED',
+                severity: debtToAsset > 75 ? 'CRITICAL' : 'WARNING',
+                title: `Debt-to-Asset Ratio Elevated — ${debtToAsset.toFixed(0)}% of net worth`,
+                explanation: `Outstanding loans of ${fmt(totalLiabilities)} represent ${debtToAsset.toFixed(0)}% of your net worth of ${fmt(netWorth)}. Safe benchmark is below 50%.`,
+                action: `Direct any annual bonus or windfall toward loan prepayment before investing. Reducing leverage improves your Financial Health Score by up to ${healthScoreImpact} points.`,
+                impact: totalLiabilities - (netWorth * 0.5),
+                urgency: 1,
+                score: (totalLiabilities - (netWorth * 0.5)) * 1,
+            });
+        }
+
+        // ── 12. Retirement Gap Critical ──
+        if (retirementGap > 0 && yearsToRetirement > 0 && fiRatio < 50) {
+            const additionalSIP = retirementGap / (yearsToRetirement * 12 * 15);
+            allFlags.push({
+                id: 'RF_RETIREMENT_GAP',
+                severity: 'CRITICAL',
+                title: `Retirement Gap Critical — ${fmt(retirementGap)} shortfall`,
+                explanation: `Your current corpus of ${fmt(netWorth)} will grow to approximately ${fmt(projectedCorpus)} at retirement. Required corpus is ${fmt(requiredCorpus)}. Gap: ${fmt(retirementGap)} in today's money.`,
+                action: `Start a dedicated retirement SIP of ${fmt(additionalSIP)}/month in NPS or a flexi-cap fund immediately to close this gap over ${yearsToRetirement} years.`,
+                impact: retirementGap,
+                urgency: 1,
+                score: retirementGap * 1,
+            });
+        }
+
+        // ── 13. Under-insured Dependents ──
+        const dependents = store.dependents || 0;
+        if (dependents > 0 && incomeMultiple < 15 && annualIncome > 0) {
+            const minRecommended = annualIncome * 15;
+            allFlags.push({
+                id: 'RF_UNDERINSURED_DEPS',
+                severity: incomeMultiple < 5 ? 'CRITICAL' : 'WARNING',
+                title: `Under-insured Dependents — Cover ${incomeMultiple.toFixed(0)}× income only`,
+                explanation: `You have ${dependents} dependent${dependents > 1 ? 's' : ''}. Your term cover of ${fmt(existingTermCover)} is only ${incomeMultiple.toFixed(0)}× your annual income. Minimum recommended is 15× (${fmt(minRecommended)}) with dependents.`,
+                action: `Increase term cover to at least ${fmt(minRecommended)}. Do this before age ${age + 5} — premiums increase significantly with each passing year.`,
+                impact: Math.max(0, minRecommended - existingTermCover),
+                urgency: 1,
+                score: Math.max(0, minRecommended - existingTermCover) * 1,
+            });
+        }
+
+        // ── 14. Low Savings Rate ──
+        if (savingsRate < 30 && annualIncome > 0) {
+            const targetSave = monthlyIncome * 0.30;
+            const deficit = Math.max(0, targetSave - (monthlyIncome * savingsRate / 100));
+            allFlags.push({
+                id: 'RF_LOW_SAVINGS',
+                severity: savingsRate < 15 ? 'CRITICAL' : 'WARNING',
+                title: `Low Savings Rate — ${savingsRate.toFixed(0)}% vs. 30% benchmark`,
+                explanation: `Your savings rate of ${savingsRate.toFixed(0)}% is below the 30% benchmark for your income level and age. This directly limits wealth accumulation speed.`,
+                action: `Automate a ${fmt(deficit)}/month SIP on salary day before expenses hit your account. Treat savings as a fixed expense, not what is left over.`,
+                impact: deficit * 12,
+                urgency: 1,
+                score: deficit * 12,
+            });
+        }
+
+        // ── 15. LTCG Exemption Unused ──
         if (equityAssets > 100000 && daysToFYEnd <= 60) {
-            const unusedExemption = 125000; // ₹1.25L LTCG exemption (updated threshold)
-            const potentialTax = unusedExemption * 0.125; // 12.5% LTCG
+            const unusedExemption = 125000;
+            const potentialTax = unusedExemption * 0.125;
             const ltcgUrgency = daysToFYEnd <= 30 ? 3 : 2;
             allFlags.push({
-                id: 'TAX_LTCG_HARVEST_P2',
+                id: 'RF_LTCG_HARVEST',
                 severity: 'INFO',
-                title: `LTCG Exemption: up to ${formatRupee(unusedExemption)}`,
-                metric: `LTCG Exemption unused: ${formatRupee(unusedExemption)}`,
-                explanation: `You have up to ${formatRupee(unusedExemption)} in tax-free gain booking remaining before 31 March — after that it resets.`,
-                action: `Harvest ${formatRupee(unusedExemption)} in LTCG gains before March 31 to save ${formatRupee(potentialTax)} in tax.`,
+                title: `LTCG Exemption: up to ${fmt(unusedExemption)} tax-free`,
+                explanation: `You have up to ${fmt(unusedExemption)} in tax-free gain booking remaining before 31 March — after that it resets.`,
+                action: `Harvest ${fmt(unusedExemption)} in LTCG gains before March 31 to save ${fmt(potentialTax)} in tax.`,
                 impact: potentialTax,
                 urgency: ltcgUrgency,
                 score: potentialTax * ltcgUrgency,
             });
         }
 
-        // ── SORT BY PRIORITY SCORE → TIE-BREAKERS ──
-
+        // ── SORT ──
         allFlags.sort((a, b) => {
-            // 1. Priority score DESC
             if (b.score !== a.score) return b.score - a.score;
-            // 2. Severity rank (CRITICAL > WARNING > INFO)
             const sevDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
             if (sevDiff !== 0) return sevDiff;
-            // 3. Highest rupee impact
             if (b.impact !== a.impact) return b.impact - a.impact;
-            // 4. Fixed order
             return (TIEBREAK_ORDER[a.id] ?? 99) - (TIEBREAK_ORDER[b.id] ?? 99);
         });
 
         return {
             allFlags,
-            topFlags: allFlags.slice(0, 3),       // Free dashboard: max 3
+            topFlags: allFlags.slice(0, 3),
             totalTriggered: allFlags.length,
             hiddenCount: Math.max(0, allFlags.length - 3),
         };

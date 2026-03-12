@@ -1,24 +1,25 @@
 import { useMemo } from 'react';
 import { useAssessmentStore } from '../features/assessment/store/useAssessmentStore';
 import { useFinancialHealthScore } from './useFinancialHealthScore';
-import { getCityTier, getHealthInsuranceBenchmark } from '../utils/benchmarkTables';
 
 /**
- * Locked Premium Insight Cards
+ * Locked Premium Insights — 5 Cards
  *
- * Walk down a fixed-priority list. First 4 triggered = the 4 cards shown.
- * No scoring. Priority order is fixed.
+ * Fixed priority order. Show the first 4 triggered cards.
+ * Each card has a trigger condition, blurred figure, and hook text.
  */
 
-/** Format ₹ in lakhs/crores */
 const fmt = (v) => {
-    if (v >= 10000000) return `₹${(v / 10000000).toFixed(1)} Cr`;
+    if (v >= 10000000) return `₹${(v / 10000000).toFixed(2)} Cr`;
     if (v >= 100000) return `₹${(v / 100000).toFixed(1)}L`;
     if (v >= 1000) return `₹${Math.round(v).toLocaleString('en-IN')}`;
     return `₹${Math.round(v)}`;
 };
 
-/** Marginal tax rate (same as usePriorityActions) */
+const fmtCr = (v) => `₹${(v / 10000000).toFixed(2)} Cr`;
+const fmtL = (v) => `₹${(v / 100000).toFixed(1)}L`;
+
+/** Marginal tax rate (Old Regime with cess) */
 const getMarginalRate = (income) => {
     if (income > 1500000) return 0.312;
     if (income > 1000000) return 0.208;
@@ -31,177 +32,144 @@ export const useLockedInsights = () => {
     const { rawData } = useFinancialHealthScore();
 
     return useMemo(() => {
-        if (!rawData) return [];
+        if (!rawData) return { cards: [], maxFigure: 0 };
 
         const {
             annualIncome = 0,
-            monthlyIncome = 0,
-            monthlyEMI = 0,
-            emiToIncomeRatio = 0,
             existingTermCover = 0,
             existingHealthCover = 0,
             requiredCover = 0,
             equityPct = 0,
             targetEquityPct = 50,
-            retirementAge = 60,
+            totalAssets = 0,
             age = 30,
-            netWorth = 0,
+            retirementAge = 60,
             monthlyExpenses = 0,
+            netWorth = 0,
         } = rawData;
 
         const {
-            assets = [],
             taxRegime = 'new',
             investments80C = 0,
             city = '',
         } = store;
 
+        // ── Derived metrics ──
         const marginalRate = getMarginalRate(annualIncome);
-        const isOldRegime = taxRegime === 'old';
-
-        // Asset breakdowns
-        const fdTotal = assets
-            .filter(a => (a.subCategory || '').includes('Fixed Deposit'))
-            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-        const fdInterestAnnual = fdTotal * 0.07;
-
-        const npsTotal = assets
-            .filter(a => (a.subCategory || '').includes('NPS'))
-            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-
-        const equityAssets = assets
-            .filter(a => (a.subCategory || '').includes('Stocks') || (a.subCategory || '').includes('Equity'))
-            .reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
-
-        // City-tier health benchmark
-        const cityTier = getCityTier(city);
-        const hiBench = getHealthInsuranceBenchmark(age, cityTier);
-
-        // Retirement projection
         const yearsToRetirement = Math.max(0, retirementAge - age);
         const annualExpenses = monthlyExpenses * 12;
+
+        // Tax saving calculations
+        const gap80C = Math.max(0, 150000 - investments80C);
+        const taxSaved80C = gap80C * marginalRate;
+        const npsTaxSaved = 50000 * marginalRate;
+        const totalTaxSaving = taxSaved80C + npsTaxSaved;
+
+        // Life cover gap
+        const lifeCoverGap = Math.max(0, requiredCover - existingTermCover);
+        const lifeCoverGapCr = lifeCoverGap / 10000000;
+
+        // Retirement calculation
         const requiredCorpus = annualExpenses * 25;
         const projectedCorpus = netWorth * Math.pow(1.12, yearsToRetirement);
-        // Estimate projected retirement age: how many extra years needed at 12% growth
+        const retirementGapRatio = requiredCorpus > 0 ? projectedCorpus / requiredCorpus : 1;
+        // Estimate projected retirement age (simplified)
         let projectedRetireAge = retirementAge;
-        if (projectedCorpus < requiredCorpus && netWorth > 0 && annualExpenses > 0) {
-            // Solve: netWorth × 1.12^N = requiredCorpus → N = log(requiredCorpus/netWorth) / log(1.12)
-            const yearsNeeded = Math.log(requiredCorpus / Math.max(1, netWorth)) / Math.log(1.12);
-            projectedRetireAge = Math.round(age + yearsNeeded);
-        } else if (netWorth <= 0 || annualExpenses <= 0) {
-            projectedRetireAge = retirementAge + 10; // worst-case estimate
+        if (retirementGapRatio < 1 && yearsToRetirement > 0) {
+            // Rough estimate: each 10% shortfall adds ~2 years
+            const shortfallPct = (1 - retirementGapRatio) * 100;
+            projectedRetireAge = retirementAge + Math.round(shortfallPct / 5);
         }
+        const yearsLate = Math.max(0, projectedRetireAge - retirementAge);
 
-        // ── CARD DEFINITIONS (Fixed Priority) ──
+        // Health cover
+        const cityMinBenchmark = ['Mumbai', 'Delhi', 'Bangalore', 'Bengaluru', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune'].includes(city) ? 1500000 : 1000000;
+        const healthGap = Math.max(0, cityMinBenchmark - existingHealthCover);
+        const healthGapL = healthGap / 100000;
+
+        // Portfolio deviation
+        const equityDeviation = Math.abs(equityPct - targetEquityPct);
+        // Cost of misalignment over 5 years (simplified)
+        const deviationCostPerYear = totalAssets * (equityDeviation / 100) * 0.03;
+        const deviationCost5yr = deviationCostPerYear * 5;
+
+        // ── BUILD CARDS (fixed priority order) ──
         const allCards = [];
 
-        // 1. LC_TAX
-        const gap80C = isOldRegime ? Math.max(0, 150000 - investments80C) : 0;
-        const tax80C = gap80C * marginalRate;
-        const taxNPS = (isOldRegime && npsTotal === 0 && annualIncome > 500000) ? 50000 * marginalRate : 0;
-        const basicEstimate = annualIncome * 0.4;
-        const taxEmployerNPS = (isOldRegime && npsTotal === 0 && annualIncome > 1500000) ? basicEstimate * 0.14 * marginalRate * 1.04 : 0;
-        const ltcgSaving = (equityAssets > 100000) ? 125000 * 0.125 : 0;
-        const totalTaxSaving = tax80C + taxNPS + taxEmployerNPS + ltcgSaving;
-
+        // Slot 1: LC_TAX
         if (totalTaxSaving > 2000) {
             allCards.push({
                 id: 'LC_TAX',
-                icon: '💰',
-                title: 'Tax Savings',
+                priority: 1,
                 blurredFigure: fmt(totalTaxSaving),
+                blurredRaw: totalTaxSaving,
                 hookText: `We found ${fmt(totalTaxSaving)} in unclaimed tax savings expiring 31 March`,
+                icon: '📋',
             });
         }
 
-        // 2. LC_LIFE_INSURANCE
-        const lifeCoverGap = Math.max(0, requiredCover - existingTermCover);
+        // Slot 2: LC_LIFE_INSURANCE
         if (lifeCoverGap > 2500000) {
             allCards.push({
                 id: 'LC_LIFE_INSURANCE',
+                priority: 2,
+                blurredFigure: fmtCr(lifeCoverGap),
+                blurredRaw: lifeCoverGap,
+                hookText: `Your family has ${fmtCr(lifeCoverGap)} in uninsured exposure`,
                 icon: '🔒',
-                title: 'Life Insurance Gap',
-                blurredFigure: `${(lifeCoverGap / 10000000).toFixed(1)} Cr`,
-                hookText: `Your family has ₹${(lifeCoverGap / 10000000).toFixed(1)} Cr in uninsured exposure`,
             });
         }
 
-        // 3. LC_RETIREMENT
-        const yearsLate = Math.max(0, projectedRetireAge - 62);
+        // Slot 3: LC_RETIREMENT
         if (projectedRetireAge > 62) {
             allCards.push({
                 id: 'LC_RETIREMENT',
-                icon: '🏖️',
-                title: 'Retirement Delay',
+                priority: 3,
                 blurredFigure: `${yearsLate} yrs`,
+                blurredRaw: yearsLate,
                 hookText: `At current pace you retire at ${projectedRetireAge} — ${yearsLate} years late`,
+                icon: '🏖️',
             });
         }
 
-        // 4. LC_HEALTH_INSURANCE
-        const healthGap = Math.max(0, hiBench.min - existingHealthCover);
-        if (existingHealthCover < hiBench.min) {
+        // Slot 4: LC_HEALTH_INSURANCE
+        if (existingHealthCover < cityMinBenchmark) {
             allCards.push({
                 id: 'LC_HEALTH_INSURANCE',
+                priority: 4,
+                blurredFigure: fmtL(healthGap),
+                blurredRaw: healthGap,
+                hookText: `One ICU admission = ₹3–8L in your city. You are ${fmtL(healthGap)} under-insured`,
                 icon: '🏥',
-                title: 'Health Under-Insurance',
-                blurredFigure: `${(healthGap / 100000).toFixed(1)}L`,
-                hookText: `You are ₹${(healthGap / 100000).toFixed(1)}L under-insured for your city`,
             });
         }
 
-        // 5. LC_PORTFOLIO
-        const equityDeviation = Math.abs(equityPct - targetEquityPct);
+        // Slot 5: LC_PORTFOLIO
         if (equityDeviation > 10) {
             allCards.push({
                 id: 'LC_PORTFOLIO',
-                icon: '📊',
-                title: 'Portfolio Misalignment',
+                priority: 5,
                 blurredFigure: `${equityDeviation.toFixed(0)}%`,
-                hookText: `Your portfolio is ${equityDeviation.toFixed(0)}% misaligned`,
+                blurredRaw: deviationCost5yr,
+                hookText: `Portfolio ${equityDeviation.toFixed(0)}% misaligned — costs ${fmt(deviationCost5yr)} over 5 years`,
+                icon: '📊',
             });
         }
 
-        // 6. LC_DEBT
-        const takeHome = monthlyIncome;
-        if (emiToIncomeRatio > 45 && takeHome > 0) {
-            const trapped = Math.max(0, monthlyEMI - takeHome * 0.40);
-            allCards.push({
-                id: 'LC_DEBT',
-                icon: '💳',
-                title: 'EMI Overload',
-                blurredFigure: `${fmt(trapped)}/mo`,
-                hookText: `${fmt(trapped)}/month trapped in EMIs`,
-            });
-        }
+        // Show first 4 triggered
+        const cards = allCards.slice(0, 4);
 
-        // 7. LC_EMPLOYER_NPS
-        if (npsTotal === 0 && annualIncome > 1500000 && isOldRegime) {
-            const annualBenefit = basicEstimate * 0.14 * marginalRate * 1.04;
-            allCards.push({
-                id: 'LC_EMPLOYER_NPS',
-                icon: '🏢',
-                title: 'Employer NPS',
-                blurredFigure: `${fmt(annualBenefit)}/yr`,
-                hookText: `${fmt(annualBenefit)}/year employer NPS benefit unclaimed`,
-            });
-        }
+        // Max figure for CTA
+        const maxFigure = cards.reduce((max, c) => Math.max(max, c.blurredRaw), 0);
 
-        // 8. LC_FD_TAX
-        if (fdInterestAnnual > 150000 && marginalRate >= 0.30) {
-            const taxDrag = fdInterestAnnual * marginalRate;
-            allCards.push({
-                id: 'LC_FD_TAX',
-                icon: '🏦',
-                title: 'FD Tax Drag',
-                blurredFigure: `${fmt(taxDrag)}/yr`,
-                hookText: `${fmt(taxDrag)}/yr leaving your FD in avoidable tax`,
-            });
-        }
-
-        // Return first 4 triggered
-        return allCards.slice(0, 4);
-
+        return {
+            cards,
+            allCards,
+            maxFigure,
+            maxFigureFormatted: fmt(maxFigure),
+            totalTriggered: allCards.length,
+            hiddenCount: Math.max(0, allCards.length - 4),
+        };
     }, [rawData, store]);
 };
 
