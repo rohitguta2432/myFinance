@@ -6,6 +6,8 @@ import { useHookText } from '../../../hooks/useHookText';
 import { useRedFlags } from '../../../hooks/useRedFlags';
 import { usePriorityActions } from '../../../hooks/usePriorityActions';
 import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
+import BenchmarkComparison from '../components/BenchmarkComparison';
+import LockedPremiumInsights from '../components/LockedPremiumInsights';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -457,53 +459,11 @@ const FinancialDashboard = () => {
                 </div>
                 )}
 
-                {/* ── Your Numbers vs Benchmarks ── */}
-                <div>
-                    <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-3">
-                        Your Numbers vs. Benchmarks
-                    </h3>
-                    <div className="bg-surface-dark rounded-2xl border border-white/5 overflow-hidden">
-                        {[
-                            { label: 'Emergency Fund', yours: `${emergencyFundMonths.toFixed(1)} mo`, bench: '6 months', pct: Math.min(100, (emergencyFundMonths / 6) * 100) },
-                            { label: 'EMI / Income', yours: `${emiToIncomeRatio.toFixed(0)}%`, bench: '<30%', pct: Math.min(100, 100 - emiToIncomeRatio * 2.5) },
-                            { label: 'Savings Rate', yours: `${savingsRate.toFixed(0)}%`, bench: '20-30%', pct: Math.min(100, (savingsRate / 30) * 100) },
-                            { label: 'Net Worth', yours: formatInLakh(netWorth), bench: '—', pct: Math.min(100, Math.max(0, netWorth > 0 ? 70 : 20)) },
-                            { label: 'Equity Allocation', yours: `${equityPct.toFixed(0)}%`, bench: `${targetEquityPct.toFixed(0)}%`, pct: Math.min(100, (equityPct / Math.max(1, targetEquityPct)) * 100) },
-                        ].map((row, i) => {
-                            const barC = row.pct <= 40 ? '#ef4444' : row.pct <= 65 ? '#f59e0b' : '#0DF259';
-                            return (
-                                <div key={i} className={`flex items-center gap-4 px-4 py-3 ${i > 0 ? 'border-t border-white/5' : ''}`}>
-                                    <span className="text-xs text-slate-400 w-28 shrink-0">{row.label}</span>
-                                    <div className="flex-1 relative">
-                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${row.pct}%`, background: barC }} />
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-bold text-white w-16 text-right tabular-nums">{row.yours}</span>
-                                    <span className="text-[10px] text-slate-600 w-16 text-right">{row.bench}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                {/* ── Your Numbers vs Benchmarks (Personalised) ── */}
+                <BenchmarkComparison />
 
-                {/* ── Premium Insights / Upgrade Hooks ── */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-                            Premium Insights
-                        </h3>
-                        <div className="flex items-center gap-1 text-amber-500">
-                            <Lock className="w-3 h-3" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Pro</span>
-                        </div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        {sortedPillars.slice(0, 4).map(p => (
-                            <LockedHookCard key={p.id} pillar={p} hookData={hookTexts[p.id]} />
-                        ))}
-                    </div>
-                </div>
+                {/* ── Premium Insights (Locked Cards) ── */}
+                <LockedPremiumInsights />
 
                 {/* ── Upgrade CTA ── */}
                 <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/20 rounded-3xl p-6 text-center relative overflow-hidden">
