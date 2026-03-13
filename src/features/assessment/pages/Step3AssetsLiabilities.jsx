@@ -7,7 +7,7 @@ import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, use
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
-    const { incomes, assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
+    const { incomes, expenses, assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
 
     // API Integration
     const { data: balanceData } = useBalanceSheetQuery();
@@ -160,6 +160,12 @@ const Step3AssetsLiabilities = () => {
     };
     const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const dtiRatio = totalMonthlyIncome > 0 ? (monthlyEmiTotal / totalMonthlyIncome) * 100 : 0;
+
+    // Cross-validate: EMI from Cash Flow (expenses) vs Liabilities
+    const cashFlowEMI = expenses
+        .filter(exp => exp.category === 'EMIs (loan payments)' || (exp.category || '').toUpperCase().includes('EMI'))
+        .reduce((sum, item) => sum + calculateMonthly(item), 0);
+    const emiMismatch = monthlyEmiTotal > 0 && cashFlowEMI > 0 && Math.abs(monthlyEmiTotal - cashFlowEMI) > 1;
 
     const formatNetWorth = (amount) => {
         const absAmount = Math.abs(amount);
@@ -425,6 +431,24 @@ const Step3AssetsLiabilities = () => {
                                 <span className="text-white font-bold">{avgInterestRate.toFixed(1)}%</span>
                             </div>
                         </div>
+
+                        {/* EMI Mismatch Warning */}
+                        {emiMismatch && (
+                            <div className="mt-5 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                                <div className="shrink-0 mt-0.5 text-red-400">
+                                    <AlertTriangle className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h5 className="text-red-400 font-bold text-sm mb-1.5">⚠️ EMI Mismatch Detected</h5>
+                                    <p className="text-slate-300 text-xs leading-relaxed">
+                                        Your <span className="font-bold text-white">Cash Flow</span> shows EMI expenses of <span className="font-bold text-amber-400">₹{cashFlowEMI.toLocaleString()}/mo</span>, but your <span className="font-bold text-white">Liabilities</span> add up to <span className="font-bold text-amber-400">₹{monthlyEmiTotal.toLocaleString()}/mo</span>.
+                                    </p>
+                                    <p className="text-slate-400 text-xs mt-2">
+                                        Please update the EMI amount in <button onClick={() => navigate('/assessment/step-2')} className="underline text-primary font-semibold hover:text-primary-dark transition-colors">Cash Flow (Step 2)</button> or correct the EMI values in your liabilities above so both match.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Debt-to-Income Gauge */}
                         {totalMonthlyIncome > 0 && (

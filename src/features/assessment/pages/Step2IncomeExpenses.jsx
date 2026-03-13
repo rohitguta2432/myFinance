@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
@@ -8,7 +8,7 @@ import { Pencil } from 'lucide-react';
 
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
-    const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense } = useAssessmentStore();
+    const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense, liabilities } = useAssessmentStore();
 
     // API Integration
     const { data: financialsData } = useFinancialsQuery();
@@ -129,6 +129,10 @@ const Step2IncomeExpenses = () => {
 
     const surplus = totalMonthlyIncome - totalMonthlyExpenses;
     const savingsRate = totalMonthlyIncome > 0 ? Math.round((surplus / totalMonthlyIncome) * 100) : 0;
+
+    // Cross-validate: EMI from Cash Flow vs Liabilities
+    const liabilitiesEMITotal = liabilities.reduce((sum, l) => sum + (parseFloat(l.emi) || 0), 0);
+    const emiMismatch = totalMonthlyEMIs > 0 && liabilitiesEMITotal > 0 && Math.abs(totalMonthlyEMIs - liabilitiesEMITotal) > 1;
 
     // Calculate hypothetical metrics if discretionary is reduced by 30%
     const hypotheticalTotalExpenses = totalMonthlyExpenses - (totalDiscretionary * 0.30);
@@ -304,6 +308,24 @@ const Step2IncomeExpenses = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* EMI Mismatch Warning — always visible when both EMI sources exist and differ */}
+                {emiMismatch && (
+                    <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                        <div className="shrink-0 mt-0.5 text-red-400">
+                            <AlertTriangle className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h5 className="text-red-400 font-bold text-sm mb-1.5">⚠️ EMI Mismatch Detected</h5>
+                            <p className="text-slate-300 text-xs leading-relaxed">
+                                Your EMI expense here is <span className="font-bold text-amber-400">₹{totalMonthlyEMIs.toLocaleString()}/mo</span>, but your <span className="font-bold text-white">Liabilities</span> (Step 3) add up to <span className="font-bold text-amber-400">₹{liabilitiesEMITotal.toLocaleString()}/mo</span>.
+                            </p>
+                            <p className="text-slate-400 text-xs mt-2">
+                                Please update the EMI amount here or correct the EMI values in <button onClick={() => navigate('/assessment/step-3')} className="underline text-primary font-semibold hover:text-primary-dark transition-colors">Liabilities (Step 3)</button> so both match.
+                            </p>
                         </div>
                     </div>
                 )}

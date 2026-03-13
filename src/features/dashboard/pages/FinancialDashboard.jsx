@@ -267,64 +267,6 @@ const FinancialDashboard = () => {
                     </div>
                 </div>
 
-                {/* ── Emergency Fund Insight ── */}
-                {(() => {
-                    const targetMonths = 6;
-                    const targetAmount = monthlyExpenses * targetMonths;
-                    const shortfall = Math.max(0, targetAmount - liquidAssets);
-                    const coverageDays = monthlyExpenses > 0 ? (liquidAssets / monthlyExpenses) * 30 : 0;
-                    const coverageLabel = emergencyFundMonths < 1
-                        ? `${Math.round(coverageDays)} Days`
-                        : `${emergencyFundMonths.toFixed(1)} Months`;
-                    const isHealthy = emergencyFundMonths >= targetMonths;
-                    const borderColor = isHealthy ? 'border-primary/20' : emergencyFundMonths < 3 ? 'border-red-500/30' : 'border-amber-500/30';
-                    const bgColor = isHealthy ? 'bg-primary/5' : emergencyFundMonths < 3 ? 'bg-red-500/5' : 'bg-amber-500/5';
-                    const accentColor = isHealthy ? 'text-primary' : emergencyFundMonths < 3 ? 'text-red-400' : 'text-amber-400';
-
-                    return (
-                        <div className={`${bgColor} ${borderColor} border rounded-2xl p-5`}>
-                            <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl shrink-0">
-                                    🛡️
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                                        <h3 className="font-bold text-white text-sm">Emergency Fund:</h3>
-                                        <span className={`font-black text-sm ${accentColor}`}>
-                                            {coverageLabel} Only
-                                        </span>
-                                        {!isHealthy && (
-                                            <span className="text-xs text-red-400 font-semibold">
-                                                &amp; {formatInLakh(shortfall)} shortfall
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-slate-400 leading-relaxed mb-2.5">
-                                        You have <span className={`font-semibold ${accentColor}`}>{coverageLabel.toLowerCase()}</span> of
-                                        expenses covered. Minimum safe level is <span className="text-white font-semibold">{targetMonths} months</span>.
-                                    </p>
-                                    {!isHealthy && (
-                                        <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
-                                            <span className="text-sm mt-px">📌</span>
-                                            <p className="text-xs text-slate-300 leading-relaxed">
-                                                Park <span className="text-white font-bold">{formatInLakh(shortfall)}</span> more in a liquid MF or savings account.
-                                            </p>
-                                        </div>
-                                    )}
-                                    {isHealthy && (
-                                        <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
-                                            <span className="text-sm mt-px">✅</span>
-                                            <p className="text-xs text-slate-300 leading-relaxed">
-                                                Your emergency fund covers <span className="text-primary font-bold">{coverageLabel.toLowerCase()}</span> — well above the 6-month minimum. Great job!
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })()}
-
                 {/* ── Financial Time Machine ── */}
                 <FinancialTimeMachine />
 

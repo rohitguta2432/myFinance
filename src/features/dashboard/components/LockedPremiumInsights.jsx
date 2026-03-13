@@ -5,27 +5,23 @@ import { useLockedInsights } from '../../../hooks/useLockedInsights';
 const LockedInsightCard = ({ card }) => {
     return (
         <div className="relative border border-white/10 rounded-2xl p-5 overflow-hidden bg-white/[0.02]">
-            {/* Blur overlay with lock + CTA */}
-            <div className="absolute inset-0 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
-                        <Lock className="w-5 h-5 text-white/60" />
-                    </div>
-                    <button className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-black rounded-full uppercase tracking-wider shadow-lg hover:shadow-amber-500/20 transition-all active:scale-95">
-                        Unlock Full Analysis
-                    </button>
+            {/* Title row with lock icon */}
+            <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-sm font-bold text-white">{card.label}</h4>
+                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-3.5 h-3.5 text-white/60" />
                 </div>
             </div>
 
-            {/* Content behind blur */}
-            <div className="relative z-0">
-                <h4 className="text-sm font-bold text-white mb-2">{card.label}</h4>
+            {/* Impact figure — large, prominent, visible */}
+            <p className="text-2xl font-black text-amber-400 mb-3 tabular-nums">
+                {card.impactLabel}
+            </p>
 
-                {/* Impact figure — large, prominent, blurred */}
-                <p className="text-2xl font-black text-amber-400 mb-1 blur-[5px] select-none tabular-nums">
-                    {card.impactLabel}
-                </p>
-            </div>
+            {/* CTA button */}
+            <button className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-black rounded-full uppercase tracking-wider shadow-lg hover:shadow-amber-500/20 transition-all active:scale-95">
+                Unlock Full Analysis
+            </button>
         </div>
     );
 };
