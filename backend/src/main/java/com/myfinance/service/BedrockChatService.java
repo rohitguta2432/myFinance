@@ -30,7 +30,7 @@ public class BedrockChatService {
     @Value("${aws.bedrock.region:us-east-1}")
     private String awsRegion;
 
-    @Value("${aws.bedrock.model-id:anthropic.claude-3-sonnet-20240229-v1:0}")
+    @Value("${aws.bedrock.model-id:amazon.nova-lite-v1:0}")
     private String modelId;
 
     private BedrockRuntimeClient bedrockClient;
@@ -76,7 +76,7 @@ public class BedrockChatService {
     private String buildSystemPrompt(Map<String, Object> financialContext) {
         StringBuilder sb = new StringBuilder();
         sb.append("""
-                You are **Mera** — a friendly, expert personal financial advisor for Indian users.
+                You are **Kira** — a friendly, expert personal financial advisor for Indian users.
 
                 ## Your Personality
                 - Warm, approachable, and non-judgmental
@@ -108,13 +108,38 @@ public class BedrockChatService {
         return sb.toString();
     }
 
+    private boolean isNovaModel() {
+        return modelId != null && modelId.contains("nova");
+    }
+
     private String buildRequestBody(String systemPrompt, String userMessage, List<ChatMessage> history) {
         try {
             ObjectNode root = objectMapper.createObjectNode();
-            root.put("anthropic_version", "bedrock-2023-05-31");
-            root.put("max_tokens", 1024);
-            root.put("temperature", 0.7);
-            root.put("system", systemPrompt);
+
+            if (isNovaModel()) {
+                // Amazon Nova format
+                root.put("schemaVersion", "messages-v1");
+
+                // System prompt as array
+                ArrayNode systemArr = objectMapper.createArrayNode();
+                ObjectNode sysNode = objectMapper.createObjectNode();
+                sysNode.put("text", systemPrompt);
+                systemArr.add(sysNode);
+                root.set("system", systemArr);
+
+                // Inference config
+                ObjectNode inferenceConfig = objectMapper.createObjectNode();
+                inferenceConfig.put("max_new_tokens", 1024);
+                inferenceConfig.put("temperature", 0.7);
+                inferenceConfig.put("top_p", 0.9);
+                root.set("inferenceConfig", inferenceConfig);
+            } else {
+                // Claude (Anthropic) format
+                root.put("anthropic_version", "bedrock-2023-05-31");
+                root.put("max_tokens", 1024);
+                root.put("temperature", 0.7);
+                root.put("system", systemPrompt);
+            }
 
             ArrayNode messages = objectMapper.createArrayNode();
 
@@ -156,10 +181,24 @@ public class BedrockChatService {
     private String extractReply(String responseBody) {
         try {
             var tree = objectMapper.readTree(responseBody);
-            var content = tree.get("content");
-            if (content != null && content.isArray() && !content.isEmpty()) {
-                return content.get(0).get("text").asText();
+
+            if (isNovaModel()) {
+                // Nova format: { "output": { "message": { "content": [{"text": "..."}], "role": "assistant" } } }
+                var output = tree.get("output");
+                if (output != null && output.has("message")) {
+                    var content = output.get("message").get("content");
+                    if (content != null && content.isArray() && !content.isEmpty()) {
+                        return content.get(0).get("text").asText();
+                    }
+                }
+            } else {
+                // Claude format: { "content": [{"text": "..."}] }
+                var content = tree.get("content");
+                if (content != null && content.isArray() && !content.isEmpty()) {
+                    return content.get(0).get("text").asText();
+                }
             }
+
             return "I received your message but couldn't generate a proper response.";
         } catch (Exception e) {
             log.error("Failed to parse Bedrock response: {}", e.getMessage());
