@@ -145,9 +145,18 @@ public class BedrockChatService {
             boolean nova = isNovaModel();
 
             // Add conversation history (last 10 messages)
-            if (history != null) {
+            if (history != null && !history.isEmpty()) {
                 List<ChatMessage> recent = history.size() > 10 ? history.subList(history.size() - 10, history.size()) : history;
-                for (ChatMessage msg : recent) {
+                // Skip leading assistant messages — Nova requires first message to be "user"
+                int startIdx = recent.size(); // default: skip all if no user message found
+                for (int i = 0; i < recent.size(); i++) {
+                    if ("user".equals(recent.get(i).role())) {
+                        startIdx = i;
+                        break;
+                    }
+                }
+                for (int i = startIdx; i < recent.size(); i++) {
+                    ChatMessage msg = recent.get(i);
                     ObjectNode msgNode = objectMapper.createObjectNode();
                     msgNode.put("role", msg.role());
                     ArrayNode contentArr = objectMapper.createArrayNode();
