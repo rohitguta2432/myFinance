@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/layout/Layout';
+import AiChatWidget from './components/ai/AiChatWidget';
 import Home from './features/dashboard/pages/Home';
 import FinancialDashboard from './features/dashboard/pages/FinancialDashboard';
 import Step1PersonalRisk from './features/assessment/pages/Step1PersonalRisk';
@@ -61,6 +62,7 @@ export default function App() {
           },
         }}
       />
+      <AiChatWidget />
     </QueryClientProvider>
   );
 }

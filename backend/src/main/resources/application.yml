@@ -32,3 +32,10 @@ logging:
   level:
     com.myfinance: DEBUG
     org.springframework.web: INFO
+
+# ─── AWS Bedrock (AI Chat) ────────────────────────────
+aws:
+  bedrock:
+    region: us-east-1
+    model-id: anthropic.claude-3-sonnet-20240229-v1:0
+
