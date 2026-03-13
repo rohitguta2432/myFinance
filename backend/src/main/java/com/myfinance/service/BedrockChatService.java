@@ -142,6 +142,7 @@ public class BedrockChatService {
             }
 
             ArrayNode messages = objectMapper.createArrayNode();
+            boolean nova = isNovaModel();
 
             // Add conversation history (last 10 messages)
             if (history != null) {
@@ -151,7 +152,7 @@ public class BedrockChatService {
                     msgNode.put("role", msg.role());
                     ArrayNode contentArr = objectMapper.createArrayNode();
                     ObjectNode textNode = objectMapper.createObjectNode();
-                    textNode.put("type", "text");
+                    if (!nova) textNode.put("type", "text");
                     textNode.put("text", msg.content());
                     contentArr.add(textNode);
                     msgNode.set("content", contentArr);
@@ -164,7 +165,7 @@ public class BedrockChatService {
             userMsg.put("role", "user");
             ArrayNode contentArr = objectMapper.createArrayNode();
             ObjectNode textNode = objectMapper.createObjectNode();
-            textNode.put("type", "text");
+            if (!nova) textNode.put("type", "text");
             textNode.put("text", userMessage);
             contentArr.add(textNode);
             userMsg.set("content", contentArr);
