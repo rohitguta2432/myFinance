@@ -5,6 +5,13 @@ import { useMemo } from 'react';
  * and user's actual computed financial data.
  *
  * All values are computed at runtime — no hardcoded sample numbers.
+ *
+ * INTERPRETATION RULES applied per pillar (from product spec):
+ * - Survival: liquid=0 → CRITICAL; days capped at 180; months=0 → "Less than 1 week"
+ * - Protection: cross-check life vs health sub-scores; city health benchmark tiers
+ * - Debt: DTI safe threshold = 30%; DSCR<1 → force CRITICAL; {Y} never negative
+ * - Wealth: 12% CAGR; equity=0% → force CRITICAL; {Z} in lakhs/crores
+ * - Retirement: iterative solver for actual retirement age; don't show CRITICAL if early
  */
 export const useHookText = (pillars, rawData) => {
     return useMemo(() => {
@@ -30,6 +37,13 @@ export const useHookText = (pillars, rawData) => {
             age = 30,
             retirementGoal = null,
             netWorth = 0,
+            // Additional fields from updated useFinancialHealthScore
+            dscr = 3,
+            lifeScore = 0,
+            healthScore = 0,
+            annualSavings = 0,
+            currentCorpus = 0,
+            city = '',
         } = rawData;
 
         const formatCr = (v) => (v / 10000000).toFixed(2);
@@ -41,136 +55,268 @@ export const useHookText = (pillars, rawData) => {
             return p ? p.score : 0;
         };
 
+        /** Get city-specific health benchmark */
+        const getCityHealthBenchmark = (cityName) => {
+            const metros = ['mumbai', 'delhi', 'bangalore', 'bengaluru', 'chennai', 'kolkata', 'hyderabad', 'pune'];
+            const tier1 = ['ahmedabad', 'jaipur', 'lucknow', 'chandigarh', 'kochi', 'indore', 'nagpur', 'coimbatore', 'visakhapatnam', 'bhopal', 'patna', 'thiruvananthapuram', 'gurgaon', 'noida', 'ghaziabad', 'navi mumbai', 'thane'];
+            const c = (cityName || '').toLowerCase().trim();
+            if (metros.some(m => c.includes(m))) return 2000000; // ₹20L
+            if (tier1.some(t => c.includes(t))) return 1500000;  // ₹15L
+            return 1000000; // ₹10L (default Tier-2)
+        };
+
+        const cityHealthBenchmark = getCityHealthBenchmark(city);
+
         // ── SURVIVAL ──
         const survivalScore = getPillarScore('survival');
         let survivalHook;
-        if (survivalScore <= 10) {
-            const daysRunway = monthlyExpenses > 0 ? Math.round(liquidAssets / (monthlyExpenses / 30)) : 0;
+
+        // RULE: If Liquid Assets = 0, force to CRITICAL regardless of computed score
+        if (liquidAssets === 0 || survivalScore <= 10) {
+            let daysRunway = monthlyExpenses > 0 ? Math.floor(liquidAssets / (monthlyExpenses / 30)) : 0;
+            // RULE: Cap at 180 days
+            const displayDays = daysRunway > 180 ? '180+' : String(daysRunway);
             survivalHook = {
                 tier: 'critical',
-                text: `Your emergency fund lasts only ${daysRunway} days — one income disruption triggers financial collapse`,
-                emotionalDriver: 'Terror / Urgency',
+                status: 'CRITICAL',
+                text: `Your emergency fund lasts only ${displayDays} days — one income disruption triggers financial collapse.`,
+                action: 'Build an emergency fund of at least 6 months of essential expenses in a high-yield savings account. Start with ₹5,000/month SIP into a liquid fund.',
             };
         } else if (survivalScore <= 17) {
+            // RULE: months round to 1dp; if 0.0 → "Less than 1 week"
+            const monthsDisplay = emergencyFundMonths < 0.05
+                ? 'Less than 1 week'
+                : `${emergencyFundMonths.toFixed(1)} months`;
             survivalHook = {
                 tier: 'warn',
-                text: `You have ${emergencyFundMonths.toFixed(1)} months of runway — below the 6-month safety net for your income profile`,
-                emotionalDriver: 'Mild anxiety',
+                status: 'WARNING',
+                text: `You have ${monthsDisplay} of runway — below the 6-month safety net for your income profile.`,
+                action: 'Increase monthly contributions to your emergency fund. Target: ₹' + formatRupees(Math.max(0, (6 * monthlyExpenses) - liquidAssets) / 12) + '/month to reach 6-month buffer within a year.',
             };
         } else {
             survivalHook = {
                 tier: 'ok',
-                text: 'Your survival buffer is healthy — unlock to see if your asset allocation within liquid funds is optimal',
-                emotionalDriver: 'Optimisation curiosity',
+                status: 'OK',
+                text: 'Your survival buffer is healthy — unlock to see if your asset allocation within liquid funds is optimal.',
+                action: 'Review your liquid fund allocation. Consider splitting between savings account (1-2 months) and liquid mutual funds (3-4 months) for better returns.',
             };
         }
 
         // ── PROTECTION ──
         const protectionScore = getPillarScore('protection');
         let protectionHook;
-        if (protectionScore <= 8) {
+
+        // RULE: If life score < 4 AND health score < 4 → display CRITICAL life hook
+        // RULE: If life score >= 8 but health score < 4 → display WARNING health hook regardless
+        if (lifeScore < 4 && healthScore < 4) {
             const uninsuredCr = formatCr(Math.max(0, requiredCover - existingTermCover));
             protectionHook = {
                 tier: 'critical',
-                text: `Your family has ₹${uninsuredCr} Cr in uninsured exposure — we found the lowest-cost way to close this gap`,
-                emotionalDriver: 'Fear of family destitution',
+                status: 'CRITICAL',
+                text: `Your family has ₹${uninsuredCr} Cr in uninsured exposure — we found the lowest-cost way to close this gap.`,
+                action: 'Get a pure term insurance plan immediately. At your age, a ₹1 Cr term plan costs approximately ₹700-1,200/month. Compare online-only plans for lowest premiums.',
             };
-        } else if (protectionScore <= 14) {
-            const healthGapLakh = formatLakh(Math.max(0, healthBenchmark - existingHealthCover));
+        } else if (lifeScore >= 8 && healthScore < 4) {
+            // Force health hook regardless of total score band
+            const healthGapLakh = formatLakh(Math.max(0, cityHealthBenchmark - existingHealthCover));
             protectionHook = {
                 tier: 'warn',
-                text: `You are ₹${healthGapLakh} Lakh under-insured on health cover — one hospitalisation could cost you this`,
-                emotionalDriver: 'Medical bankruptcy fear',
+                status: 'WARNING',
+                text: `You are ₹${healthGapLakh} Lakh under-insured on health cover — one hospitalisation could cost you this.`,
+                action: 'Buy a top-up or super top-up health insurance plan to bridge the gap. These are significantly cheaper than standalone plans for the same coverage.',
+            };
+        } else if (protectionScore <= 8) {
+            const uninsuredCr = formatCr(Math.max(0, requiredCover - existingTermCover));
+            protectionHook = {
+                tier: 'critical',
+                status: 'CRITICAL',
+                text: `Your family has ₹${uninsuredCr} Cr in uninsured exposure — we found the lowest-cost way to close this gap.`,
+                action: 'Get a pure term insurance plan immediately. At your age, a ₹1 Cr term plan costs approximately ₹700-1,200/month. Compare online-only plans for lowest premiums.',
+            };
+        } else if (protectionScore <= 14) {
+            const healthGapLakh = formatLakh(Math.max(0, cityHealthBenchmark - existingHealthCover));
+            protectionHook = {
+                tier: 'warn',
+                status: 'WARNING',
+                text: `You are ₹${healthGapLakh} Lakh under-insured on health cover — one hospitalisation could cost you this.`,
+                action: 'Consider a super top-up health plan with ₹5-10L coverage. Also ensure your corporate health insurance covers your family and includes maternity if needed.',
             };
         } else {
             protectionHook = {
                 tier: 'ok',
-                text: 'Your insurance base is adequate — unlock to check if your riders cover the 3 most common claim scenarios',
-                emotionalDriver: 'Completeness desire',
+                status: 'OK',
+                text: 'Your insurance base is adequate — unlock to check if your riders cover the 3 most common claim scenarios.',
+                action: 'Review your policy riders: critical illness, accidental death, and waiver of premium are the top 3. Check if your existing plans include them.',
             };
         }
 
         // ── DEBT ──
         const debtScore = getPillarScore('debt');
         let debtHook;
-        if (debtScore <= 8) {
+
+        // RULE: If DSCR < 1.0, force CRITICAL and add override message
+        if (dscr < 1.0) {
             debtHook = {
                 tier: 'critical',
-                text: `₹${formatRupees(monthlyEMI)}/month is trapped in EMIs — debt restructuring could free this up within 90 days`,
-                emotionalDriver: 'Relief, financial freedom',
+                status: 'CRITICAL',
+                text: `₹${formatRupees(monthlyEMI)}/month is trapped in EMIs — debt restructuring could free this up within 90 days.`,
+                action: 'Your current EMIs exceed your disposable income — immediate restructuring is required. Contact your lenders about loan tenure extension, balance transfer to lower-rate loans, or consolidation.',
+                dscrOverride: true,
+            };
+        } else if (debtScore <= 8) {
+            debtHook = {
+                tier: 'critical',
+                status: 'CRITICAL',
+                text: `₹${formatRupees(monthlyEMI)}/month is trapped in EMIs — debt restructuring could free this up within 90 days.`,
+                action: 'List all debts by interest rate. Pay minimum on all except the highest-rate debt — throw every extra rupee at that one. This avalanche method saves the most interest.',
             };
         } else if (debtScore <= 14) {
-            const dtiAbove = Math.max(0, dti - 30).toFixed(0);
-            debtHook = {
-                tier: 'warn',
-                text: `Your DTI is ${dti.toFixed(0)}% — ${dtiAbove}% above the safe threshold — here is the payoff sequence that saves a lot in interest, pay off high interest loan first`,
-                emotionalDriver: 'Stress relief',
-            };
+            // RULE: {Y} must never be negative. If DTI < 30%, display OK hook regardless.
+            const dtiAbove = Math.max(0, dti - 30);
+            if (dtiAbove <= 0) {
+                // DTI is below safe threshold — show OK instead
+                debtHook = {
+                    tier: 'ok',
+                    status: 'OK',
+                    text: 'Your debt load is manageable — unlock to see if your home loan interest deduction is fully optimised.',
+                    action: 'Check if you are claiming full ₹2L deduction under Section 24(b) for home loan interest and ₹1.5L under Section 80C for principal repayment.',
+                };
+            } else {
+                debtHook = {
+                    tier: 'warn',
+                    status: 'WARNING',
+                    text: `Your DTI is ${dti.toFixed(0)}% — ${dtiAbove.toFixed(0)}% above the safe threshold — here is the payoff sequence that saves the most in interest.`,
+                    action: 'Prioritise paying off high-interest loans (credit cards, personal loans) first. Consider balance transfer for home loans if rate differential exceeds 0.5%.',
+                };
+            }
         } else {
             debtHook = {
                 tier: 'ok',
-                text: 'Your debt load is manageable — unlock to see if your home loan interest deduction is fully optimised',
-                emotionalDriver: 'Savings curiosity',
+                status: 'OK',
+                text: 'Your debt load is manageable — unlock to see if your home loan interest deduction is fully optimised.',
+                action: 'Check if you are claiming full ₹2L deduction under Section 24(b) for home loan interest and ₹1.5L under Section 80C for principal repayment.',
             };
         }
 
         // ── WEALTH ──
         const wealthScore = getPillarScore('wealth');
         let wealthHook;
-        if (wealthScore <= 8) {
-            // Project: current annual savings × (1+r)^n
-            const annualSavings = Math.max(0, (monthlyIncome - monthlyExpenses - monthlyEMI) * 12);
+
+        // RULE: If equity % is zero, override to CRITICAL regardless of savings score
+        if (equityPct === 0 && totalEquityZeroCheck(rawData)) {
             const yearsToRetirement = Math.max(1, retirementAge - age);
-            const r = 0.09;
+            const r = 0.12; // RULE: 12% CAGR
             const projected = annualSavings * ((Math.pow(1 + r, yearsToRetirement) - 1) / r);
             const projectedFormatted = projected >= 10000000
                 ? `₹${formatCr(projected)} Cr`
                 : `₹${formatLakh(projected)} Lakh`;
             wealthHook = {
                 tier: 'critical',
-                text: `At your current savings rate you will be able to accumulate ${projectedFormatted}`,
-                emotionalDriver: 'Long-term fear',
+                status: 'CRITICAL',
+                text: `At your current savings rate you will accumulate ${projectedFormatted} by retirement.`,
+                action: 'With zero equity, inflation is eroding the real value of your savings every year. Start a monthly SIP in a diversified equity fund (index fund or flexi-cap) with at least 20% of your monthly surplus.',
+                equityOverride: true,
+            };
+        } else if (wealthScore <= 8) {
+            const yearsToRetirement = Math.max(1, retirementAge - age);
+            const r = 0.12; // RULE: 12% CAGR
+            const projected = annualSavings * ((Math.pow(1 + r, yearsToRetirement) - 1) / r);
+            const projectedFormatted = projected >= 10000000
+                ? `₹${formatCr(projected)} Cr`
+                : `₹${formatLakh(projected)} Lakh`;
+            wealthHook = {
+                tier: 'critical',
+                status: 'CRITICAL',
+                text: `At your current savings rate you will accumulate ${projectedFormatted} by retirement.`,
+                action: 'Increase your savings rate to at least 20% of gross income. Automate SIPs on salary day so investments happen before discretionary spending.',
             };
         } else if (wealthScore <= 14) {
-            const annualEquityInvestment = equityPct > 0 ? (equityPct / 100) * annualIncome * 0.3 : 0;
+            // RULE: {Z} = Annual investment into equity × ((1.12)^10 − 1) / 0.12 formatted in lakhs/crores
             const r = 0.12;
+            const annualEquityInvestment = equityPct > 0 ? (equityPct / 100) * annualIncome * 0.3 : 0;
             const tenYearGap = annualEquityInvestment * ((Math.pow(1 + r, 10) - 1) / r);
-            const gapFormatted = tenYearGap >= 10000000 ? `₹${formatCr(tenYearGap)} Cr` : `₹${formatLakh(tenYearGap)} Lakh`;
+            let gapFormatted;
+            if (tenYearGap >= 5000000) { // > 50L → show in Crores
+                gapFormatted = `₹${formatCr(tenYearGap)} Cr`;
+            } else {
+                gapFormatted = `₹${formatLakh(tenYearGap)} Lakh`;
+            }
             wealthHook = {
                 tier: 'warn',
-                text: `Your equity exposure is ${equityPct.toFixed(0)}% vs the ${targetEquityPct.toFixed(0)}% target for your age — this gap costs ${gapFormatted} in 10-year returns`,
-                emotionalDriver: 'Opportunity cost',
+                status: 'WARNING',
+                text: `Your equity exposure is ${equityPct.toFixed(0)}% vs the ${targetEquityPct.toFixed(0)}% target for your age — this gap costs ${gapFormatted} in 10-year returns.`,
+                action: 'Gradually shift allocation towards equity via monthly SIPs. Increase equity SIP by 10% each year. Consider index funds (Nifty 50, Nifty Next 50) for core allocation.',
             };
         } else {
             wealthHook = {
                 tier: 'ok',
-                text: 'Your savings rate is strong — unlock to identify which funds in your portfolio are drag assets',
-                emotionalDriver: 'Portfolio pride',
+                status: 'OK',
+                text: 'Your savings rate is strong — unlock to identify which funds in your portfolio are drag assets.',
+                action: 'Review your portfolio for funds that have consistently underperformed their benchmark over 3+ years. Consider consolidating into 3-5 core funds.',
             };
         }
 
         // ── RETIREMENT ──
         const retirementScoreVal = getPillarScore('retirement');
         let retirementHook;
+
         if (retirementScoreVal <= 6) {
-            // Estimate projected retirement age (simple approximation)
-            const yearsToRetirement = Math.max(1, retirementAge - age);
-            const estimatedRetireAge = retirementAge + Math.max(0, Math.round((1 - retirementScoreVal / 15) * yearsToRetirement * 0.3));
-            const yearsLate = estimatedRetireAge - retirementAge;
-            retirementHook = {
-                tier: 'critical',
-                text: `At current pace you retire at age ${estimatedRetireAge} — ${yearsLate} years late. One change to your SIP fixes a significant portion of the gap`,
-                emotionalDriver: 'Fear of old-age poverty',
-            };
+            // FULL RETIREMENT CALCULATION per spec
+            const A = age;
+            const R = retirementAge;
+            const C = currentCorpus;
+            const S = annualSavings;
+            const r = 0.09;
+            const E = monthlyExpenses * 12;
+            const inflation = 0.07;
+
+            // Step 1: Find actual retirement age X (iterative solver)
+            const requiredCorpus = E * Math.pow(1 + inflation, R - A) * 25;
+            let X = R;
+            for (let testAge = A + 1; testAge <= 80; testAge++) {
+                const n = testAge - A;
+                const projected = C * Math.pow(1 + r, n) + S * ((Math.pow(1 + r, n) - 1) / r);
+                if (projected >= requiredCorpus) {
+                    X = testAge;
+                    break;
+                }
+                X = testAge;
+            }
+
+            // Step 2: Y = years late
+            const Y = X - R;
+
+            // RULE: If X < R, the user is early — do not display CRITICAL hook
+            if (Y <= 0) {
+                retirementHook = {
+                    tier: 'ok',
+                    status: 'OK',
+                    text: 'You are on track for retirement — unlock to check if your NPS allocation is tax-optimised under the new regime.',
+                    action: 'Review your NPS Tier-1 allocation. Under the new tax regime, you can claim ₹50,000 additional deduction under Section 80CCD(1B).',
+                };
+            } else {
+                // Step 3: Z = % of gap fixed by 10% SIP increase
+                const nR = R - A;
+                const currentProjected = C * Math.pow(1 + r, nR) + S * ((Math.pow(1 + r, nR) - 1) / r);
+                const S2 = S * 1.10;
+                const newProjected = C * Math.pow(1 + r, nR) + S2 * ((Math.pow(1 + r, nR) - 1) / r);
+                const gap = Math.max(1, requiredCorpus - currentProjected);
+                const Z = Math.min(100, Math.round(((newProjected - currentProjected) / gap) * 100));
+
+                retirementHook = {
+                    tier: 'critical',
+                    status: 'CRITICAL',
+                    text: `At current pace you retire at age ${X} — ${Y} years late. One change to your SIP fixes ${Z}% of the gap.`,
+                    action: `Increase your monthly SIP by just 10% (₹${formatRupees(Math.round((S2 - S) / 12))}/month more). Also consider maximising your NPS and EPF voluntary contributions for tax-efficient retirement building.`,
+                };
+            }
         } else if (retirementScoreVal <= 11) {
-            // Compute gap and additional SIP needed
             const N = Math.max(1, retirementAge - age);
             const futureExpenses = (monthlyExpenses * 12) * Math.pow(1.07, N);
             const requiredCorpus = futureExpenses * 25;
-            const currentCorpus = netWorth > 0 ? netWorth : 0;
-            const annualContrib = retirementGoal ? (retirementGoal.currentSavings || 0) : 0;
             const r = 0.09;
             const fv1 = currentCorpus * Math.pow(1 + r, N);
+            const annualContrib = retirementGoal ? (retirementGoal.currentSavings || 0) : 0;
             const fv2 = annualContrib > 0 ? annualContrib * ((Math.pow(1 + r, N) - 1) / r) : 0;
             const projectedCorpus = fv1 + fv2;
             const gap = Math.max(0, requiredCorpus - projectedCorpus);
@@ -179,14 +325,16 @@ export const useHookText = (pillars, rawData) => {
             const additionalMonthly = Math.round(additionalAnnual / 12);
             retirementHook = {
                 tier: 'warn',
-                text: `Your retirement corpus is ₹${gapCr} Cr short of target — monthly SIP needs to increase by ₹${formatRupees(additionalMonthly)}`,
-                emotionalDriver: 'Moderate worry',
+                status: 'WARNING',
+                text: `Your retirement corpus is ₹${gapCr} Cr short of target — monthly SIP needs to increase by ₹${formatRupees(additionalMonthly)}.`,
+                action: `Set up an additional SIP of ₹${formatRupees(additionalMonthly)}/month in a balanced advantage or flexi-cap fund. Auto-step-up by 10% annually for best results.`,
             };
         } else {
             retirementHook = {
                 tier: 'ok',
-                text: 'You are on track for retirement — unlock to check if your NPS allocation is tax-optimised under the new regime',
-                emotionalDriver: 'Optimisation interest',
+                status: 'OK',
+                text: 'You are on track for retirement — unlock to check if your NPS allocation is tax-optimised under the new regime.',
+                action: 'Review your NPS Tier-1 allocation. Under the new tax regime, you can claim ₹50,000 additional deduction under Section 80CCD(1B).',
             };
         }
 
@@ -199,5 +347,10 @@ export const useHookText = (pillars, rawData) => {
         };
     }, [pillars, rawData]);
 };
+
+/** Helper: check if equity is truly zero */
+function totalEquityZeroCheck(rawData) {
+    return (rawData.equityPct || 0) === 0;
+}
 
 export default useHookText;

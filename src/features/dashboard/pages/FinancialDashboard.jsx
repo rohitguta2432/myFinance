@@ -9,6 +9,7 @@ import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
 import BenchmarkComparison from '../components/BenchmarkComparison';
 import LockedPremiumInsights from '../components/LockedPremiumInsights';
 import FinancialTimeMachine from '../components/FinancialTimeMachine';
+import PillarInterpretationCard from '../components/PillarInterpretationCard';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -151,6 +152,9 @@ const FinancialDashboard = () => {
     const { topActions, hiddenCount: actionsHidden, totalTriggered: actionsTriggered } = usePriorityActions();
     const { city } = useAssessmentStore();
 
+    // Inject city into rawData for hook text city health benchmark logic
+    if (rawData) rawData.city = city;
+
     const {
         emergencyFundMonths = 0,
         emiToIncomeRatio = 0,
@@ -264,6 +268,26 @@ const FinancialDashboard = () => {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* ── Health Area Insights ── */}
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                            Health Area Insights
+                        </h3>
+                        <span className="text-[10px] text-slate-600">Personalised to your data</span>
+                    </div>
+                    <div className="grid gap-3">
+                        {sortedPillars.map((p, i) => (
+                            <PillarInterpretationCard
+                                key={p.id}
+                                pillar={p}
+                                hookData={hookTexts[p.id]}
+                                index={i}
+                            />
+                        ))}
                     </div>
                 </div>
 

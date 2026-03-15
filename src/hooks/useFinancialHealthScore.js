@@ -356,6 +356,13 @@ export const useFinancialHealthScore = () => {
             lifeCoverRatio,
             monthlySurplus: monthlySavings,
             grossIncome: monthlyIncome,
+            // Additional fields for interpretation rules
+            dscr,
+            lifeScore,
+            healthScore,
+            annualSavings: Math.max(0, monthlySavings * 12),
+            currentCorpus: netWorth > 0 ? netWorth : 0,
+            city: undefined, // will be set by consumer from store
         };
 
         return {
