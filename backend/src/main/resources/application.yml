@@ -37,5 +37,5 @@ logging:
 aws:
   bedrock:
     region: us-east-1
-    model-id: anthropic.claude-3-sonnet-20240229-v1:0
+    model-id: amazon.nova-lite-v1:0
 
