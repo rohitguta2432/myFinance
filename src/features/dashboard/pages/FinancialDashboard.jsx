@@ -10,6 +10,7 @@ import BenchmarkComparison from '../components/BenchmarkComparison';
 import LockedPremiumInsights from '../components/LockedPremiumInsights';
 import FinancialTimeMachine from '../components/FinancialTimeMachine';
 import PillarInterpretationCard from '../components/PillarInterpretationCard';
+import { DashboardTabs } from './InsuranceTab';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -192,12 +193,15 @@ const FinancialDashboard = () => {
                         </div>
                         <h1 className="font-bold text-lg tracking-wide">Financial Health</h1>
                     </div>
-                    <button
-                        onClick={() => navigate('/assessment/step-1')}
-                        className="text-xs text-slate-400 hover:text-white transition-colors px-3 py-1.5 bg-surface-dark rounded-lg border border-white/5"
-                    >
-                        ↻ Retake Assessment
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <DashboardTabs />
+                        <button
+                            onClick={() => navigate('/assessment/step-1')}
+                            className="text-xs text-slate-400 hover:text-white transition-colors px-3 py-1.5 bg-surface-dark rounded-lg border border-white/5"
+                        >
+                            ↻ Retake Assessment
+                        </button>
+                    </div>
                 </div>
             </div>
 

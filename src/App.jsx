@@ -5,6 +5,9 @@ import Layout from './components/layout/Layout';
 import AiChatWidget from './components/ai/AiChatWidget';
 import Home from './features/dashboard/pages/Home';
 import FinancialDashboard from './features/dashboard/pages/FinancialDashboard';
+import InsuranceTab from './features/dashboard/pages/InsuranceTab';
+import TaxPlanningTab from './features/dashboard/pages/TaxPlanningTab';
+import ActionPlanTab from './features/dashboard/pages/ActionPlanTab';
 import Step1PersonalRisk from './features/assessment/pages/Step1PersonalRisk';
 import Step2IncomeExpenses from './features/assessment/pages/Step2IncomeExpenses';
 import Step3AssetsLiabilities from './features/assessment/pages/Step3AssetsLiabilities';
@@ -30,6 +33,9 @@ export default function App() {
             <Route path="/assessment/step-6" element={<Step6TaxOptimization />} />
             <Route path="/assessment/complete" element={<AssessmentComplete />} />
             <Route path="/dashboard" element={<FinancialDashboard />} />
+            <Route path="/dashboard/actions" element={<ActionPlanTab />} />
+            <Route path="/dashboard/insurance" element={<InsuranceTab />} />
+            <Route path="/dashboard/tax" element={<TaxPlanningTab />} />
           </Route>
         </Routes>
       </BrowserRouter>
