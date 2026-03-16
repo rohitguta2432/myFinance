@@ -52,39 +52,6 @@ const ScoreRing = ({ score, label, color }) => {
     );
 };
 
-/* ─── Pillar Bar (compact for inline display) ─── */
-const PillarBar = ({ pillar, index, isWorst }) => {
-    const pct = (pillar.score / pillar.maxScore) * 100;
-    const barColor = pct <= 40 ? '#ef4444' : pct <= 65 ? '#f59e0b' : '#0DF259';
-
-    return (
-        <div className={`relative rounded-xl px-3 py-2.5 border transition-all duration-300 ${isWorst ? 'border-red-500/30 bg-red-500/5' : 'border-white/5 hover:border-white/10'}`}>
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2.5">
-                    <span className="text-lg">{pillar.icon}</span>
-                    <h3 className="font-bold text-white text-sm">{pillar.name}</h3>
-                    {isWorst && (
-                        <span className="px-1.5 py-0.5 bg-red-500 text-[8px] font-bold text-white uppercase tracking-widest rounded-full leading-none">Risk</span>
-                    )}
-                </div>
-                <div className="flex items-baseline gap-0.5">
-                    <span className="text-base font-black tabular-nums" style={{ color: barColor }}>{pillar.score}</span>
-                    <span className="text-[10px] text-slate-500">/{pillar.maxScore}</span>
-                </div>
-            </div>
-            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <div
-                    className="h-full rounded-full transition-all duration-1000 ease-out"
-                    style={{
-                        width: `${pct}%`,
-                        background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
-                        boxShadow: `0 0 8px ${barColor}30`,
-                    }}
-                />
-            </div>
-        </div>
-    );
-};
 
 /* ─── Red Flag Card ─── */
 const RedFlag = ({ title, current, benchmark, severity }) => {
@@ -260,38 +227,24 @@ const FinancialDashboard = () => {
                         <div className="hidden lg:block w-px bg-white/5 self-stretch" />
                         <div className="lg:hidden h-px bg-white/5 w-full" />
 
-                        {/* Right: Pillar Breakdown */}
+                        {/* Right: Pillar Breakdown (collapsible insights) */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Score Breakdown by Pillar</h3>
-                                <span className="text-[10px] text-slate-600">Sorted by priority</span>
+                                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Health Pillars</h3>
+                                <span className="text-[10px] text-slate-600">Tap a pillar for insights</span>
                             </div>
-                            <div className="grid gap-3">
+                            <div className="grid gap-2">
                                 {sortedPillars.map((p, i) => (
-                                    <PillarBar key={p.id} pillar={p} index={i} isWorst={i === 0} />
+                                    <PillarInterpretationCard
+                                        key={p.id}
+                                        pillar={p}
+                                        hookData={hookTexts[p.id]}
+                                        index={i}
+                                        isWorst={i === 0}
+                                    />
                                 ))}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* ── Health Area Insights ── */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-                            Health Area Insights
-                        </h3>
-                        <span className="text-[10px] text-slate-600">Personalised to your data</span>
-                    </div>
-                    <div className="grid gap-3">
-                        {sortedPillars.map((p, i) => (
-                            <PillarInterpretationCard
-                                key={p.id}
-                                pillar={p}
-                                hookData={hookTexts[p.id]}
-                                index={i}
-                            />
-                        ))}
                     </div>
                 </div>
 
