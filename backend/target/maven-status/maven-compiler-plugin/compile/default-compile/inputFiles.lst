@@ -6,6 +6,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/LocationController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/NetWorthController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/ProfileController.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/RiskScoringController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/TaxController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/AssetDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/BalanceSheetResponse.java
@@ -19,6 +20,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/InsuranceDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/LiabilityDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/ProfileDTO.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/RiskScoringDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/TaxDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Asset.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Expense.java
@@ -50,6 +52,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/LocationService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/NetWorthService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/ProfileService.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/RiskScoringService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/TaxService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/EnumUtils.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/JsonUtils.java

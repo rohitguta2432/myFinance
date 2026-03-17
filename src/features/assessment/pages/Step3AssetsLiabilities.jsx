@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingU
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
+import { useRiskScoringQuery } from '../hooks/useRiskScoring';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
@@ -23,6 +24,9 @@ const Step3AssetsLiabilities = () => {
             if (balanceData.liabilities?.length) useAssessmentStore.setState({ liabilities: balanceData.liabilities });
         }
     }, [balanceData]);
+
+    // Fetch risk scoring (scores + target allocation) from backend
+    const { data: riskData } = useRiskScoringQuery();
 
     const [activeTab, setActiveTab] = useState('assets'); // 'assets' or 'liabilities'
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -256,17 +260,24 @@ const Step3AssetsLiabilities = () => {
         #64748b ${equityPct + debtPct + realEstatePct + goldPct}% 100%
     )` : 'conic-gradient(#334155 0% 100%)';
 
+    // Dynamic target allocation from backend scoring
+    const targetEquity = riskData?.targetEquity ?? 50;
+    const targetDebt = riskData?.targetDebt ?? 30;
+    const targetGold = riskData?.targetGold ?? 5;
+    const targetRealEstate = riskData?.targetRealEstate ?? 15;
+    const profileLabel = riskData?.profileLabel ?? 'Moderate';
+
     const getMismatchAlert = () => {
         if (totalAssets === 0) return null;
-        if (realEstatePct > 15 + 20) {
+        if (realEstatePct > targetRealEstate + 20) {
             return {
-                title: `⚠️ Your Real Estate exposure is ${(realEstatePct - 15).toFixed(0)}% above target.`,
-                msg: `This concentrates risk. Consider gradually shifting ₹${((realEstatePct - 15) / 100 * totalAssets / 100000).toFixed(1)} lakhs to equity over 2-3 years.`
+                title: `⚠️ Your Real Estate exposure is ${(realEstatePct - targetRealEstate).toFixed(0)}% above target.`,
+                msg: `This concentrates risk. Consider gradually shifting ₹${((realEstatePct - targetRealEstate) / 100 * totalAssets / 100000).toFixed(1)} lakhs to equity over 2-3 years.`
             };
         }
-        if (equityPct < 50 - 20) {
+        if (equityPct < targetEquity - 20) {
             return {
-                title: `⚠️ Your Equity exposure is ${(50 - equityPct).toFixed(0)}% below target.`,
+                title: `⚠️ Your Equity exposure is ${(targetEquity - equityPct).toFixed(0)}% below target.`,
                 msg: `Consider gradually increasing your investments in mutual funds and stocks.`
             };
         }

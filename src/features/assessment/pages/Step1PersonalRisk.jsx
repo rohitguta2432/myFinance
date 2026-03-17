@@ -95,102 +95,82 @@ const Step1PersonalRisk = () => {
     );
     const [expandedQuestion, setExpandedQuestion] = useState(1);
 
-    // Risk Questions Data — 5 scored questions
+    // ── 7 New Risk Questions ─────────────────────────────────
     const questions = [
         {
             id: 1,
-            text: "If your investment dropped 20% tomorrow, would you:",
+            text: "Your ₹1 lakh investment drops to ₹80,000 in a month. What do you do?",
             options: [
-                { id: 'panic', text: 'Panic and sell immediately', score: 1 },
-                { id: 'hold', text: 'Hold steady and wait', score: 2 },
-                { id: 'buy', text: 'Buy more at lower price', score: 3 }
+                { id: 'sell', text: 'I sell everything and move it to FD or savings', score: 1 },
+                { id: 'hold', text: 'I do nothing and wait for it to come back', score: 2 },
+                { id: 'buy', text: 'I invest more while prices are cheap', score: 3 }
             ]
         },
         {
             id: 2,
-            text: "Your investment timeline for most goals:",
+            text: "When are you most likely to need the money you are investing today?",
             options: [
-                { id: 'short', text: 'Less than 3 years', score: 1 },
-                { id: 'medium', text: '3 to 7 years', score: 2 },
-                { id: 'long', text: '7+ years', score: 3 }
+                { id: 'short', text: 'Within the next 3 years', score: 1 },
+                { id: 'medium', text: 'In 3 to 7 years', score: 2 },
+                { id: 'long', text: '7 or more years from now', score: 3 }
             ]
         },
         {
             id: 3,
-            text: "What do you prioritize most:",
+            text: "If you had ₹5 lakhs to invest today, what matters most to you?",
             options: [
-                { id: 'protect', text: 'Capital protection first', score: 1 },
-                { id: 'balanced', text: 'Balanced growth', score: 2 },
-                { id: 'aggressive', text: 'Aggressive growth', score: 3 }
+                { id: 'safety', text: "That I don't lose any of it — growth can wait", score: 1 },
+                { id: 'balanced', text: "Some growth is fine, but I don't want big swings", score: 2 },
+                { id: 'growth', text: 'Maximum growth, even if it means big ups and downs', score: 3 }
             ]
         },
         {
             id: 4,
-            text: "Market volatility makes you:",
+            text: "Imagine your portfolio crashes 40% in a recession. What do you do?",
             options: [
-                { id: 'anxious', text: 'Very anxious', score: 1 },
-                { id: 'uncomfortable', text: 'Somewhat uncomfortable', score: 2 },
-                { id: 'unfazed', text: 'Unfazed', score: 3 }
+                { id: 'exit', text: "I exit completely — I can't handle this", score: 1 },
+                { id: 'wait', text: 'I stay put and wait for recovery', score: 2 },
+                { id: 'invest', text: 'I see this as a buying opportunity and invest more', score: 3 }
             ]
         },
         {
             id: 5,
-            text: "Your investment knowledge level:",
+            text: "You're offered: A guaranteed 7% return, or a chance at 15% but could be −5%. Pick one.",
             options: [
-                { id: 'beginner', text: 'Beginner', score: 1 },
-                { id: 'intermediate', text: 'Intermediate', score: 2 },
-                { id: 'advanced', text: 'Advanced', score: 3 }
+                { id: 'guaranteed', text: 'Give me the guaranteed 7%', score: 1 },
+                { id: 'split', text: "I'd split — some safe, some risky", score: 2 },
+                { id: 'chance', text: "I'll take the 15% chance — I can handle a bad year", score: 3 }
+            ]
+        },
+        {
+            id: 6,
+            text: "If your EMI increases and money gets tight, what do you cut first?",
+            options: [
+                { id: 'investments', text: 'My investments — safety first', score: 1 },
+                { id: 'adjust', text: 'I adjust both lifestyle and investments', score: 2 },
+                { id: 'keep', text: "I don't touch my investments — I find other ways", score: 3 }
+            ]
+        },
+        {
+            id: 7,
+            text: "Would you be comfortable putting money in crypto or startups?",
+            options: [
+                { id: 'no', text: 'Absolutely not — too risky', score: 1 },
+                { id: 'small', text: 'Maybe a small percentage', score: 2 },
+                { id: 'yes', text: 'Yes, I like high-risk high-reward bets', score: 3 }
             ]
         }
     ];
 
-    // Compute risk score (5–15 raw → mapped to 0–10 scale)
-    const allRiskAnswered = Object.keys(riskAnswers).length === 5;
-    const rawRiskScore = useMemo(() => {
-        if (!allRiskAnswered) return 0;
-        return Object.values(riskAnswers).reduce((sum, s) => sum + s, 0);
-    }, [riskAnswers, allRiskAnswered]);
-
-    // Map 5–15 → 0–10
-    const mappedScore = useMemo(() => {
-        if (!allRiskAnswered) return 0;
-        return Math.round(((rawRiskScore - 5) / 10) * 10);
-    }, [rawRiskScore, allRiskAnswered]);
-
-    const riskProfile = useMemo(() => {
-        if (!allRiskAnswered) return null;
-        if (mappedScore <= 3) return {
-            label: 'Conservative',
-            equity: 20, debt: 60, gold: 10, reits: 10,
-            color: 'text-blue-400'
-        };
-        if (mappedScore <= 6) return {
-            label: 'Moderate',
-            equity: 50, debt: 30, gold: 5, reits: 15,
-            color: 'text-yellow-400'
-        };
-        return {
-            label: 'Aggressive',
-            equity: 70, debt: 15, gold: 5, reits: 10,
-            color: 'text-red-400'
-        };
-    }, [mappedScore, allRiskAnswered]);
-
-    // Update riskTolerance when profile is computed
-    useEffect(() => {
-        if (riskProfile) {
-            setRiskTolerance(riskProfile.label.toLowerCase());
-        }
-    }, [riskProfile]);
+    // All 7 questions must be answered to proceed
+    const allRiskAnswered = Object.keys(riskAnswers).length === 7;
+    // Scoring is handled by the backend (GET /api/v1/risk-scoring)
 
     // Handle risk answer
     const handleRiskAnswer = (qId, option) => {
         setRiskAnswer(qId, option.score);
         // Auto-advance to next question
         if (qId < questions.length) {
-            setTimeout(() => setExpandedQuestion(qId + 1), 300);
-        } else {
-            // Last question answered — collapse it to show result
             setTimeout(() => setExpandedQuestion(qId + 1), 300);
         }
     };
@@ -529,16 +509,16 @@ const Step1PersonalRisk = () => {
 
             <div className="h-px w-full bg-white/10 my-2"></div>
 
-            {/* Section B: Risk Profile */}
+            {/* Section B: Know Your Investor Style */}
             <section className="space-y-5">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30">B</span>
-                    <h3 className="text-white text-lg font-bold leading-tight">Risk Profile</h3>
+                    <h3 className="text-white text-lg font-bold leading-tight">Know Your Investor Style</h3>
                 </div>
                 <div className="space-y-1 mb-4">
-                    <p className="text-sm text-primary font-semibold">Answer 5 quick questions to determine your ideal investment mix.</p>
+                    <p className="text-sm text-primary font-semibold">7 questions · Your profile tells us exactly how much risk your mind and your finances can handle.</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                        These questions help us understand if you're comfortable with market ups and downs, or prefer safe but lower returns.
+                        So your money is always working in a way you're genuinely comfortable with.
                     </p>
                 </div>
 
@@ -607,61 +587,7 @@ const Step1PersonalRisk = () => {
                     })}
                 </div>
 
-                {/* Result Card — shown when all 5 questions answered */}
-                {allRiskAnswered && riskProfile && (
-                    <div className="relative mt-8 animate-fade-in-up">
-                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-2xl"></div>
-                        <div className="relative rounded-xl bg-surface-dark border border-white/10 p-5 shadow-2xl backdrop-blur-md">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background-dark shadow-[0_0_15px_rgba(13,242,89,0.4)]">
-                                        <Check className="w-6 h-6 font-bold" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-primary font-bold uppercase tracking-wide mb-0.5">Your Risk Profile</p>
-                                        <h4 className="text-white text-lg font-bold">
-                                            {riskProfile.label} Investor
-                                        </h4>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs text-slate-500 mb-0.5">Risk Score</p>
-                                    <p className="text-2xl font-mono font-bold text-primary">{mappedScore}<span className="text-sm text-slate-400">/10</span></p>
-                                </div>
-                            </div>
-                            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
-                            <div className="space-y-3">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Recommended Asset Allocation</p>
-                                {/* Stacked bar */}
-                                <div className="flex h-3.5 w-full rounded-full overflow-hidden">
-                                    <div className="bg-primary h-full transition-all duration-700" style={{ width: `${riskProfile.equity}%` }}></div>
-                                    <div className="bg-blue-500 h-full transition-all duration-700" style={{ width: `${riskProfile.debt}%` }}></div>
-                                    <div className="bg-yellow-500 h-full transition-all duration-700" style={{ width: `${riskProfile.gold}%` }}></div>
-                                    <div className="bg-purple-500 h-full transition-all duration-700" style={{ width: `${riskProfile.reits}%` }}></div>
-                                </div>
-                                {/* Legend */}
-                                <div className="grid grid-cols-2 gap-2 text-xs font-medium">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
-                                        <span className="text-white">Equity {riskProfile.equity}%</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-white">Debt {riskProfile.debt}%</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-                                        <span className="text-white">Gold {riskProfile.gold}%</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-white">Real Estate (REITs) {riskProfile.reits}%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {/* No result card — scoring is used internally for Step 3 comparison */}
             </section>
 
             {/* Bottom Navigation */}

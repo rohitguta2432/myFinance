@@ -27,6 +27,12 @@ export const useAssessmentStore = create(
             })),
             riskTolerance: '', // computed: 'conservative', 'moderate', 'aggressive'
             setRiskTolerance: (riskTolerance) => set({ riskTolerance }),
+            toleranceScore: null,
+            setToleranceScore: (toleranceScore) => set({ toleranceScore }),
+            capacityScore: null,
+            setCapacityScore: (capacityScore) => set({ capacityScore }),
+            compositeScore: null,
+            setCompositeScore: (compositeScore) => set({ compositeScore }),
 
             // Step 2: Income & Expenses
             incomes: [], // { id, source, amount, frequency }

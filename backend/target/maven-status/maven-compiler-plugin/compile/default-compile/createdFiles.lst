@@ -1,6 +1,7 @@
 com/myfinance/model/Income$IncomeBuilder.class
 com/myfinance/controller/TaxController.class
 com/myfinance/model/Insurance.class
+com/myfinance/controller/RiskScoringController.class
 com/myfinance/repository/IncomeRepository.class
 com/myfinance/util/EnumUtils.class
 com/myfinance/model/enums/EmploymentType.class
@@ -15,6 +16,7 @@ com/myfinance/model/enums/RiskTolerance.class
 com/myfinance/dto/AssetDTO$AssetDTOBuilder.class
 com/myfinance/service/LocationService.class
 com/myfinance/controller/GoalController.class
+com/myfinance/service/RiskScoringService.class
 com/myfinance/service/GoalService.class
 com/myfinance/util/JsonUtils.class
 com/myfinance/model/Liability$LiabilityBuilder.class
@@ -22,18 +24,21 @@ com/myfinance/dto/BalanceSheetResponse$BalanceSheetResponseBuilder.class
 com/myfinance/model/Profile.class
 com/myfinance/dto/IncomeDTO$IncomeDTOBuilder.class
 com/myfinance/dto/FinancialsResponse$FinancialsResponseBuilder.class
+com/myfinance/service/RiskScoringService$1.class
 com/myfinance/repository/ExpenseRepository.class
 com/myfinance/dto/BalanceSheetResponse.class
 com/myfinance/controller/LocationController.class
 com/myfinance/dto/GoalDTO$GoalDTOBuilder.class
 com/myfinance/controller/CashFlowController.class
 com/myfinance/model/Asset$AssetBuilder.class
+com/myfinance/dto/RiskScoringDTO.class
 com/myfinance/controller/ProfileController.class
 com/myfinance/repository/LiabilityRepository.class
 com/myfinance/dto/ProfileDTO.class
 com/myfinance/model/Asset.class
 com/myfinance/MyFinanceApplication.class
 com/myfinance/controller/ChatController.class
+com/myfinance/dto/RiskScoringDTO$RiskScoringDTOBuilder.class
 com/myfinance/service/NetWorthService.class
 com/myfinance/controller/NetWorthController.class
 com/myfinance/dto/TaxDTO$TaxDTOBuilder.class
@@ -46,6 +51,7 @@ com/myfinance/model/Expense$ExpenseBuilder.class
 com/myfinance/service/TaxService.class
 com/myfinance/repository/TaxRepository.class
 com/myfinance/repository/ProfileRepository.class
+com/myfinance/service/RiskScoringService$ProfileBand.class
 com/myfinance/service/ProfileService.class
 com/myfinance/dto/AssetDTO.class
 com/myfinance/controller/InsuranceController.class

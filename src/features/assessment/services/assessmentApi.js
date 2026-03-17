@@ -289,3 +289,8 @@ export const saveTax = async (data) => {
     const dto = await api.post('/tax', mapTaxToDTO(data));
     return mapTaxFromDTO(dto);
 };
+
+// Risk Scoring — computed by backend from profile + assets + liabilities + cashflow
+export const getRiskScoring = async () => {
+    return await api.get('/risk-scoring');
+};
