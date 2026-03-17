@@ -11,6 +11,7 @@ import java.util.Map;
 public class ProfileDTO {
     private Long id;
     private Integer age;
+    private String state;
     private String city;
     private String maritalStatus;
     private Integer dependents;

@@ -18,6 +18,8 @@ public class Profile {
 
     private Integer age;
 
+    private String state;
+
     private String city;
 
     @Enumerated(EnumType.STRING)

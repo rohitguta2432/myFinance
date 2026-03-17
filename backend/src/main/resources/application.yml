@@ -3,18 +3,13 @@ spring:
     name: myfinance-backend
 
   datasource:
-    url: jdbc:h2:mem:myfinance
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:postgresql://localhost:5432/myfinance
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: false
@@ -38,4 +33,3 @@ aws:
   bedrock:
     region: us-east-1
     model-id: amazon.nova-lite-v1:0
-

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, CheckCircle2, Circle, Check, Loader2, MapPin, AlertCircle } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, CheckCircle2, Circle, Check, Loader2, MapPin, AlertCircle, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useProfileQuery, useProfileMutation } from '../hooks/useProfile';
@@ -9,6 +9,7 @@ const Step1PersonalRisk = () => {
     const navigate = useNavigate();
     const {
         age, setAge,
+        state, setState,
         city, setCity,
         maritalStatus, setMaritalStatus,
         dependents, setDependents,
@@ -27,6 +28,7 @@ const Step1PersonalRisk = () => {
     useEffect(() => {
         if (profileData) {
             if (profileData.age) setAge(profileData.age);
+            if (profileData.state) setState(profileData.state);
             if (profileData.city) setCity(profileData.city);
             if (profileData.maritalStatus) setMaritalStatus(profileData.maritalStatus);
             if (profileData.dependents !== undefined) setDependents(profileData.dependents);
@@ -44,6 +46,53 @@ const Step1PersonalRisk = () => {
 
     // Local state for dropdowns and accordion
     const [openDropdown, setOpenDropdown] = useState(null);
+
+    // Location data from backend
+    const [statesList, setStatesList] = useState([]);
+    const [citiesList, setCitiesList] = useState([]);
+    const [stateSearch, setStateSearch] = useState('');
+    const [citySearch, setCitySearch] = useState('');
+    const [loadingStates, setLoadingStates] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
+    const stateSearchRef = useRef(null);
+    const citySearchRef = useRef(null);
+
+    // Fetch states from backend on mount
+    useEffect(() => {
+        setLoadingStates(true);
+        fetch('/api/v1/location/states')
+            .then(res => res.json())
+            .then(data => setStatesList(data || []))
+            .catch(err => console.error('Failed to load states:', err))
+            .finally(() => setLoadingStates(false));
+    }, []);
+
+    // Fetch cities when state changes
+    useEffect(() => {
+        if (!state) {
+            setCitiesList([]);
+            return;
+        }
+        setLoadingCities(true);
+        fetch(`/api/v1/location/cities?state=${encodeURIComponent(state)}`)
+            .then(res => res.json())
+            .then(data => setCitiesList(data || []))
+            .catch(err => console.error('Failed to load cities:', err))
+            .finally(() => setLoadingCities(false));
+    }, [state]);
+
+    // Auto-focus search input when dropdown opens
+    useEffect(() => {
+        if (openDropdown === 'state') stateSearchRef.current?.focus();
+        if (openDropdown === 'city') citySearchRef.current?.focus();
+    }, [openDropdown]);
+
+    const filteredStates = statesList.filter(s =>
+        s.toLowerCase().includes(stateSearch.toLowerCase())
+    );
+    const filteredCities = citiesList.filter(c =>
+        c.toLowerCase().includes(citySearch.toLowerCase())
+    );
     const [expandedQuestion, setExpandedQuestion] = useState(1);
 
     // Risk Questions Data — 5 scored questions
@@ -150,19 +199,20 @@ const Step1PersonalRisk = () => {
     const isFormValid = useMemo(() => {
         return (
             age && parseInt(age) >= 18 &&
+            state.trim() !== '' &&
             city.trim() !== '' &&
             maritalStatus !== '' &&
             employmentType !== '' &&
             residencyStatus !== '' &&
             allRiskAnswered
         );
-    }, [age, city, maritalStatus, employmentType, residencyStatus, allRiskAnswered]);
+    }, [age, state, city, maritalStatus, employmentType, residencyStatus, allRiskAnswered]);
 
     const handleNext = async () => {
         if (!isFormValid) return;
         try {
             await saveProfileApi({
-                age, city, maritalStatus, dependents, childDependents,
+                age, state, city, maritalStatus, dependents, childDependents,
                 employmentType, residencyStatus, riskAnswers, riskTolerance
             });
         } catch (err) {
@@ -211,18 +261,132 @@ const Step1PersonalRisk = () => {
                         </div>
                     </div>
 
-                    {/* Current City — free text input */}
+                    {/* State & City — cascading searchable dropdowns */}
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
-                        <label className="text-sm font-medium text-slate-400 block">Current City <span className="text-red-400">*</span></label>
-                        <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                            <input
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                placeholder="e.g. Mumbai, Jaipur, Coimbatore..."
-                                className="w-full bg-surface-active border border-white/10 rounded-lg py-3 pl-9 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
-                            />
+                        <label className="text-sm font-medium text-slate-400 block">Location <span className="text-red-400">*</span></label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* State Dropdown */}
+                            <div className="relative">
+                                <div
+                                    onClick={() => setOpenDropdown(openDropdown === 'state' ? null : 'state')}
+                                    className={`bg-surface-active border rounded-lg py-3 px-3 text-sm cursor-pointer flex items-center gap-2 transition-all hover:border-primary/30 ${
+                                        state ? 'border-primary/20 text-white' : 'border-white/10 text-slate-500'
+                                    }`}
+                                >
+                                    <MapPin className="w-4 h-4 text-slate-500 shrink-0" />
+                                    <span className="truncate flex-1">{state || 'Select State...'}</span>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openDropdown === 'state' ? 'rotate-180' : ''}`} />
+                                </div>
+                                {openDropdown === 'state' && (
+                                    <div className="absolute top-full left-0 w-full mt-2 bg-surface-dark rounded-xl shadow-xl border border-white/10 z-30 overflow-hidden">
+                                        <div className="p-2 border-b border-white/5">
+                                            <div className="relative">
+                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                                                <input
+                                                    ref={stateSearchRef}
+                                                    type="text"
+                                                    value={stateSearch}
+                                                    onChange={(e) => setStateSearch(e.target.value)}
+                                                    placeholder="Search states..."
+                                                    className="w-full bg-surface-active border border-white/5 rounded-lg py-2 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primary/30"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="max-h-48 overflow-y-auto">
+                                            {loadingStates ? (
+                                                <div className="p-3 text-xs text-slate-500 text-center flex items-center justify-center gap-2">
+                                                    <Loader2 className="w-3 h-3 animate-spin" /> Loading states...
+                                                </div>
+                                            ) : filteredStates.length === 0 ? (
+                                                <div className="p-3 text-xs text-slate-500 text-center">No states found</div>
+                                            ) : (
+                                                filteredStates.map(s => (
+                                                    <div
+                                                        key={s}
+                                                        onClick={() => {
+                                                            setState(s);
+                                                            setCity('');
+                                                            setStateSearch('');
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                        className={`px-3 py-2.5 text-sm cursor-pointer transition-colors ${
+                                                            state === s
+                                                                ? 'bg-primary/10 text-primary font-semibold'
+                                                                : 'hover:bg-surface-active text-slate-300'
+                                                        }`}
+                                                    >
+                                                        {s}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* City Dropdown */}
+                            <div className="relative">
+                                <div
+                                    onClick={() => {
+                                        if (!state) {
+                                            toast.error('Please select a state first', { id: 'state-first' });
+                                            return;
+                                        }
+                                        setOpenDropdown(openDropdown === 'city' ? null : 'city');
+                                    }}
+                                    className={`bg-surface-active border rounded-lg py-3 px-3 text-sm cursor-pointer flex items-center gap-2 transition-all hover:border-primary/30 ${
+                                        !state ? 'opacity-50 cursor-not-allowed' : city ? 'border-primary/20 text-white' : 'border-white/10 text-slate-500'
+                                    }`}
+                                >
+                                    <MapPin className="w-4 h-4 text-slate-500 shrink-0" />
+                                    <span className="truncate flex-1">{city || 'Select City...'}</span>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${openDropdown === 'city' ? 'rotate-180' : ''}`} />
+                                </div>
+                                {openDropdown === 'city' && state && (
+                                    <div className="absolute top-full left-0 w-full mt-2 bg-surface-dark rounded-xl shadow-xl border border-white/10 z-30 overflow-hidden">
+                                        <div className="p-2 border-b border-white/5">
+                                            <div className="relative">
+                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                                                <input
+                                                    ref={citySearchRef}
+                                                    type="text"
+                                                    value={citySearch}
+                                                    onChange={(e) => setCitySearch(e.target.value)}
+                                                    placeholder="Search cities..."
+                                                    className="w-full bg-surface-active border border-white/5 rounded-lg py-2 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primary/30"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="max-h-48 overflow-y-auto">
+                                            {loadingCities ? (
+                                                <div className="p-3 text-xs text-slate-500 text-center flex items-center justify-center gap-2">
+                                                    <Loader2 className="w-3 h-3 animate-spin" /> Loading cities...
+                                                </div>
+                                            ) : filteredCities.length === 0 ? (
+                                                <div className="p-3 text-xs text-slate-500 text-center">No cities found</div>
+                                            ) : (
+                                                filteredCities.map(c => (
+                                                    <div
+                                                        key={c}
+                                                        onClick={() => {
+                                                            setCity(c);
+                                                            setCitySearch('');
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                        className={`px-3 py-2.5 text-sm cursor-pointer transition-colors ${
+                                                            city === c
+                                                                ? 'bg-primary/10 text-primary font-semibold'
+                                                                : 'hover:bg-surface-active text-slate-300'
+                                                        }`}
+                                                    >
+                                                        {c}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

@@ -7,7 +7,9 @@ export const useAssessmentStore = create(
             // Step 1: Personal Risk Profile
             age: 30,
             setAge: (age) => set({ age }),
-            city: '', // free-text city name
+            state: '', // selected Indian state
+            setState: (state) => set({ state }),
+            city: '', // selected city within state
             setCity: (city) => set({ city }),
             maritalStatus: '', // 'single', 'married', 'divorced', 'widowed'
             setMaritalStatus: (maritalStatus) => set({ maritalStatus }),

@@ -45,6 +45,7 @@ public class AssessmentService {
                 .orElse(new Profile());
 
         profile.setAge(dto.getAge());
+        profile.setState(dto.getState());
         profile.setCity(dto.getCity());
         profile.setMaritalStatus(safeEnum(MaritalStatus.class, dto.getMaritalStatus()));
         profile.setDependents(dto.getDependents());
@@ -62,6 +63,7 @@ public class AssessmentService {
         return ProfileDTO.builder()
                 .id(p.getId())
                 .age(p.getAge())
+                .state(p.getState())
                 .city(p.getCity())
                 .maritalStatus(enumName(p.getMaritalStatus()))
                 .dependents(p.getDependents())
