@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, Zap, TrendingUp, AlertTriangle, ChevronRight, Info, ArrowUpRight, CheckCircle2, XCircle, AlertCircle, Wallet, PiggyBank, BarChart3, RefreshCw } from 'lucide-react';
 import { useFinancialHealthScore } from '../../../hooks/useFinancialHealthScore';
 import { useHookText } from '../../../hooks/useHookText';
@@ -10,7 +9,6 @@ import BenchmarkComparison from '../components/BenchmarkComparison';
 import LockedPremiumInsights from '../components/LockedPremiumInsights';
 import FinancialTimeMachine from '../components/FinancialTimeMachine';
 import PillarInterpretationCard from '../components/PillarInterpretationCard';
-import { DashboardTabs } from './InsuranceTab';
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -113,7 +111,6 @@ const LockedHookCard = ({ pillar, hookData }) => {
 
 /* ─── MAIN DASHBOARD ─── */
 const FinancialDashboard = () => {
-    const navigate = useNavigate();
     const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData } = useFinancialHealthScore();
     const hookTexts = useHookText(sortedPillars, rawData);
     const { topFlags, hiddenCount: flagsHidden, totalTriggered: flagsTriggered } = useRedFlags();
@@ -150,27 +147,7 @@ const FinancialDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background-dark text-white">
-            {/* Header */}
-            <div className="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-primary" />
-                        </div>
-                        <h1 className="font-bold text-lg tracking-wide">Financial Health</h1>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <DashboardTabs />
-                        <button
-                            onClick={() => navigate('/assessment/step-1')}
-                            className="text-xs text-slate-400 hover:text-white transition-colors px-3 py-1.5 bg-surface-dark rounded-lg border border-white/5"
-                        >
-                            ↻ Retake Assessment
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <>
 
             <div className="max-w-[1200px] mx-auto px-4 py-6 pb-24 space-y-6">
 
@@ -417,7 +394,7 @@ const FinancialDashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

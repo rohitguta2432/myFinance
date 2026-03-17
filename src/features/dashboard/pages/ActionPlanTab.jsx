@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Shield, HeartPulse, Zap, ChevronDown, ChevronUp,
     CheckCircle2, AlertTriangle, Info, ArrowUpRight,
     Target, TrendingUp, Wallet, Building2, Check, X,
     ListChecks, Sparkles, Clock, BadgeAlert
 } from 'lucide-react';
-import { DashboardTabs } from './InsuranceTab';
+
 import { useActionPlan } from '../../../hooks/useActionPlan';
 
 /* ── Category / Pillar badge config ── */
@@ -175,8 +174,7 @@ export default function ActionPlanTab() {
         <section className="min-h-screen pb-24">
             {/* Header */}
             <div className="max-w-3xl mx-auto px-4 pt-10 space-y-6">
-                {/* Tabs */}
-                <DashboardTabs />
+
 
                 {/* Page header */}
                 <div className="space-y-2">

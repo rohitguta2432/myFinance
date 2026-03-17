@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Receipt, Scale, Home, FileText, Building2,
     CheckCircle2, AlertTriangle, Info, ArrowDownRight,
@@ -7,38 +6,7 @@ import {
 } from 'lucide-react';
 import { useTaxAnalysis } from '../../../hooks/useTaxAnalysis';
 
-/* ── Tab Navigation (shared across dashboard tabs) ── */
-export const DashboardTabs = () => {
-    const navigate = useNavigate();
-    const { pathname } = useLocation();
-    const tabs = [
-        { label: 'Summary', path: '/dashboard' },
-        { label: 'Insurance', path: '/dashboard/insurance' },
-        { label: 'Tax', path: '/dashboard/tax' },
-    ];
-    const active = tabs.find(t =>
-        t.path === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(t.path)
-    )?.path || '/dashboard';
 
-    return (
-        <div className="flex gap-1 bg-surface-dark rounded-xl p-1 border border-white/5">
-            {tabs.map(t => (
-                <button
-                    key={t.path}
-                    onClick={() => navigate(t.path)}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all ${active === t.path
-                        ? 'bg-primary/15 text-primary shadow-sm'
-                        : 'text-slate-500 hover:text-slate-300'
-                        }`}
-                >
-                    {t.label}
-                </button>
-            ))}
-        </div>
-    );
-};
 
 /* ═══════════════════════════════════════════════════════════════
    REUSABLE SUB-COMPONENTS
@@ -82,19 +50,7 @@ const TaxPlanningTab = () => {
     const { old: oldR, new: newR, recommended, savings, savingsFormatted } = regimeComparison;
 
     return (
-        <div className="min-h-screen bg-background-dark text-white">
-            {/* ── Header ── */}
-            <div className="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-primary" />
-                        </div>
-                        <h1 className="font-bold text-lg tracking-wide">Financial Health</h1>
-                    </div>
-                    <DashboardTabs />
-                </div>
-            </div>
+        <>
 
             <div className="max-w-[1200px] mx-auto px-4 py-6 pb-24 space-y-8">
 
@@ -443,7 +399,7 @@ const TaxPlanningTab = () => {
                 )}
 
             </div>
-        </div>
+        </>
     );
 };
 
