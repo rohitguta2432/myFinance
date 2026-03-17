@@ -52,9 +52,12 @@ Pre-seeded instincts extracted from scanning the **actual myFinance codebase** (
 |----------|---------|------------|----------|
 | `lombok-entities` | When creating Java classes | 0.90 | `@Data`, `@Builder` via Lombok in pom.xml |
 | `h2-dev-pg-prod` | When configuring DB | 0.95 | H2 in application.yml, PostgreSQL via Docker Compose env vars |
-| `controller-service-repo` | When adding backend features | 0.90 | 2 controllers, 2 services, 8 repositories — standard layered arch |
+| `step-based-controllers` | When adding backend features | 0.95 | 7 controllers (6 domain + Chat), 7 services, 8 repositories — 1 controller per wizard step |
 | `bedrock-ai-integration` | When working with AI chat | 0.85 | `BedrockChatService` uses AWS SDK `bedrockruntime` for `amazon.nova-lite-v1:0` |
-| `assessment-api-base` | When adding API endpoints | 0.90 | All endpoints under `/api/v1/assessment` |
+| `domain-api-base` | When adding API endpoints | 0.95 | Each step has own base: `/api/v1/profile`, `/api/v1/cashflow`, `/api/v1/networth`, etc. |
+| `structured-logging` | When adding log statements | 0.95 | `domain.entity.action key=value` pattern, e.g. `cashflow.income.add source=Salary amount=100000` |
+| `backend-owns-logic` | When implementing calculations or analysis | 1.00 | ALL business logic (scoring, tax analysis, projections) MUST be in backend services, NOT frontend hooks |
+| `enum-safe-parsing` | When handling enum values from frontend | 0.90 | `EnumUtils.safeEnum()` — returns null instead of throwing on unknown values |
 
 ### Deployment
 
