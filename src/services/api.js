@@ -1,4 +1,4 @@
-const BASE_URL = '/api/v1/assessment';
+const BASE_URL = '/api/v1';
 
 /**
  * Shared fetch wrapper with JSON headers and error handling.
