@@ -26,4 +26,8 @@ public class Goal {
     private Integer timeHorizonYears;
 
     private Double inflationRate;
+
+    private Double currentSavings;
+
+    private String importance;
 }

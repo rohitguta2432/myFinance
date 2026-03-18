@@ -24,4 +24,6 @@ public class Expense {
     private Frequency frequency;
 
     private Boolean isEssential;
+
+    private String description;
 }

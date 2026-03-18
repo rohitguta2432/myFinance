@@ -26,4 +26,6 @@ public class Income {
     private Boolean taxDeducted;
 
     private Double tdsPercentage;
+
+    private String description;
 }

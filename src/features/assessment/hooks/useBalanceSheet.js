@@ -28,6 +28,7 @@ export const useAddAssetMutation = () => {
         onSuccess: (savedAsset) => {
             store.addAsset(savedAsset);
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
     });
 };
@@ -41,6 +42,7 @@ export const useAddLiabilityMutation = () => {
         onSuccess: (savedLiability) => {
             store.addLiability(savedLiability);
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
     });
 };
@@ -54,6 +56,7 @@ export const useDeleteAssetMutation = () => {
         onSuccess: (_, id) => {
             store.removeAsset(id);
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
     });
 };
@@ -67,6 +70,7 @@ export const useDeleteLiabilityMutation = () => {
         onSuccess: (_, id) => {
             store.removeLiability(id);
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
     });
 };

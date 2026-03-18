@@ -14,4 +14,6 @@ public class GoalDTO {
     private Double currentCost;
     private Integer timeHorizonYears;
     private Double inflationRate;
+    private Double currentSavings;
+    private String importance;
 }

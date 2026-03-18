@@ -12,4 +12,5 @@ public class ExpenseDTO {
     private Double amount;
     private String frequency;
     private Boolean isEssential;
+    private String description;
 }

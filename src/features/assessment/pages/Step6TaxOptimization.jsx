@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, CheckCircle2, AlertTriangle, Loader2, Sparkles, X, Crown, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle2, AlertTriangle, Loader2, Sparkles, Crown, TrendingUp, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useTaxQuery, useTaxMutation } from '../hooks/useTax';
+import { useTaxCalculationQuery } from '../hooks/useTaxCalculation';
 
 const Step6TaxOptimization = () => {
     const navigate = useNavigate();
-    const {
-        incomes,
-        expenses,
-        assets,
-        insurance,
-        taxRegime,
-        setTaxRegime,
-        investments80C,
-        setInvestments80C
-    } = useAssessmentStore();
+    const { taxRegime, setTaxRegime, investments80C, setInvestments80C } = useAssessmentStore();
 
-    // API Integration
+    // API: existing CRUD for persisting tax choices
     const { data: taxData } = useTaxQuery();
     const { mutateAsync: saveTaxApi, isPending: isSaving } = useTaxMutation();
 
@@ -28,6 +20,64 @@ const Step6TaxOptimization = () => {
             if (taxData.investments80C !== undefined) setInvestments80C(taxData.investments80C);
         }
     }, [taxData, setTaxRegime, setInvestments80C]);
+
+    // ─── Manual Deduction Inputs ─────────────────────────────────────────────
+
+    const [homeLoanPrincipal, setHomeLoanPrincipal] = useState(0);
+    const [tuitionFees, setTuitionFees] = useState(0);
+    const [nscFd, setNscFd] = useState(0);
+
+    const [medSelfSpouse, setMedSelfSpouse] = useState(0);
+    const [medParentsLt60, setMedParentsLt60] = useState(0);
+    const [medParentsGt60, setMedParentsGt60] = useState(0);
+
+    const [otherNps, setOtherNps] = useState(0);
+    const [eduLoanInterest, setEduLoanInterest] = useState(0);
+    const [homeLoanInterest, setHomeLoanInterest] = useState(0);
+    const [donations, setDonations] = useState(0);
+
+    // ─── Debounced deduction totals ──────────────────────────────────────────
+
+    const [debouncedParams, setDebouncedParams] = useState({ deductions80C: 0, deductions80D: 0, otherDeductions: 0 });
+
+    const { data: calcData, isLoading: calcLoading } = useTaxCalculationQuery(debouncedParams);
+
+    const autoEpf = calcData?.autoEpf ?? 0;
+    const autoPpf = calcData?.autoPpf ?? 0;
+    const autoLifeIns = calcData?.autoLifeInsurance ?? 0;
+
+    const total80CRaw = autoEpf + autoPpf + autoLifeIns + homeLoanPrincipal + tuitionFees + nscFd;
+    const final80C = Math.min(total80CRaw, 150000);
+    const unused80C = Math.max(0, 150000 - final80C);
+
+    const final80D = Math.min(medSelfSpouse, 25000) + Math.min(medParentsLt60, 25000) + Math.min(medParentsGt60, 50000);
+    const finalOtherDeductions = Math.min(otherNps, 50000) + eduLoanInterest + Math.min(homeLoanInterest, 200000) + donations;
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedParams({ deductions80C: final80C, deductions80D: final80D, otherDeductions: finalOtherDeductions });
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [final80C, final80D, finalOtherDeductions]);
+
+    useEffect(() => { setInvestments80C(final80C); }, [final80C, setInvestments80C]);
+
+    // ─── Backend data ────────────────────────────────────────────────────────
+
+    const grossTotalIncome = calcData?.grossTotalIncome ?? 0;
+    const incomeCategories = calcData?.incomeCategories ?? {};
+    const hraExemption = calcData?.hraExemption ?? 0;
+    const annualRentPaid = calcData?.annualRentPaid ?? 0;
+    const annualBasic = calcData?.annualBasic ?? 0;
+    const actualHraReceived = calcData?.actualHraReceived ?? 0;
+    const oldRegime = calcData?.oldRegime ?? {};
+    const newRegime = calcData?.newRegime ?? {};
+    const recommendedRegime = calcData?.recommendedRegime ?? 'new';
+    const savings = calcData?.savings ?? 0;
+
+    useEffect(() => {
+        if (!taxRegime && grossTotalIncome > 0) setTaxRegime(recommendedRegime);
+    }, [grossTotalIncome, recommendedRegime, taxRegime, setTaxRegime]);
 
     const handleComplete = async () => {
         if (!taxRegime) {
@@ -42,173 +92,168 @@ const Step6TaxOptimization = () => {
         navigate('/assessment/complete');
     };
 
-    // --- Section A: Income Summary ---
-    const calculateAnnual = (item) => {
-        if (item.frequency === 'Monthly') return item.amount * 12;
-        if (item.frequency === 'Quarterly') return item.amount * 4;
-        if (item.frequency === 'Yearly') return item.amount;
-        return item.amount; // One-time
-    };
-
-    const incomeCategories = incomes.reduce((acc, inc) => {
-        const cat = inc.source || 'Other';
-        acc[cat] = (acc[cat] || 0) + calculateAnnual(inc);
-        return acc;
-    }, {});
-    const grossTotalIncome = Object.values(incomeCategories).reduce((sum, val) => sum + val, 0);
-
-    // --- Section B: Deductions Data & Calculation ---
-
-    // 80C Auto-fetches
-    const autoEpf = assets.filter(a => (a.subCategory || a.category)?.includes('EPF')).reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
-    const autoPpf = assets.filter(a => (a.subCategory || a.category)?.includes('PPF') || (a.subCategory || a.category)?.includes('NPS')).reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0);
-    const autoLifeIns = (insurance?.personalLife || []).reduce((sum, p) => sum + (parseFloat(p.premium) || 0), 0);
-
-    const [homeLoanPrincipal, setHomeLoanPrincipal] = useState(0);
-    const [tuitionFees, setTuitionFees] = useState(0);
-    const [nscFd, setNscFd] = useState(0);
-
-    const total80C = autoEpf + autoPpf + autoLifeIns + homeLoanPrincipal + tuitionFees + nscFd;
-    const final80C = Math.min(total80C, 150000);
-    const unused80C = Math.max(0, 150000 - final80C);
-
-    useEffect(() => {
-        setInvestments80C(final80C);
-    }, [final80C, setInvestments80C]);
-
-    // 80D
-    const [medSelfSpouse, setMedSelfSpouse] = useState(0);
-    const [medParentsLt60, setMedParentsLt60] = useState(0);
-    const [medParentsGt60, setMedParentsGt60] = useState(0);
-
-    const final80D = Math.min(medSelfSpouse, 25000) + Math.min(medParentsLt60, 25000) + Math.min(medParentsGt60, 50000);
-
-    // Other Deductions State
-    const [otherNps, setOtherNps] = useState(0);
-    const [eduLoanInterest, setEduLoanInterest] = useState(0);
-    const [homeLoanInterest, setHomeLoanInterest] = useState(0);
-    const [donations, setDonations] = useState(0);
-
-    const finalOtherDeductions = Math.min(otherNps, 50000) + eduLoanInterest + Math.min(homeLoanInterest, 200000) + donations;
-
-    // HRA Exemption Auto-Calculation
-    const rentPaidMonthly = expenses.filter(e => e.category === 'Rent/Mortgage').reduce((sum, e) => {
-        if (e.frequency === 'Monthly') return sum + e.amount;
-        if (e.frequency === 'Yearly') return sum + e.amount / 12;
-        return sum + e.amount;
-    }, 0);
-    const annualRentPaid = rentPaidMonthly * 12;
-    // Assume Basic Salary is 50% of Total Salary if explicit basic isn't available. Assume actual HRA is 40% of Basic.
-    const salaryIncome = incomeCategories['Salary'] || 0;
-    const annualBasic = salaryIncome * 0.50;
-    const actualHraReceived = annualBasic * 0.40;
-
-    let finalHraExemption = 0;
-    if (annualRentPaid > 0 && annualBasic > 0) {
-        const rentMinus10PercentBasic = Math.max(0, annualRentPaid - (0.10 * annualBasic));
-        const fiftyPercentBasic = 0.50 * annualBasic; // Assume Metro
-        finalHraExemption = Math.min(actualHraReceived, fiftyPercentBasic, rentMinus10PercentBasic);
-    }
-
-
-    // --- Section C: Tax Calculations ---
-    const calculateTax = (income, regime) => {
-        let taxable = income;
-        let tax = 0;
-
-        if (regime === 'old') {
-            const stdDeduction = 50000;
-            taxable = Math.max(0, income - stdDeduction - final80C - final80D - finalHraExemption - finalOtherDeductions);
-
-            // Calculate tax slabs (Old Regime)
-            if (taxable > 1000000) {
-                tax += (taxable - 1000000) * 0.30;
-                tax += 112500;
-            } else if (taxable > 500000) {
-                tax += (taxable - 500000) * 0.20;
-                tax += 12500;
-            } else if (taxable > 250000) {
-                tax += (taxable - 250000) * 0.05;
-            }
-        } else {
-            // New Regime (FY 2024-25/2026-27 updated slabs)
-            const stdDeduction = 75000;
-            const employerNps = 0; // Assuming 0 for now unless user enters it
-            taxable = Math.max(0, income - stdDeduction - employerNps);
-
-            if (taxable <= 700000) {
-                return { taxable, baseTax: 0, cess: 0, totalTax: 0, rate: 0 };
-            }
-
-            if (taxable > 1500000) {
-                tax += (taxable - 1500000) * 0.30;
-                tax += 150000;
-            } else if (taxable > 1200000) {
-                tax += (taxable - 1200000) * 0.20;
-                tax += 90000;
-            } else if (taxable > 1000000) {
-                tax += (taxable - 1000000) * 0.15;
-                tax += 60000;
-            } else if (taxable > 700000) {
-                tax += (taxable - 700000) * 0.10;
-                tax += 30000;
-            } else if (taxable > 300000) {
-                tax += (taxable - 300000) * 0.05;
-            }
-            // Add marginal relief if applicable (simplified here)
-        }
-
-        const cess = tax * 0.04;
-        const totalTax = tax + cess;
-        const rate = income > 0 ? (totalTax / income) * 100 : 0;
-
-        return { taxable, baseTax: tax, cess, totalTax, rate };
-    };
-
-    const oldTax = calculateTax(grossTotalIncome, 'old');
-    const newTax = calculateTax(grossTotalIncome, 'new');
-
-    const recommendedRegime = oldTax.totalTax <= newTax.totalTax ? 'old' : 'new';
-    const savings = Math.abs(oldTax.totalTax - newTax.totalTax);
-
-    // Auto-select regime if not selected
-    useEffect(() => {
-        if (!taxRegime && grossTotalIncome > 0) {
-            setTaxRegime(recommendedRegime);
-        }
-    }, [grossTotalIncome, recommendedRegime, taxRegime, setTaxRegime]);
-
-
-    // UI State
-    const [openAccordion, setOpenAccordion] = useState(''); // '80c', '80d', 'other'
+    const [openAccordion, setOpenAccordion] = useState('');
     const toggleAccordion = (id) => setOpenAccordion(openAccordion === id ? '' : id);
+
+    const fmt = (n) => `₹${Math.round(n ?? 0).toLocaleString('en-IN')}`;
+
+    // ─── Comparison table rows ───────────────────────────────────────────────
+
+    const comparisonRows = [
+        { label: 'Gross Income', old: oldRegime.grossIncome, new: newRegime.grossIncome },
+        { label: 'Standard Deduction', old: oldRegime.standardDeduction, new: newRegime.standardDeduction },
+        { label: 'Section 80C', old: oldRegime.deductions80C, new: newRegime.deductions80C },
+        { label: 'Section 80D', old: oldRegime.deductions80D, new: newRegime.deductions80D },
+        { label: 'HRA Exemption', old: oldRegime.hraExemption, new: newRegime.hraExemption },
+        { label: 'Other Deductions', old: oldRegime.otherDeductions, new: newRegime.otherDeductions },
+        { label: 'Net Taxable Income', old: oldRegime.netTaxable, new: newRegime.netTaxable, bold: true },
+        { label: 'Tax Calculated', old: oldRegime.baseTax, new: newRegime.baseTax },
+        { label: 'Cess (4%)', old: oldRegime.cess, new: newRegime.cess },
+        { label: 'FINAL TAX', old: oldRegime.totalTax, new: newRegime.totalTax, final: true },
+    ];
 
     return (
         <div className="flex flex-col h-full bg-background-dark pb-24">
             <div className="flex-1 space-y-6 overflow-y-auto w-full px-2 sm:px-4 hide-scrollbar">
 
                 {/* Header */}
-                <div className="mb-6">
+                <div className="mb-2">
                     <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Tax Optimization <span className="text-slate-400 text-lg font-normal">(FY 2026-27)</span></h1>
                     <p className="text-slate-400 text-sm">Most Indians overpay few thousands to lakhs annually. Let's find the best regime for you and maximize deductions.</p>
                 </div>
 
+                {/* ═══════════════════ RECOMMENDATION BANNER (full-width) ═══════════════════ */}
+                <div className={`rounded-2xl p-5 lg:p-6 border ${recommendedRegime === 'old' ? 'bg-primary/10 border-primary/30' : 'bg-primary/10 border-primary/30'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 className="font-bold text-lg mb-1 flex items-center gap-2 text-primary">
+                                <Sparkles className="w-5 h-5" />
+                                RECOMMENDATION: Choose <span className="text-white">{recommendedRegime === 'old' ? 'OLD' : 'NEW'} REGIME</span>
+                            </h3>
+                            <p className="text-white text-xl lg:text-2xl font-bold mb-2">
+                                You SAVE {fmt(savings)}
+                            </p>
+                            <p className="text-slate-400 text-sm">
+                                You save {fmt(savings)}, recommendation on tax optimization for amount. Choose {recommendedRegime === 'old' ? 'old' : 'new'} regime.
+                            </p>
+                        </div>
+                        {/* Regime Toggle Buttons */}
+                        <div className="flex items-center gap-0 bg-surface-dark rounded-xl border border-white/10 overflow-hidden flex-shrink-0">
+                            <button
+                                onClick={() => { setTaxRegime('old'); toast.success('Old Regime selected', { id: 'regime-select' }); }}
+                                className={`px-5 py-2.5 text-sm font-bold transition-all ${taxRegime === 'old' ? 'bg-surface-active text-white' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Old Regime
+                            </button>
+                            <button
+                                onClick={() => { setTaxRegime('new'); toast.success('New Regime selected', { id: 'regime-select' }); }}
+                                className={`px-5 py-2.5 text-sm font-bold transition-all ${taxRegime === 'new' ? 'bg-primary text-background-dark' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                New Regime
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ═══════════════════ COMPARISON TABLE (full-width) ═══════════════════ */}
+                <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg">
+                    {/* Table */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            {/* Header */}
+                            <thead>
+                                <tr className="border-b border-white/10">
+                                    <th className="text-left px-5 py-4 text-sm font-bold text-slate-400 w-[40%]"></th>
+                                    <th
+                                        onClick={() => { setTaxRegime('old'); toast.success('Old Regime selected', { id: 'regime-select' }); }}
+                                        className={`text-center px-5 py-4 text-sm font-bold uppercase tracking-wider cursor-pointer transition-all w-[30%] ${
+                                            taxRegime === 'old'
+                                                ? 'text-primary bg-primary/5 border-b-2 border-primary'
+                                                : recommendedRegime === 'old'
+                                                    ? 'text-white hover:bg-white/5'
+                                                    : 'text-slate-400 hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Old Regime
+                                            {taxRegime === 'old' && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                        </div>
+                                    </th>
+                                    <th
+                                        onClick={() => { setTaxRegime('new'); toast.success('New Regime selected', { id: 'regime-select' }); }}
+                                        className={`text-center px-5 py-4 text-sm font-bold uppercase tracking-wider cursor-pointer transition-all w-[30%] ${
+                                            taxRegime === 'new'
+                                                ? 'text-primary bg-primary/5 border-b-2 border-primary'
+                                                : recommendedRegime === 'new'
+                                                    ? 'text-white hover:bg-white/5'
+                                                    : 'text-slate-400 hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            New Regime
+                                            {taxRegime === 'new' && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {comparisonRows.map((row, i) => (
+                                    <tr
+                                        key={row.label}
+                                        className={`border-b border-white/5 transition-colors ${
+                                            row.final ? 'bg-surface-active' : row.bold ? 'bg-white/[0.02]' : ''
+                                        }`}
+                                    >
+                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-black text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
+                                            {row.label}
+                                        </td>
+                                        <td className={`text-center px-5 py-3 font-mono ${
+                                            row.final
+                                                ? `text-lg font-black ${taxRegime === 'old' ? 'text-white' : 'text-slate-300'}`
+                                                : row.bold
+                                                    ? 'text-sm font-bold text-white'
+                                                    : 'text-sm text-slate-300'
+                                        } ${taxRegime === 'old' ? 'bg-primary/5' : ''}`}>
+                                            {fmt(row.old)}
+                                        </td>
+                                        <td className={`text-center px-5 py-3 font-mono ${
+                                            row.final
+                                                ? `text-lg font-black ${taxRegime === 'new' ? 'text-primary' : 'text-slate-300'}`
+                                                : row.bold
+                                                    ? 'text-sm font-bold text-white'
+                                                    : 'text-sm text-slate-300'
+                                        } ${taxRegime === 'new' ? 'bg-primary/5' : ''}`}>
+                                            {fmt(row.new)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {calcLoading && (
+                        <div className="flex items-center justify-center gap-2 py-3 text-slate-400 text-sm border-t border-white/5">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Recalculating...
+                        </div>
+                    )}
+                </div>
+
+                {/* ═══════════════════ 2-COLUMN: Income/Deductions | HRA/Premium ═══════════════════ */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full pb-10">
 
-                    {/* Left Column: Data & Deductions */}
+                    {/* Left Column */}
                     <div className="space-y-6 w-full">
 
-                        {/* Section A: Income Summary */}
+                        {/* Income Summary */}
                         <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
                             <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
-                                <h3 className="font-bold text-white text-sm tracking-wide">YOUR TOTAL INCOME (FY 2026-27)</h3>
+                                <h3 className="font-bold text-white text-sm tracking-wide">Income Summary</h3>
                                 <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-Populated</span>
                             </div>
                             <div className="p-5 font-mono text-sm space-y-3">
                                 {Object.entries(incomeCategories).map(([source, amt]) => (
                                     <div key={source} className="flex justify-between items-center text-slate-300">
                                         <span>{source}</span>
-                                        <span>₹{amt.toLocaleString()}</span>
+                                        <span>{fmt(amt)}</span>
                                     </div>
                                 ))}
                                 {Object.keys(incomeCategories).length === 0 && (
@@ -216,44 +261,34 @@ const Step6TaxOptimization = () => {
                                 )}
                                 <div className="border-t border-dashed border-white/20 pt-3 mt-3 flex justify-between items-center">
                                     <span className="text-white font-bold tracking-widest">GROSS TOTAL</span>
-                                    <span className="text-primary text-lg font-bold">₹{grossTotalIncome.toLocaleString()}</span>
+                                    <span className="text-primary text-lg font-bold">{fmt(grossTotalIncome)}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Section B: Deductions */}
+                        {/* Deductions */}
                         <div className="w-full">
-                            <h3 className="text-slate-400 font-bold mb-3 uppercase tracking-wider text-sm flex items-center gap-2">
-                                Deductions <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px]">Old Regime Only</span>
-                            </h3>
-
                             <div className="space-y-3 w-full">
-                                {/* 80C Accordion */}
+
+                                {/* 80C */}
                                 <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg transition-all w-full">
-                                    <button
-                                        onClick={() => toggleAccordion('80c')}
-                                        className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left"
-                                    >
+                                    <button onClick={() => toggleAccordion('80c')} className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left">
                                         <div>
-                                            <h4 className="font-bold text-white">SECTION 80C DEDUCTIONS</h4>
+                                            <h4 className="font-bold text-white">80C</h4>
                                             <p className="text-xs text-slate-400">(Max: ₹1,50,000)</p>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="text-primary font-bold font-mono">₹{final80C.toLocaleString()}</span>
+                                            <span className="text-primary font-bold font-mono">{fmt(final80C)}</span>
                                             <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openAccordion === '80c' ? 'rotate-180' : ''}`} />
                                         </div>
                                     </button>
-
                                     {openAccordion === '80c' && (
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-4">
-                                            {/* Auto Filled */}
                                             <div className="space-y-2">
-                                                {autoEpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> EPF Contribution</span><span className="text-slate-300">₹{autoEpf.toLocaleString()} (Auto)</span></div>}
-                                                {autoPpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> PPF/NPS</span><span className="text-slate-300">₹{autoPpf.toLocaleString()} (Auto)</span></div>}
-                                                {autoLifeIns > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Life Insurance</span><span className="text-slate-300">₹{autoLifeIns.toLocaleString()} (Auto)</span></div>}
+                                                {autoEpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> EPF Contribution</span><span className="text-slate-300">{fmt(autoEpf)} (Auto)</span></div>}
+                                                {autoPpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> PPF/NPS</span><span className="text-slate-300">{fmt(autoPpf)} (Auto)</span></div>}
+                                                {autoLifeIns > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Life Insurance</span><span className="text-slate-300">{fmt(autoLifeIns)} (Auto)</span></div>}
                                             </div>
-
-                                            {/* Manual Inputs */}
                                             <div className="space-y-3 pt-3 border-t border-white/10">
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-slate-400">Home Loan Principal:</span>
@@ -268,18 +303,17 @@ const Step6TaxOptimization = () => {
                                                     <input type="number" value={nscFd || ''} onChange={(e) => setNscFd(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                                 </div>
                                             </div>
-
                                             <div className="pt-4 border-t border-white/10">
                                                 <div className="flex justify-between text-sm font-bold">
                                                     <span className="text-white">TOTAL USED:</span>
-                                                    <span className={`${final80C >= 150000 ? 'text-primary' : 'text-slate-300'}`}>₹{final80C.toLocaleString()} / ₹1,50,000</span>
+                                                    <span className={`${final80C >= 150000 ? 'text-primary' : 'text-slate-300'}`}>{fmt(final80C)} / ₹1,50,000</span>
                                                 </div>
                                                 {unused80C > 0 && (
                                                     <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex gap-3 items-start">
                                                         <AlertTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0 mt-0.5" />
                                                         <div>
-                                                            <span className="text-yellow-400 font-bold text-sm block">⚠️ You have ₹{unused80C.toLocaleString()} unused!</span>
-                                                            <p className="text-yellow-400/80 text-xs">Invest by March 31 to save up to ₹{Math.round(unused80C * 0.312).toLocaleString()} in taxes.</p>
+                                                            <span className="text-yellow-400 font-bold text-sm block">⚠️ You have {fmt(unused80C)} unused!</span>
+                                                            <p className="text-yellow-400/80 text-xs">Invest by March 31 to save up to {fmt(unused80C * 0.312)} in taxes.</p>
                                                         </div>
                                                     </div>
                                                 )}
@@ -288,22 +322,18 @@ const Step6TaxOptimization = () => {
                                     )}
                                 </div>
 
-                                {/* 80D Accordion */}
+                                {/* 80D */}
                                 <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg transition-all w-full">
-                                    <button
-                                        onClick={() => toggleAccordion('80d')}
-                                        className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left"
-                                    >
+                                    <button onClick={() => toggleAccordion('80d')} className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left">
                                         <div>
-                                            <h4 className="font-bold text-white">SECTION 80D</h4>
+                                            <h4 className="font-bold text-white">80D</h4>
                                             <p className="text-xs text-slate-400">Medical Insurance</p>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="text-primary font-bold font-mono">₹{final80D.toLocaleString()}</span>
+                                            <span className="text-primary font-bold font-mono">{fmt(final80D)}</span>
                                             <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openAccordion === '80d' ? 'rotate-180' : ''}`} />
                                         </div>
                                     </button>
-
                                     {openAccordion === '80d' && (
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-3">
                                             <div className="flex justify-between items-center text-sm">
@@ -322,22 +352,18 @@ const Step6TaxOptimization = () => {
                                     )}
                                 </div>
 
-                                {/* Other Deductions Accordion */}
+                                {/* Others */}
                                 <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg transition-all w-full">
-                                    <button
-                                        onClick={() => toggleAccordion('other')}
-                                        className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left"
-                                    >
+                                    <button onClick={() => toggleAccordion('other')} className="w-full px-5 py-4 flex items-center justify-between bg-surface-dark hover:bg-surface-active transition-colors text-left">
                                         <div>
-                                            <h4 className="font-bold text-white">OTHER DEDUCTIONS</h4>
+                                            <h4 className="font-bold text-white">Others</h4>
                                             <p className="text-xs text-slate-400">NPS, Loans, Donations</p>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="text-primary font-bold font-mono">₹{finalOtherDeductions.toLocaleString()}</span>
+                                            <span className="text-primary font-bold font-mono">{fmt(finalOtherDeductions)}</span>
                                             <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openAccordion === 'other' ? 'rotate-180' : ''}`} />
                                         </div>
                                     </button>
-
                                     {openAccordion === 'other' && (
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-3">
                                             <div className="flex justify-between items-center text-sm">
@@ -359,190 +385,60 @@ const Step6TaxOptimization = () => {
                                         </div>
                                     )}
                                 </div>
-
-                                {/* HRA Exemption Display */}
-                                <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
-                                    <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
-                                        <h3 className="font-bold text-white text-sm tracking-wide">HRA EXEMPTION</h3>
-                                        <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-Calculated</span>
-                                    </div>
-                                    <div className="p-5 font-mono text-sm space-y-2">
-                                        <div className="flex justify-between items-center text-slate-300">
-                                            <span>Actual HRA Received:</span>
-                                            <span>₹{actualHraReceived.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-slate-300">
-                                            <span>Rent Paid:</span>
-                                            <span>₹{annualRentPaid.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-slate-300">
-                                            <span>Basic Salary:</span>
-                                            <span>₹{annualBasic.toLocaleString()}</span>
-                                        </div>
-                                        <div className="border-t border-dashed border-white/20 pt-3 flex justify-between items-center">
-                                            <span className="text-white font-bold tracking-widest">EXEMPTION:</span>
-                                            <span className="text-primary font-bold">₹{Math.round(finalHraExemption).toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
                             </div>
                         </div>
 
                     </div>
 
+                    {/* Right Column */}
+                    <div className="space-y-6 w-full">
 
-                    {/* Right Column: The Big Comparison */}
-                    <div className="space-y-6 w-full flex flex-col h-full">
-                        <h3 className="text-slate-400 font-bold uppercase tracking-wider text-sm flex items-center gap-2">
-                            The Big Comparison <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        </h3>
-
-                        <div className="grid grid-cols-2 gap-3 lg:gap-4 flex-grow">
-
-                            {/* Old Regime Card */}
-                            <div
-                                onClick={() => setTaxRegime('old')}
-                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative flex flex-col ${taxRegime === 'old' ? 'bg-surface-active border-primary shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
-                            >
-                                {recommendedRegime === 'old' && (
-                                    <div className="absolute -top-[2px] -right-[2px] bg-primary text-black font-extrabold tracking-widest text-[10px] px-4 py-1.5 rounded-bl-xl rounded-tr-2xl flex items-center justify-center leading-none">RECOMMENDED</div>
-                                )}
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className={`font-bold uppercase tracking-widest text-sm ${taxRegime === 'old' ? 'text-primary' : 'text-slate-400'}`}>OLD REGIME</h4>
-                                    {taxRegime === 'old' && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                        {/* HRA Exemption */}
+                        <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
+                            <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
+                                <h3 className="font-bold text-white text-sm tracking-wide">HRA Exemption</h3>
+                                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-calculated</span>
+                            </div>
+                            <div className="p-5 font-mono text-sm space-y-2">
+                                <div className="flex justify-between items-center text-slate-300">
+                                    <span>Standa Exemption</span>
+                                    <span>{fmt(actualHraReceived)}</span>
                                 </div>
-
-                                <div className="flex flex-col font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
-                                    <div className="space-y-2 flex-grow">
-                                        <div className="flex justify-between items-center gap-2"><span className="whitespace-nowrap">Gross Income</span><span className="text-right truncate">₹{grossTotalIncome.toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Std Ded.</span><span className="text-right truncate">-₹50,000</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) 80C</span><span className="text-right truncate">-₹{final80C.toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) 80D</span><span className="text-right truncate">-₹{final80D.toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) HRA</span><span className="text-right truncate">-₹{Math.round(finalHraExemption).toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Others</span><span className="text-right truncate">-₹{finalOtherDeductions.toLocaleString()}</span></div>
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <div className="border-t border-dashed border-white/20 pb-2 mb-2"></div>
-                                        <div className="flex justify-between items-center font-bold text-white mb-4">
-                                            <span className="whitespace-nowrap">Net Taxable</span><span className="text-right truncate">₹{oldTax.taxable.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center mb-2"><span className="whitespace-nowrap">Tax Calculated</span><span className="text-right truncate">₹{Math.round(oldTax.baseTax).toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center"><span className="whitespace-nowrap">(+) Cess (4%)</span><span className="text-right truncate">₹{Math.round(oldTax.cess).toLocaleString()}</span></div>
-                                    </div>
+                                <div className="flex justify-between items-center text-slate-300">
+                                    <span>Auto-calculated</span>
+                                    <span>-</span>
                                 </div>
-
-                                <div className="border-t border-white/10 mt-4 pt-4">
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-xs text-slate-400 font-bold">FINAL TAX:</span>
-                                        <span className={`text-xl lg:text-2xl font-bold ${recommendedRegime === 'old' ? 'text-white' : 'text-slate-300'}`}>₹{Math.round(oldTax.totalTax).toLocaleString()}</span>
-                                    </div>
-                                    <div className="text-[10px] text-right text-slate-500">Effective Rate: {oldTax.rate.toFixed(1)}%</div>
+                                <div className="border-t border-dashed border-white/20 pt-3 flex justify-between items-center">
+                                    <span className="text-white font-bold tracking-widest">EXEMPTION</span>
+                                    <span className="text-primary font-bold">{fmt(hraExemption)}</span>
                                 </div>
                             </div>
-
-                            {/* New Regime Card */}
-                            <div
-                                onClick={() => setTaxRegime('new')}
-                                className={`rounded-2xl p-4 lg:p-5 border-2 transition-all cursor-pointer relative flex flex-col ${taxRegime === 'new' ? 'bg-surface-active border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'bg-surface-dark border-white/5 hover:border-white/20'}`}
-                            >
-                                {recommendedRegime === 'new' && (
-                                    <div className="absolute -top-[2px] -right-[2px] bg-blue-500 text-white font-extrabold tracking-widest text-[10px] px-4 py-1.5 rounded-bl-xl rounded-tr-2xl flex items-center justify-center leading-none">RECOMMENDED</div>
-                                )}
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className={`font-bold uppercase tracking-widest text-sm ${taxRegime === 'new' ? 'text-blue-400' : 'text-slate-400'}`}>NEW REGIME</h4>
-                                    {taxRegime === 'new' && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
-                                </div>
-
-                                <div className="flex flex-col font-mono text-[11px] lg:text-xs text-slate-300 flex-grow">
-                                    <div className="space-y-2 flex-grow">
-                                        <div className="flex justify-between items-center gap-2"><span className="whitespace-nowrap">Gross Income</span><span className="text-right truncate">₹{grossTotalIncome.toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300"><span className="whitespace-nowrap">(-) Std Ded.</span><span className="text-right truncate">-₹75,000</span></div>
-                                        <div className="flex justify-between items-center gap-2 text-red-300 opacity-50"><span className="line-through whitespace-nowrap">(-) Others</span><span className="text-[10px] text-right truncate">Not Allowed</span></div>
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <div className="border-t border-dashed border-white/20 pb-2 mb-2"></div>
-                                        <div className="flex justify-between items-center font-bold text-white mb-4">
-                                            <span className="whitespace-nowrap">Net Taxable</span><span className="text-right truncate">₹{newTax.taxable.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center mb-2"><span className="whitespace-nowrap">Tax Calculated</span><span className="text-right truncate">₹{Math.round(newTax.baseTax).toLocaleString()}</span></div>
-                                        <div className="flex justify-between items-center"><span className="whitespace-nowrap">(+) Cess (4%)</span><span className="text-right truncate">₹{Math.round(newTax.cess).toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-white/10 mt-4 pt-4">
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-xs text-slate-400 font-bold">FINAL TAX:</span>
-                                        <span className={`text-xl lg:text-2xl font-bold ${recommendedRegime === 'new' ? 'text-white' : 'text-slate-300'}`}>₹{Math.round(newTax.totalTax).toLocaleString()}</span>
-                                    </div>
-                                    <div className="text-[10px] text-right text-slate-500">Effective Rate: {newTax.rate.toFixed(1)}%</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recommendation Banner */}
-                        <div className={`mt-6 rounded-2xl p-5 lg:p-6 border ${recommendedRegime === 'old' ? 'bg-primary/10 border-primary/30' : 'bg-blue-500/10 border-blue-500/30'}`}>
-                            <h3 className={`font-bold text-lg mb-2 flex items-center gap-2 ${recommendedRegime === 'old' ? 'text-primary' : 'text-blue-400'}`}>
-                                <Sparkles className="w-5 h-5" />
-                                RECOMMENDATION: Choose {recommendedRegime === 'old' ? 'OLD' : 'NEW'} REGIME
-                            </h3>
-                            <p className="text-white text-base lg:text-lg mb-3">
-                                You SAVE <span className="font-bold">₹{Math.round(savings).toLocaleString()}</span> by choosing {recommendedRegime === 'old' ? 'Old Regime over New Regime' : 'New Regime over Old Regime'}.
-                            </p>
-                            <p className="text-slate-400 text-sm flex items-start gap-2">
-                                <span className="mt-0.5">💡</span>
-                                {recommendedRegime === 'old'
-                                    ? `With your high deductions (₹${((final80C + final80D + finalHraExemption + finalOtherDeductions) / 100000).toFixed(2)}L total), Old Regime is better. If you have fewer deductions next year, re-check.`
-                                    : 'Since your planned deductions are lower, New Regime offers better tax savings due to its wider slabs and zero tax up to ₹7L.'}
-                            </p>
                         </div>
 
                         {/* Premium Upsell Cards */}
-                        <div className="mt-8">
-                            <h3 className="text-slate-400 font-bold uppercase tracking-wider text-sm flex items-center gap-2 mb-4">
-                                <Crown className="w-4 h-4 text-amber-500" /> Unlock Advanced Optimization
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                                {/* Tax Harvesting Card */}
-                                <div className="relative group rounded-3xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-amber-500/10 transition-shadow duration-500">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-transparent to-orange-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-                                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/30 blur-[40px] rounded-full group-hover:bg-amber-500/40 transition-colors duration-500"></div>
-
-                                    <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-3xl p-6 flex flex-col border border-white/10 group-hover:border-amber-500/40 transition-colors duration-300">
-                                        <div className="flex items-start justify-between mb-5">
-                                            <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                                                <TrendingUp className="w-6 h-6 text-amber-500" />
-                                            </div>
-                                            <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.4)] transform group-hover:scale-105 transition-transform duration-300">Premium</div>
-                                        </div>
-                                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-amber-400 transition-colors duration-300">Tax Harvesting</h4>
-                                        <p className="text-sm text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Save up to <span className="text-amber-400 font-bold">₹10,000 extra</span> by booking 1L LTCG tax-free annually.</p>
-                                    </div>
+                            {/* Tax Harvesting */}
+                            <div className="relative group rounded-2xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-amber-500/10 transition-shadow duration-500">
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-transparent to-orange-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                                <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-2xl p-5 flex flex-col border border-white/10 group-hover:border-amber-500/40 transition-colors duration-300">
+                                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
+                                    <h4 className="text-white font-bold text-base mb-2 group-hover:text-amber-400 transition-colors duration-300">Tax Harvesting</h4>
+                                    <p className="text-xs text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Compare your <span className="text-amber-400 font-bold">portfolio</span> harvest of tax harvesting.</p>
                                 </div>
-
-                                {/* Family Income Distribution Card */}
-                                <div className="relative group rounded-3xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/10 transition-shadow duration-500">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-transparent to-pink-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-                                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/30 blur-[40px] rounded-full group-hover:bg-purple-500/40 transition-colors duration-500"></div>
-
-                                    <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-3xl p-6 flex flex-col border border-white/10 group-hover:border-purple-500/40 transition-colors duration-300">
-                                        <div className="flex items-start justify-between mb-5">
-                                            <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
-                                                <Users className="w-6 h-6 text-purple-400" />
-                                            </div>
-                                            <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.4)] transform group-hover:scale-105 transition-transform duration-300">Premium</div>
-                                        </div>
-                                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-purple-400 transition-colors duration-300">Family Income Distribution</h4>
-                                        <p className="text-sm text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Restructure investments among family members to stay in <span className="text-purple-400 font-bold">lower tax brackets</span>.</p>
-                                    </div>
-                                </div>
-
                             </div>
-                        </div>
 
+                            {/* Family Income Distribution */}
+                            <div className="relative group rounded-2xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/10 transition-shadow duration-500">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-transparent to-pink-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                                <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-2xl p-5 flex flex-col border border-white/10 group-hover:border-purple-500/40 transition-colors duration-300">
+                                    <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
+                                    <h4 className="text-white font-bold text-base mb-2 group-hover:text-purple-400 transition-colors duration-300">Family Income Distribution</h4>
+                                    <p className="text-xs text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Compare your account on <span className="text-purple-400 font-bold">Family Income</span> and bins distribution amounts.</p>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 

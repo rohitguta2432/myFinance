@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
 import { useRiskScoringQuery } from '../hooks/useRiskScoring';
+import { usePortfolioAnalysisQuery } from '../hooks/usePortfolioAnalysis';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
@@ -27,6 +28,9 @@ const Step3AssetsLiabilities = () => {
 
     // Fetch risk scoring (scores + target allocation) from backend
     const { data: riskData } = useRiskScoringQuery();
+
+    // Fetch portfolio analysis (classification, allocation %, DTI, etc.) from backend
+    const { data: portfolio } = usePortfolioAnalysisQuery();
 
     const [activeTab, setActiveTab] = useState('assets'); // 'assets' or 'liabilities'
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,32 +149,30 @@ const Step3AssetsLiabilities = () => {
         setIsModalOpen(false);
     };
 
-    // Calculations
-    const totalAssets = assets.reduce((sum, item) => sum + item.amount, 0);
-    const totalLiabilities = liabilities.reduce((sum, item) => sum + item.amount, 0);
-    const netWorth = totalAssets - totalLiabilities;
+    // ── Backend-computed portfolio analysis ──────────────────────────────
+    const totalAssets = portfolio?.totalAssets ?? 0;
+    const totalLiabilities = portfolio?.totalLiabilities ?? 0;
+    const netWorth = portfolio?.netWorth ?? 0;
+    const monthlyEmiTotal = portfolio?.monthlyEmiTotal ?? 0;
+    const avgInterestRate = portfolio?.avgInterestRate ?? 0;
+    const dtiRatio = portfolio?.dtiRatio ?? 0;
+    const totalMonthlyIncome = portfolio?.monthlyIncome ?? 0;
+    const cashFlowEMI = portfolio?.cashFlowEMI ?? 0;
+    const emiMismatch = portfolio?.emiMismatch ?? false;
 
-    const monthlyEmiTotal = liabilities.reduce((sum, item) => sum + (item.emi || 0), 0);
+    const equityPct = portfolio?.equityPct ?? 0;
+    const debtPct = portfolio?.debtPct ?? 0;
+    const realEstatePct = portfolio?.realEstatePct ?? 0;
+    const goldPct = portfolio?.goldPct ?? 0;
+    const otherPct = portfolio?.otherPct ?? 0;
 
-    // Average Interest Rate Weighting by Outstanding Amount
-    const totalInterestWeighted = liabilities.reduce((sum, item) => sum + ((item.interestRate || 0) * (item.amount || 0)), 0);
-    const avgInterestRate = totalLiabilities > 0 ? (totalInterestWeighted / totalLiabilities) : 0;
+    const equityTotal = portfolio?.equityTotal ?? 0;
+    const debtTotal = portfolio?.debtTotal ?? 0;
+    const realEstateTotal = portfolio?.realEstateTotal ?? 0;
+    const goldTotal = portfolio?.goldTotal ?? 0;
+    const otherTotal = portfolio?.otherTotal ?? 0;
 
-    const calculateMonthly = (item) => {
-        if (item.frequency === 'Monthly') return item.amount;
-        if (item.frequency === 'Quarterly') return item.amount / 3;
-        if (item.frequency === 'Yearly') return item.amount / 12;
-        return item.amount / 12; // One-time amortized
-    };
-    const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
-    const dtiRatio = totalMonthlyIncome > 0 ? (monthlyEmiTotal / totalMonthlyIncome) * 100 : 0;
-
-    // Cross-validate: EMI from Cash Flow (expenses) vs Liabilities
-    const cashFlowEMI = expenses
-        .filter(exp => exp.category === 'EMIs (loan payments)' || (exp.category || '').toUpperCase().includes('EMI'))
-        .reduce((sum, item) => sum + calculateMonthly(item), 0);
-    const emiMismatch = monthlyEmiTotal > 0 && cashFlowEMI > 0 && Math.abs(monthlyEmiTotal - cashFlowEMI) > 1;
-
+    // ── Visual helpers (stay in frontend) ────────────────────────────────
     const formatNetWorth = (amount) => {
         const absAmount = Math.abs(amount);
         let formatted;
@@ -196,61 +198,6 @@ const Step3AssetsLiabilities = () => {
     };
 
     const netWorthFormat = formatNetWorth(netWorth);
-
-    // Asset Allocation
-    const getAssetClass = (subcategory) => {
-        if (!subcategory) return 'Other';
-
-        const equityList = [
-            '📊 Mutual Funds — Hybrid',
-            '📈 Stocks/Shares',
-            '📊 Mutual Funds — Equity'
-        ];
-
-        const debtList = [
-            '🏦 Bank/Savings Account',
-            '📊 Fixed Deposit (FD)',
-            '💰 Recurring Deposit (RD)',
-            '🏢 EPF (Provident Fund)',
-            '📈 PPF (Public Provident Fund)',
-            '🎯 NPS (National Pension System)',
-            '📉 Mutual Funds — Debt',
-            '📄 Bonds/Debentures'
-        ];
-
-        const realEstateList = [
-            '🏠 Real Estate (Residential)',
-            '🏢 Real Estate (Commercial)',
-            '🏢REITs/InvITs'
-        ];
-
-        const goldList = [
-            '💎 Gold/ Silver (Digital/Sovereign Gold Bonds)'
-        ];
-
-        if (equityList.includes(subcategory)) return 'Equity';
-        if (debtList.includes(subcategory)) return 'Debt';
-        if (realEstateList.includes(subcategory)) return 'Real Estate';
-        if (goldList.includes(subcategory)) return 'Gold';
-
-        return 'Other';
-    };
-
-    let equityTotal = 0, debtTotal = 0, realEstateTotal = 0, goldTotal = 0, otherTotal = 0;
-    assets.forEach(a => {
-        const cls = getAssetClass(a.subCategory || a.category);
-        if (cls === 'Equity') equityTotal += a.amount;
-        else if (cls === 'Debt') debtTotal += a.amount;
-        else if (cls === 'Real Estate') realEstateTotal += a.amount;
-        else if (cls === 'Gold') goldTotal += a.amount;
-        else otherTotal += a.amount;
-    });
-
-    const equityPct = totalAssets ? (equityTotal / totalAssets) * 100 : 0;
-    const debtPct = totalAssets ? (debtTotal / totalAssets) * 100 : 0;
-    const realEstatePct = totalAssets ? (realEstateTotal / totalAssets) * 100 : 0;
-    const goldPct = totalAssets ? (goldTotal / totalAssets) * 100 : 0;
-    const otherPct = totalAssets ? (otherTotal / totalAssets) * 100 : 0;
 
     const conicGradient = totalAssets > 0 ? `conic-gradient(
         #3b82f6 0% ${equityPct}%,
@@ -374,7 +321,7 @@ const Step3AssetsLiabilities = () => {
                         </div>
                     </div>
 
-                    <h4 className="text-white font-bold text-sm mb-3">Your Current vs Target (Moderate Risk):</h4>
+                    <h4 className="text-white font-bold text-sm mb-3">Your Current vs Target ({profileLabel}):</h4>
                     <div className="bg-background-dark rounded-xl p-4 space-y-3 mb-4">
                         <div className="grid grid-cols-4 text-xs font-semibold text-slate-500 mb-1">
                             <div className="col-span-1">Asset</div>
@@ -382,30 +329,31 @@ const Step3AssetsLiabilities = () => {
                             <div className="text-center">Target</div>
                             <div className="text-right">Status</div>
                         </div>
-                        <div className="grid grid-cols-4 text-sm items-center">
-                            <div className="text-slate-300">Equity</div>
-                            <div className="text-center font-bold text-white">{equityPct.toFixed(0)}%</div>
-                            <div className="text-center text-slate-400">50%</div>
-                            <div className="text-right text-xs">{equityPct < 30 ? <span className="text-amber-400">⚠️ {50 - Math.round(equityPct)}% below</span> : <span className="text-emerald-400">✓ Close enough</span>}</div>
-                        </div>
-                        <div className="grid grid-cols-4 text-sm items-center">
-                            <div className="text-slate-300">Debt</div>
-                            <div className="text-center font-bold text-white">{debtPct.toFixed(0)}%</div>
-                            <div className="text-center text-slate-400">30%</div>
-                            <div className="text-right text-xs"><span className="text-emerald-400">✓ Close enough</span></div>
-                        </div>
-                        <div className="grid grid-cols-4 text-sm items-center">
-                            <div className="text-slate-300">Real Estate</div>
-                            <div className="text-center font-bold text-white">{realEstatePct.toFixed(0)}%</div>
-                            <div className="text-center text-slate-400">15%</div>
-                            <div className="text-right text-xs">{realEstatePct > 35 ? <span className="text-amber-400">⚠️ {Math.round(realEstatePct) - 15}% above</span> : <span className="text-emerald-400">✓ Close enough</span>}</div>
-                        </div>
-                        <div className="grid grid-cols-4 text-sm items-center">
-                            <div className="text-slate-300">Gold</div>
-                            <div className="text-center font-bold text-white">{goldPct.toFixed(0)}%</div>
-                            <div className="text-center text-slate-400">5%</div>
-                            <div className="text-right text-xs"><span className="text-emerald-400">✓ Close enough</span></div>
-                        </div>
+                        {[
+                            { label: 'Equity',      current: equityPct,     target: targetEquity },
+                            { label: 'Debt',         current: debtPct,       target: targetDebt },
+                            { label: 'Real Estate',  current: realEstatePct, target: targetRealEstate },
+                            { label: 'Gold',         current: goldPct,       target: targetGold },
+                        ].map(row => {
+                            const diff = Math.round(row.current) - row.target;
+                            const threshold = row.target * 0.4; // 40% tolerance band
+                            let statusEl;
+                            if (diff > threshold) {
+                                statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% above</span>;
+                            } else if (diff < -threshold) {
+                                statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% below</span>;
+                            } else {
+                                statusEl = <span className="text-emerald-400">✓ On track</span>;
+                            }
+                            return (
+                                <div key={row.label} className="grid grid-cols-4 text-sm items-center">
+                                    <div className="text-slate-300">{row.label}</div>
+                                    <div className="text-center font-bold text-white">{row.current.toFixed(0)}%</div>
+                                    <div className="text-center text-slate-400">{row.target}%</div>
+                                    <div className="text-right text-xs">{statusEl}</div>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {alert && (

@@ -13,4 +13,5 @@ public class IncomeDTO {
     private String frequency;
     private Boolean taxDeducted;
     private Double tdsPercentage;
+    private String description;
 }

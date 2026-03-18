@@ -122,6 +122,8 @@ const mapGoalToDTO = (data) => ({
     currentCost: parseFloat(data.cost) || 0,
     timeHorizonYears: parseInt(data.horizon) || 5,
     inflationRate: data.inflation ? parseFloat(data.inflation) / 100 : 0.06,
+    currentSavings: parseFloat(data.currentSavings) || 0,
+    importance: data.importance || 'High',
 });
 
 const mapGoalFromDTO = (dto) => ({
@@ -131,6 +133,8 @@ const mapGoalFromDTO = (dto) => ({
     cost: dto.currentCost,
     horizon: dto.timeHorizonYears,
     inflation: dto.inflationRate ? dto.inflationRate * 100 : 6,
+    currentSavings: dto.currentSavings || 0,
+    importance: dto.importance || 'High',
 });
 
 const mapInsuranceToDTO = (type, data) => ({
@@ -290,7 +294,22 @@ export const saveTax = async (data) => {
     return mapTaxFromDTO(dto);
 };
 
+// Portfolio Analysis — computed by backend (classification, allocation %, DTI, etc.)
+export const getPortfolioAnalysis = async () => {
+    return await api.get('/portfolio-analysis');
+};
+
 // Risk Scoring — computed by backend from profile + assets + liabilities + cashflow
 export const getRiskScoring = async () => {
     return await api.get('/risk-scoring');
+};
+
+// Goal Projection — computed by backend (future cost, SIP, feasibility, etc.)
+export const getGoalProjection = async () => {
+    return await api.get('/goal-projection');
+};
+
+// Tax Calculation — hybrid: auto-deductions + slabs on backend, manual caps on frontend
+export const getTaxCalculation = async ({ deductions80C = 0, deductions80D = 0, otherDeductions = 0 } = {}) => {
+    return await api.get(`/tax-calculation?deductions80C=${deductions80C}&deductions80D=${deductions80D}&otherDeductions=${otherDeductions}`);
 };

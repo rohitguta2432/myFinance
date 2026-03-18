@@ -6,6 +6,8 @@ import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
 import { Pencil } from 'lucide-react';
 
+const EMI_CATEGORY = 'EMIs (loan payments)';
+
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
     const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense, liabilities } = useAssessmentStore();
@@ -22,10 +24,10 @@ const Step2IncomeExpenses = () => {
     // Hydrate store from API
     useEffect(() => {
         if (financialsData) {
-            if (financialsData.incomes?.length) {
+            if (financialsData.incomes) {
                 useAssessmentStore.setState({ incomes: financialsData.incomes });
             }
-            if (financialsData.expenses?.length) {
+            if (financialsData.expenses) {
                 useAssessmentStore.setState({ expenses: financialsData.expenses });
             }
         }
@@ -42,6 +44,7 @@ const Step2IncomeExpenses = () => {
     const [isEssential, setIsEssential] = useState(true);
     const [taxDeducted, setTaxDeducted] = useState(false);
     const [tdsPercentage, setTdsPercentage] = useState(10);
+    const [description, setDescription] = useState('');
 
     const openModal = (type, item = null) => {
         setModalType(type);
@@ -50,6 +53,7 @@ const Step2IncomeExpenses = () => {
             setCategory(type === 'income' ? item.source : item.category);
             setAmount(item.amount.toString());
             setFrequency(item.frequency);
+            setDescription(item.description || '');
             if (type === 'income') {
                 setTaxDeducted(item.taxDeducted || false);
                 setTdsPercentage(item.tdsPercentage || 10);
@@ -64,6 +68,7 @@ const Step2IncomeExpenses = () => {
             setTaxDeducted(false);
             setTdsPercentage(10);
             setIsEssential(true);
+            setDescription('');
         }
         setIsModalOpen(true);
     };
@@ -79,29 +84,33 @@ const Step2IncomeExpenses = () => {
         if (modalType === 'income') {
             const incomeItem = {
                 ...baseItem,
-                id: editingId || Date.now(),
+                id: editingId || crypto.randomUUID(),
                 source: category,
                 taxDeducted,
-                tdsPercentage: taxDeducted ? parseFloat(tdsPercentage) || 0 : 0
+                tdsPercentage: taxDeducted ? parseFloat(tdsPercentage) || 0 : 0,
+                description: description.trim() || undefined
             };
             if (editingId) {
+                const prev = incomes.find(i => i.id === editingId);
                 updateIncome(editingId, incomeItem);
-                try { await updateIncomeApi(incomeItem); } catch (e) { console.warn('Income API update failed:', e.message); }
+                try { await updateIncomeApi(incomeItem); } catch (e) { updateIncome(editingId, prev); toast.error('Failed to update income — reverted'); }
             } else {
-                addIncome(incomeItem); // optimistic local update
-                try { await addIncomeApi(incomeItem); } catch (e) { console.warn('Income API save failed:', e.message); }
+                addIncome(incomeItem);
+                try { await addIncomeApi(incomeItem); } catch (e) { removeIncome(incomeItem.id); toast.error('Failed to save income — removed'); }
             }
         } else {
             const expenseItem = {
                 ...baseItem,
-                id: editingId || Date.now()
+                id: editingId || crypto.randomUUID(),
+                description: description.trim() || undefined
             };
             if (editingId) {
+                const prev = expenses.find(e => e.id === editingId);
                 updateExpense(editingId, expenseItem);
-                try { await updateExpenseApi(expenseItem); } catch (e) { console.warn('Expense API update failed:', e.message); }
+                try { await updateExpenseApi(expenseItem); } catch (e) { updateExpense(editingId, prev); toast.error('Failed to update expense — reverted'); }
             } else {
-                addExpense(expenseItem); // optimistic local update
-                try { await addExpenseApi(expenseItem); } catch (e) { console.warn('Expense API save failed:', e.message); }
+                addExpense(expenseItem);
+                try { await addExpenseApi(expenseItem); } catch (e) { removeExpense(expenseItem.id); toast.error('Failed to save expense — removed'); }
             }
         }
         setIsModalOpen(false);
@@ -118,7 +127,7 @@ const Step2IncomeExpenses = () => {
     const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyEMIs = expenses
-        .filter(exp => exp.category === 'EMIs (loan payments)' || exp.category.toUpperCase().includes('EMI'))
+        .filter(exp => exp.category === EMI_CATEGORY)
         .reduce((sum, item) => sum + calculateMonthly(item), 0);
 
     // We want the primary expenses listed as (Total Expenses - EMIs) in the card since it breaks out EMIs specifically.
@@ -132,7 +141,7 @@ const Step2IncomeExpenses = () => {
 
     // Cross-validate: EMI from Cash Flow vs Liabilities
     const liabilitiesEMITotal = liabilities.reduce((sum, l) => sum + (parseFloat(l.emi) || 0), 0);
-    const emiMismatch = totalMonthlyEMIs > 0 && liabilitiesEMITotal > 0 && Math.abs(totalMonthlyEMIs - liabilitiesEMITotal) > 1;
+    const emiMismatch = (totalMonthlyEMIs > 0 || liabilitiesEMITotal > 0) && Math.abs(totalMonthlyEMIs - liabilitiesEMITotal) > 1;
 
     // Calculate hypothetical metrics if discretionary is reduced by 30%
     const hypotheticalTotalExpenses = totalMonthlyExpenses - (totalDiscretionary * 0.30);
@@ -159,6 +168,7 @@ const Step2IncomeExpenses = () => {
                                 <p className="text-xs text-slate-400">
                                     {inc.frequency} • ₹ {inc.amount.toLocaleString()}
                                     {inc.taxDeducted && <span className="ml-2 text-primary">({inc.tdsPercentage}% TDS)</span>}
+                                    {inc.description && <span className="block text-slate-500 mt-0.5">{inc.description}</span>}
                                 </p>
                             </div>
                         </div>
@@ -200,7 +210,10 @@ const Step2IncomeExpenses = () => {
                             </div>
                             <div>
                                 <p className="font-bold text-sm text-white">{exp.category} <span className="text-[10px] font-normal bg-surface-active px-1.5 py-0.5 rounded ml-1 text-slate-400">{exp.type}</span></p>
-                                <p className="text-xs text-slate-400">{exp.frequency} • ₹ {exp.amount.toLocaleString()}</p>
+                                <p className="text-xs text-slate-400">
+                                    {exp.frequency} • ₹ {exp.amount.toLocaleString()}
+                                    {exp.description && <span className="block text-slate-500 mt-0.5">{exp.description}</span>}
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -434,6 +447,18 @@ const Step2IncomeExpenses = () => {
                                     onChange={(e) => setAmount(e.target.value)}
                                     className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     placeholder="0"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Description (optional)</label>
+                                <input
+                                    type="text"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full bg-background-dark border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    placeholder={modalType === 'income' ? 'e.g. Acme Corp salary' : 'e.g. Home Loan EMI'}
+                                    maxLength={100}
                                 />
                             </div>
 

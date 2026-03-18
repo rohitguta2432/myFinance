@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart,
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useGoalsQuery, useAddGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
+import { useGoalProjectionQuery } from '../hooks/useGoalProjection';
 
 const GOAL_TYPES = [
     { id: 'home', label: 'Home Purchase', icon: Home, defaultCost: 7500000, defaultHorizon: 15 },
@@ -25,7 +26,7 @@ const IMPORTANCE_LEVELS = [
 
 const Step4FinancialGoals = () => {
     const navigate = useNavigate();
-    const { goals, addGoal, removeGoal, updateGoal, incomes, expenses, liabilities } = useAssessmentStore();
+    const { goals, addGoal, removeGoal, updateGoal } = useAssessmentStore();
 
     // API Integration
     const { data: goalsData } = useGoalsQuery();
@@ -101,26 +102,18 @@ const Step4FinancialGoals = () => {
         setIsModalOpen(false);
     };
 
-    // --- Calculations for Projection ---
+    // --- Calculations for Modal Projection Preview (before save) ---
     const numericCost = parseFloat(cost) || 0;
     const numericHorizon = parseInt(horizon) || 0;
     const numericSavings = parseFloat(currentSavings) || 0;
     const numericInflation = parseFloat(inflation) / 100 || 0;
 
-    // Future Cost = Today's Cost * (1 + Inflation Rate)^Years
     const futureCost = numericCost * Math.pow(1 + numericInflation, numericHorizon);
-
-    // Buffered Cost = Future Cost * 1.20
     const bufferedCost = futureCost * 1.20;
-
-    // Savings Growth = Current Savings * (1 + Return Rate)^Years
     const assumedReturnRate = 0.12;
     const savingsGrowth = numericSavings * Math.pow(1 + assumedReturnRate, numericHorizon);
-
-    // Gap to Fill = Buffered Cost - Savings Growth
     const gapToFill = Math.max(0, bufferedCost - savingsGrowth);
 
-    // Required SIP = Gap * (rate/12) / ((1 + rate/12)^(Years * 12) - 1)
     const calculateSIP = (gap, years, annualRate = 0.12) => {
         if (gap <= 0 || years <= 0) return 0;
         const months = years * 12;
@@ -129,8 +122,6 @@ const Step4FinancialGoals = () => {
         return (gap * monthlyRate) / (Math.pow(1 + monthlyRate, months) - 1);
     };
     const requiredSip = calculateSIP(gapToFill, numericHorizon, assumedReturnRate);
-
-    // Required Lump Sum = Gap / (1 + Return Rate)^Years
     const requiredLumpSum = gapToFill / Math.pow(1 + assumedReturnRate, numericHorizon);
 
     // --- Formatters ---
@@ -140,59 +131,22 @@ const Step4FinancialGoals = () => {
         return `₹${Math.round(value).toLocaleString('en-IN')}`;
     };
 
-    // --- Monthly Surplus Calculation ---
-    const calculateMonthlyIncome = () => {
-        return incomes.reduce((sum, inc) => {
-            const amount = parseFloat(inc.amount) || 0;
-            switch (inc.frequency) {
-                case 'monthly': return sum + amount;
-                case 'yearly': return sum + (amount / 12);
-                case 'weekly': return sum + (amount * 4.33);
-                default: return sum + amount;
-            }
-        }, 0);
-    };
+    // --- Backend Projection Data ---
+    const { data: projection } = useGoalProjectionQuery();
+    const totalGoals = projection?.totalGoals ?? goals.length;
+    const totalAdjustedTarget = projection?.totalAdjustedTarget ?? 0;
+    const totalCurrentSavingsAll = projection?.totalCurrentSavings ?? 0;
+    const totalSIPRequiredAll = projection?.totalSipRequired ?? 0;
+    const monthlySurplus = projection?.monthlySurplus ?? 0;
+    const isAchievable = projection?.isAchievable ?? true;
+    const feasibilityRemainingBuffer = projection?.remainingBuffer ?? 0;
+    const feasibilityShortfall = projection?.shortfall ?? 0;
 
-    const calculateMonthlyExpenses = () => {
-        return expenses.reduce((sum, exp) => {
-            const amount = parseFloat(exp.amount) || 0;
-            switch (exp.frequency) {
-                case 'monthly': return sum + amount;
-                case 'yearly': return sum + (amount / 12);
-                case 'weekly': return sum + (amount * 4.33);
-                default: return sum + amount;
-            }
-        }, 0);
-    };
-
-    const calculateMonthlyLiabilities = () => {
-        return liabilities.reduce((sum, liab) => sum + (parseFloat(liab.emi) || 0), 0);
-    };
-
-    const totalMonthlyIncome = calculateMonthlyIncome();
-    const totalMonthlyOutgo = calculateMonthlyExpenses() + calculateMonthlyLiabilities();
-    const monthlySurplus = Math.max(0, totalMonthlyIncome - totalMonthlyOutgo);
-
-    // --- All Goals Summary Data ---
-    const totalGoals = goals.length;
-    let totalAdjustedTarget = 0;
-    let totalCurrentSavings = 0;
-    let totalSIPRequiredAll = 0;
-
-    goals.forEach(goal => {
-        const goalFutureCost = goal.cost * Math.pow(1 + (goal.inflation / 100), goal.horizon);
-        const goalBufferedCost = goalFutureCost * 1.20;
-        const goalSavingsGrowth = (goal.currentSavings || 0) * Math.pow(1 + 0.12, goal.horizon);
-        const goalGap = Math.max(0, goalBufferedCost - goalSavingsGrowth);
-
-        totalAdjustedTarget += goalBufferedCost;
-        totalCurrentSavings += (goal.currentSavings || 0);
-        totalSIPRequiredAll += calculateSIP(goalGap, goal.horizon, 0.12);
+    // Build a lookup of backend-computed per-goal projections
+    const goalProjectionMap = {};
+    (projection?.goals || []).forEach(g => {
+        goalProjectionMap[g.id] = g;
     });
-
-    const isAchievable = totalSIPRequiredAll <= monthlySurplus;
-    const feasibilityRemainingBuffer = monthlySurplus - totalSIPRequiredAll;
-    const feasibilityShortfall = totalSIPRequiredAll - monthlySurplus;
 
 
     return (
@@ -230,14 +184,12 @@ const Step4FinancialGoals = () => {
                     </div>
                 )}
                 {goals.map((goal) => {
-                    const gFutureCost = goal.cost * Math.pow(1 + (goal.inflation / 100), goal.horizon);
-                    const gBufferedCost = gFutureCost * 1.20;
-                    const gSavingsGrowth = (goal.currentSavings || 0) * Math.pow(1 + 0.12, goal.horizon);
-                    const gGap = Math.max(0, gBufferedCost - gSavingsGrowth);
-                    const sip = calculateSIP(gGap, goal.horizon, 0.12);
+                    const proj = goalProjectionMap[goal.id];
+                    const gBufferedCost = proj?.bufferedCost ?? 0;
+                    const gSavings = proj?.currentSavings ?? (goal.currentSavings || 0);
+                    const sip = proj?.requiredSip ?? 0;
+                    const progressPercent = proj?.progressPercent ?? 0;
                     const Icon = GOAL_TYPES.find(t => t.id === goal.type)?.icon || Home;
-
-                    const progressPercent = gBufferedCost > 0 ? ((goal.currentSavings || 0) / gBufferedCost) * 100 : 0;
 
                     return (
                         <div key={goal.id} className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-sm relative overflow-hidden">
@@ -262,7 +214,7 @@ const Step4FinancialGoals = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-1">
                                     <span className="text-[10px] text-slate-500">Progress: {progressPercent.toFixed(1)}% complete</span>
-                                    <span className="text-[10px] text-slate-300">{formatToCrLakh(gBufferedCost - (goal.currentSavings || 0))} to go</span>
+                                    <span className="text-[10px] text-slate-300">{formatToCrLakh(gBufferedCost - gSavings)} to go</span>
                                 </div>
                             </div>
 
@@ -309,7 +261,7 @@ const Step4FinancialGoals = () => {
                                 <div className="text-right font-bold text-white">{formatToCrLakh(totalAdjustedTarget)}</div>
 
                                 <div className="text-slate-400">Current Savings</div>
-                                <div className="text-right font-bold text-white">{formatToCrLakh(totalCurrentSavings)}</div>
+                                <div className="text-right font-bold text-white">{formatToCrLakh(totalCurrentSavingsAll)}</div>
 
                                 <div className="text-slate-400">Total SIP Required</div>
                                 <div className="text-right font-bold text-primary">₹ {Math.round(totalSIPRequiredAll).toLocaleString('en-IN')}</div>

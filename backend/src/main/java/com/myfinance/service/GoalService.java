@@ -37,6 +37,8 @@ public class GoalService {
                 .currentCost(dto.getCurrentCost())
                 .timeHorizonYears(dto.getTimeHorizonYears())
                 .inflationRate(dto.getInflationRate())
+                .currentSavings(dto.getCurrentSavings())
+                .importance(dto.getImportance())
                 .build();
         GoalDTO saved = toDTO(goalRepo.save(goal));
         log.info("goals.add.success id={}", saved.getId());
@@ -58,6 +60,8 @@ public class GoalService {
                 .currentCost(g.getCurrentCost())
                 .timeHorizonYears(g.getTimeHorizonYears())
                 .inflationRate(g.getInflationRate())
+                .currentSavings(g.getCurrentSavings())
+                .importance(g.getImportance())
                 .build();
     }
 }

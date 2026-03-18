@@ -25,6 +25,7 @@ export const useAddGoalMutation = () => {
         onSuccess: (savedGoal) => {
             store.addGoal(savedGoal);
             queryClient.invalidateQueries({ queryKey: ['goals'] });
+            queryClient.invalidateQueries({ queryKey: ['goal-projection'] });
         },
     });
 };
@@ -38,6 +39,7 @@ export const useDeleteGoalMutation = () => {
         onSuccess: (_, id) => {
             store.removeGoal(id);
             queryClient.invalidateQueries({ queryKey: ['goals'] });
+            queryClient.invalidateQueries({ queryKey: ['goal-projection'] });
         },
     });
 };
