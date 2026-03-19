@@ -14,6 +14,7 @@ export const useProfileQuery = () => {
         staleTime: 5 * 60 * 1000,
         onSuccess: (data) => {
             if (data.age) store.setAge(data.age);
+            if (data.state) store.setState(data.state);
             if (data.city) store.setCity(data.city);
             if (data.maritalStatus) store.setMaritalStatus(data.maritalStatus);
             if (data.dependents !== undefined) store.setDependents(data.dependents);

@@ -23,6 +23,7 @@ const REGIME_FROM_DB = { 'OLD': 'old', 'NEW': 'new' };
 
 const mapProfileToDTO = (data) => ({
     age: data.age ? parseInt(data.age) : null,
+    state: data.state || null,
     city: data.city || null,
     maritalStatus: MARITAL_TO_DB[data.maritalStatus] || data.maritalStatus?.toUpperCase(),
     dependents: parseInt(data.dependents) || 0,
@@ -36,6 +37,7 @@ const mapProfileToDTO = (data) => ({
 
 const mapProfileFromDTO = (dto) => ({
     age: dto.age ?? '',
+    state: dto.state ?? '',
     city: dto.city ?? '',
     maritalStatus: MARITAL_FROM_DB[dto.maritalStatus] ?? dto.maritalStatus?.toLowerCase() ?? '',
     dependents: dto.dependents ?? 0,
@@ -83,7 +85,7 @@ const mapExpenseFromDTO = (dto) => ({
 });
 
 const mapAssetToDTO = (data) => ({
-    assetType: data.category,
+    assetType: data.subCategory || data.category,
     name: data.name,
     currentValue: parseFloat(data.amount) || 0,
     allocationPercentage: null, // Calculated server-side

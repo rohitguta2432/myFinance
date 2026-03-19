@@ -58,12 +58,15 @@ public class PortfolioAnalysisService {
     // Everything else (Crypto, Business Equity, ESOPs, P2P, Startup, Vehicle,
     // EPF, PPF, NPS, Other) falls into "Other".
 
-    private String classifyAsset(String assetType) {
-        if (assetType == null) return "Other";
-        if (EQUITY_TYPES.contains(assetType)) return "Equity";
-        if (DEBT_TYPES.contains(assetType)) return "Debt";
-        if (REAL_ESTATE_TYPES.contains(assetType)) return "RealEstate";
-        if (GOLD_TYPES.contains(assetType)) return "Gold";
+    private String classifyAsset(String assetType, String name) {
+        // Check assetType first (new records), then name as fallback (legacy records)
+        for (String field : new String[]{assetType, name}) {
+            if (field == null) continue;
+            if (EQUITY_TYPES.contains(field)) return "Equity";
+            if (DEBT_TYPES.contains(field)) return "Debt";
+            if (REAL_ESTATE_TYPES.contains(field)) return "RealEstate";
+            if (GOLD_TYPES.contains(field)) return "Gold";
+        }
         return "Other";
     }
 
@@ -96,7 +99,7 @@ public class PortfolioAnalysisService {
 
         for (Asset a : assets) {
             double val = a.getCurrentValue() != null ? a.getCurrentValue() : 0;
-            switch (classifyAsset(a.getAssetType())) {
+            switch (classifyAsset(a.getAssetType(), a.getName())) {
                 case "Equity" -> equityTotal += val;
                 case "Debt" -> debtTotal += val;
                 case "RealEstate" -> realEstateTotal += val;
