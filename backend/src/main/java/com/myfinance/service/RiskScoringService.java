@@ -31,31 +31,39 @@ public class RiskScoringService {
     private final ExpenseRepository expenseRepo;
 
     // ─── Age Modifier Table ──────────────────────────────────
+    // Reference: Age Modifier image
+    // 18-35 → 0.00, 36-44 → 0.50, 45-54 → 1.00, 55-64 → 1.50, 65+ → 2.00
     private static double getAgeModifier(int age) {
         if (age <= 35) return 0.00;
-        if (age <= 44) return -0.50;
-        if (age <= 54) return -1.00;
-        if (age <= 64) return -1.50;
-        return -2.00;
+        if (age <= 44) return 0.50;
+        if (age <= 54) return 1.00;
+        if (age <= 64) return 1.50;
+        return 2.00;
     }
 
     // ─── Adult Dependent Modifier ────────────────────────────
+    // Reference: Dependants Modifiers image
+    // 0 → 0.00, 1 → 0.25, 2 → 0.50, 3+ → 0.75 (cap)
     private static double getAdultDependentModifier(int adultDependents) {
         if (adultDependents <= 0) return 0.00;
-        if (adultDependents == 1) return -0.25;
-        if (adultDependents == 2) return -0.50;
-        return -0.75; // 3+
+        if (adultDependents == 1) return 0.25;
+        if (adultDependents == 2) return 0.50;
+        return 0.75; // 3+ (cap)
     }
 
     // ─── Child Modifier ──────────────────────────────────────
+    // Reference: Children Modifier image
+    // 0 → 0.00, 1 → 0.30, 2 → 0.60, 3 → 0.90, 4+ → 1.20 (cap)
     private static double getChildModifier(int children) {
         if (children <= 0) return 0.00;
-        if (children == 1) return -0.25;
-        if (children == 2) return -0.50;
-        return -1.00; // 3+
+        if (children == 1) return 0.30;
+        if (children == 2) return 0.60;
+        if (children == 3) return 0.90;
+        return 1.20; // 4+ (cap)
     }
 
     // ─── Income Stability Score ──────────────────────────────
+    // Reference: Q3 image — Unemployed 0, Self-employed 1, Business 2, Salaried & Retired 3
     private static int getIncomeStabilityScore(EmploymentType type) {
         if (type == null) return 0;
         return switch (type) {
@@ -74,7 +82,7 @@ public class RiskScoringService {
             "📉 Mutual Funds — Debt"
     );
 
-    // ─── Financial asset subcategories (excludes real estate, vehicles) ──
+    // ─── Financial asset subcategories (all Savings & Investments) ──
     private static final Set<String> FINANCIAL_TYPES = Set.of(
             "🏦 Bank/Savings Account",
             "📊 Fixed Deposit (FD)",
@@ -93,21 +101,27 @@ public class RiskScoringService {
             "₿ Cryptocurrency"
     );
 
-    // ─── Profile Band Definitions ────────────────────────────
-    private record ProfileBand(int minScore, int maxScore, String label,
-                               int equity, int debt, int gold, int realEstate) {}
+    // ─── Profile Band Definitions (0–10 scale) ──────────────
+    // Reference: Profile Bands + Asset Allocations images
+    private record ProfileBand(double minScore, double maxScore, String label,
+                               int equity, int debt, int gold, int reits) {}
 
     private static final List<ProfileBand> PROFILE_BANDS = List.of(
-            new ProfileBand(0,  4,  "Conservative",             20, 60, 10, 10),
-            new ProfileBand(5,  8,  "Moderately Conservative",  35, 45, 10, 10),
-            new ProfileBand(9,  12, "Moderate",                 50, 30,  5, 15),
-            new ProfileBand(13, 16, "Moderately Aggressive",    65, 20,  5, 10),
-            new ProfileBand(17, 21, "Aggressive",               75, 10,  5, 10)
+            new ProfileBand(0.0,  2.5,  "Capital Preserver",        10, 70, 10, 10),
+            new ProfileBand(2.6,  4.5,  "Conservative Grower",      25, 55, 10, 10),
+            new ProfileBand(4.6,  6.0,  "Balanced Investor",        50, 30, 10, 10),
+            new ProfileBand(6.1,  7.5,  "Growth Seeker",            65, 20,  5, 10),
+            new ProfileBand(7.6, 10.0,  "Aggressive Wealth Builder", 80, 10,  5,  5)
     );
 
     // ─── Clamp helper ────────────────────────────────────────
     private static double clamp(double value, double min, double max) {
         return Math.min(Math.max(value, min), max);
+    }
+
+    // ─── Round to 2 decimal places ───────────────────────────
+    private static double round2(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     // ══════════════════════════════════════════════════════════
@@ -125,40 +139,44 @@ public class RiskScoringService {
                     .toleranceScore(0.0)
                     .capacityScore(0.0)
                     .compositeScore(0.0)
-                    .profileLabel("Conservative")
-                    .targetEquity(20).targetDebt(60).targetGold(10).targetRealEstate(10)
+                    .profileLabel("Capital Preserver")
+                    .targetEquity(10).targetDebt(70).targetGold(10).targetRealEstate(10)
                     .build();
         }
 
-        // ─── TOLERANCE SCORE ─────────────────────────────────
+        // ─── TOLERANCE SCORE (0–10 scale) ────────────────────
+        // Base Score = (Raw quiz total / 21) × 10
         Map<String, Integer> riskAnswers = parseRiskAnswers(profile.getRiskAnswers());
-        int baseScore = riskAnswers.values().stream().mapToInt(Integer::intValue).sum();
+        int rawQuizTotal = riskAnswers.values().stream().mapToInt(Integer::intValue).sum();
+        double baseScore = (rawQuizTotal / 21.0) * 10.0;
 
         int age = profile.getAge() != null ? profile.getAge() : 30;
         int dependents = profile.getDependents() != null ? profile.getDependents() : 0;
         int childDeps = profile.getChildDependents() != null ? profile.getChildDependents() : 0;
         int adultDeps = Math.max(0, dependents - childDeps);
 
-        double toleranceScore = clamp(
-                baseScore + getAgeModifier(age) + getAdultDependentModifier(adultDeps) + getChildModifier(childDeps),
-                0, 21
-        );
-        log.info("risk.scoring.tolerance base={} age={} adultDeps={} childDeps={} score={}",
-                baseScore, age, adultDeps, childDeps, toleranceScore);
+        // Tolerance = Base − Age Modifier − Adult Dependant Modifier − Children Modifier
+        // Clipped to [0.0, 10.0]
+        double toleranceScore = round2(clamp(
+                baseScore - getAgeModifier(age) - getAdultDependentModifier(adultDeps) - getChildModifier(childDeps),
+                0.0, 10.0
+        ));
+        log.info("risk.scoring.tolerance rawQuiz={} base={} age={} adultDeps={} childDeps={} score={}",
+                rawQuizTotal, round2(baseScore), age, adultDeps, childDeps, toleranceScore);
 
-        // ─── CAPACITY SCORE ──────────────────────────────────
+        // ─── CAPACITY SCORE (0–10 scale) ─────────────────────
         List<Asset> assets = assetRepo.findAll();
         List<Liability> liabilities = liabilityRepo.findAll();
         List<Income> incomes = incomeRepo.findAll();
         List<Expense> expenses = expenseRepo.findAll();
 
-        // Liquid assets (Bank, FD, RD)
+        // Liquid assets (Bank, FD, RD, Debt MF)
         double liquidAssets = assets.stream()
                 .filter(a -> a.getAssetType() != null && LIQUID_TYPES.contains(a.getAssetType()))
                 .mapToDouble(a -> a.getCurrentValue() != null ? a.getCurrentValue() : 0)
                 .sum();
 
-        // Monthly essential expenses only (for emergency fund calculation)
+        // Monthly essential expenses only
         double monthlyEssentialExpenses = expenses.stream()
                 .filter(e -> Boolean.TRUE.equals(e.getIsEssential()))
                 .mapToDouble(e -> e.getAmount() != null ? e.getAmount() : 0)
@@ -174,7 +192,7 @@ public class RiskScoringService {
                 .mapToDouble(i -> i.getAmount() != null ? i.getAmount() : 0)
                 .sum();
 
-        // Financial assets (everything except real estate / vehicles)
+        // Financial assets (all Savings & Investments category)
         double financialAssets = assets.stream()
                 .filter(a -> a.getAssetType() != null && FINANCIAL_TYPES.contains(a.getAssetType()))
                 .mapToDouble(a -> a.getCurrentValue() != null ? a.getCurrentValue() : 0)
@@ -190,52 +208,63 @@ public class RiskScoringService {
         double totalNetWorth = totalAssetsValue - totalLiabilities;
 
         // Q1: Emergency Fund = liquid assets / monthly essential expenses
-        int q1 = 0;
+        // Reference: <3 months → 1pt, 3-6 months → 2pts, >6 months → 3pts
+        int q1;
         if (monthlyEssentialExpenses > 0) {
             double months = liquidAssets / monthlyEssentialExpenses;
-            if (months >= 6) q1 = 3;
+            if (months > 6) q1 = 3;
             else if (months >= 3) q1 = 2;
-            else if (months >= 1) q1 = 1;
+            else q1 = 1;
+        } else {
+            q1 = liquidAssets > 0 ? 3 : 1; // No expenses tracked: if has liquid assets → safe
         }
 
-        // Q2: EMI Burden
+        // Q2: EMI Burden = (total EMI / take-home salary) × 100
+        // Reference: >50% → 1pt, 30-50% → 2pts, <30% → 3pts
         int q2;
         if (takeHomeSalary > 0) {
             double emiBurdenPct = (totalEmi / takeHomeSalary) * 100;
-            if (emiBurdenPct < 20) q2 = 3;
-            else if (emiBurdenPct <= 35) q2 = 2;
-            else if (emiBurdenPct <= 50) q2 = 1;
-            else q2 = 0;
+            if (emiBurdenPct < 30) q2 = 3;
+            else if (emiBurdenPct <= 50) q2 = 2;
+            else q2 = 1;
         } else {
-            q2 = totalEmi > 0 ? 0 : 3;
+            q2 = totalEmi > 0 ? 1 : 3; // No income: if has EMI → worst; no EMI → best
         }
 
-        // Q3: Income Stability
+        // Q3: Income Stability — from employment type
+        // Reference: Unemployed 0, Self-employed 1, Business 2, Salaried & Retired 3
         int q3 = getIncomeStabilityScore(profile.getEmploymentType());
 
-        // Q4: Financial Asset Ratio
-        int q4 = 0;
+        // Q4: Financial Asset Ratio = (Financial Assets / Total Net Worth) × 100
+        // Reference: <20% → 1pt, 20-50% → 2pts, >50% → 3pts
+        int q4;
         if (totalNetWorth > 0) {
             double ratio = (financialAssets / totalNetWorth) * 100;
-            if (ratio > 60) q4 = 3;
-            else if (ratio >= 40) q4 = 2;
-            else if (ratio >= 20) q4 = 1;
+            if (ratio > 50) q4 = 3;
+            else if (ratio >= 20) q4 = 2;
+            else q4 = 1;
+        } else {
+            q4 = 1; // Negative or zero net worth → lowest
         }
 
         int rawCapacity = q1 + q2 + q3 + q4;
-        double capacityScore = clamp(Math.round((rawCapacity / 12.0) * 21), 0, 21);
-        log.info("risk.scoring.capacity q1={} q2={} q3={} q4={} raw={} scaled={}",
+        // Capacity Score = (Raw Total / 12) × 10, clipped to [0.0, 10.0]
+        double capacityScore = round2(clamp((rawCapacity / 12.0) * 10.0, 0.0, 10.0));
+        log.info("risk.scoring.capacity q1={} q2={} q3={} q4={} raw={} score={}",
                 q1, q2, q3, q4, rawCapacity, capacityScore);
 
-        // ─── COMPOSITE SCORE ─────────────────────────────────
-        double compositeScore = clamp(Math.round(0.6 * toleranceScore + 0.4 * capacityScore), 0, 21);
+        // ─── COMPOSITE SCORE (0–10 scale, 2 decimal places) ──
+        // Composite = (Tolerance × 0.55) + (Capacity × 0.45)
+        double compositeScore = round2(clamp(
+                (0.55 * toleranceScore) + (0.45 * capacityScore),
+                0.0, 10.0
+        ));
 
         // ─── PROFILE BAND ────────────────────────────────────
-        int compositeInt = (int) Math.round(compositeScore);
         ProfileBand band = PROFILE_BANDS.stream()
-                .filter(b -> compositeInt >= b.minScore && compositeInt <= b.maxScore)
+                .filter(b -> compositeScore >= b.minScore && compositeScore <= b.maxScore)
                 .findFirst()
-                .orElse(PROFILE_BANDS.get(2)); // Moderate fallback
+                .orElse(PROFILE_BANDS.get(2)); // Balanced Investor fallback
 
         log.info("risk.scoring.calculate.success tolerance={} capacity={} composite={} profile={}",
                 toleranceScore, capacityScore, compositeScore, band.label);
@@ -249,7 +278,7 @@ public class RiskScoringService {
                 .targetEquity(band.equity)
                 .targetDebt(band.debt)
                 .targetGold(band.gold)
-                .targetRealEstate(band.realEstate)
+                .targetRealEstate(band.reits)
                 .build();
     }
 

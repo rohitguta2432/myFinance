@@ -27,7 +27,8 @@ const Step3AssetsLiabilities = () => {
     }, [balanceData]);
 
     // Fetch risk scoring (scores + target allocation) from backend
-    const { data: riskData } = useRiskScoringQuery();
+    const { data: riskData, isError: isRiskError, isLoading: isRiskLoading } = useRiskScoringQuery();
+    const hasRiskData = !!riskData && !isRiskError && riskData.profileLabel != null;
 
     // Fetch portfolio analysis (classification, allocation %, DTI, etc.) from backend
     const { data: portfolio } = usePortfolioAnalysisQuery();
@@ -321,45 +322,63 @@ const Step3AssetsLiabilities = () => {
                         </div>
                     </div>
 
-                    <h4 className="text-white font-bold text-sm mb-3">Your Current vs Target ({profileLabel}):</h4>
-                    <div className="bg-background-dark rounded-xl p-4 space-y-3 mb-4">
-                        <div className="grid grid-cols-4 text-xs font-semibold text-slate-500 mb-1">
-                            <div className="col-span-1">Asset</div>
-                            <div className="text-center">You</div>
-                            <div className="text-center">Target</div>
-                            <div className="text-right">Status</div>
-                        </div>
-                        {[
-                            { label: 'Equity',      current: equityPct,     target: targetEquity },
-                            { label: 'Debt',         current: debtPct,       target: targetDebt },
-                            { label: 'Real Estate',  current: realEstatePct, target: targetRealEstate },
-                            { label: 'Gold',         current: goldPct,       target: targetGold },
-                        ].map(row => {
-                            const diff = Math.round(row.current) - row.target;
-                            const threshold = row.target * 0.4; // 40% tolerance band
-                            let statusEl;
-                            if (diff > threshold) {
-                                statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% above</span>;
-                            } else if (diff < -threshold) {
-                                statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% below</span>;
-                            } else {
-                                statusEl = <span className="text-emerald-400">✓ On track</span>;
-                            }
-                            return (
-                                <div key={row.label} className="grid grid-cols-4 text-sm items-center">
-                                    <div className="text-slate-300">{row.label}</div>
-                                    <div className="text-center font-bold text-white">{row.current.toFixed(0)}%</div>
-                                    <div className="text-center text-slate-400">{row.target}%</div>
-                                    <div className="text-right text-xs">{statusEl}</div>
+                    {hasRiskData ? (
+                        <>
+                            <h4 className="text-white font-bold text-sm mb-3">Your Current vs Target ({profileLabel}):</h4>
+                            <div className="bg-background-dark rounded-xl p-4 space-y-3 mb-4">
+                                <div className="grid grid-cols-4 text-xs font-semibold text-slate-500 mb-1">
+                                    <div className="col-span-1">Asset</div>
+                                    <div className="text-center">You</div>
+                                    <div className="text-center">Target</div>
+                                    <div className="text-right">Status</div>
                                 </div>
-                            );
-                        })}
-                    </div>
+                                {[
+                                    { label: 'Equity',      current: equityPct,     target: targetEquity },
+                                    { label: 'Debt',         current: debtPct,       target: targetDebt },
+                                    { label: 'Real Estate',  current: realEstatePct, target: targetRealEstate },
+                                    { label: 'Gold',         current: goldPct,       target: targetGold },
+                                ].map(row => {
+                                    const diff = Math.round(row.current) - row.target;
+                                    const threshold = row.target * 0.4; // 40% tolerance band
+                                    let statusEl;
+                                    if (diff > threshold) {
+                                        statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% above</span>;
+                                    } else if (diff < -threshold) {
+                                        statusEl = <span className="text-amber-400">⚠️ {Math.abs(diff)}% below</span>;
+                                    } else {
+                                        statusEl = <span className="text-emerald-400">✓ On track</span>;
+                                    }
+                                    return (
+                                        <div key={row.label} className="grid grid-cols-4 text-sm items-center">
+                                            <div className="text-slate-300">{row.label}</div>
+                                            <div className="text-center font-bold text-white">{row.current.toFixed(0)}%</div>
+                                            <div className="text-center text-slate-400">{row.target}%</div>
+                                            <div className="text-right text-xs">{statusEl}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
 
-                    {alert && (
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
-                            <h5 className="font-bold text-amber-400 text-sm mb-1">{alert.title}</h5>
-                            <p className="text-amber-400/80 text-xs">{alert.msg}</p>
+                            {alert && (
+                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+                                    <h5 className="font-bold text-amber-400 text-sm mb-1">{alert.title}</h5>
+                                    <p className="text-amber-400/80 text-xs">{alert.msg}</p>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
+                            <Info className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+                            <div>
+                                <h5 className="text-blue-400 font-bold text-sm mb-1">
+                                    {isRiskLoading ? 'Loading your risk profile…' : 'Target allocation unavailable'}
+                                </h5>
+                                <p className="text-slate-400 text-xs">
+                                    {isRiskLoading
+                                        ? 'We\'re calculating your personalized target based on your profile.'
+                                        : 'Complete your profile and risk questionnaire (Step 1 & 4) so we can suggest a personalized target allocation for you.'}
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
