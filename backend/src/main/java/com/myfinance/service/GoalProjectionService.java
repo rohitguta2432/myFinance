@@ -4,11 +4,9 @@ import com.myfinance.dto.GoalProjectionDTO;
 import com.myfinance.model.Expense;
 import com.myfinance.model.Goal;
 import com.myfinance.model.Income;
-import com.myfinance.model.Liability;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.GoalRepository;
 import com.myfinance.repository.IncomeRepository;
-import com.myfinance.repository.LiabilityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,6 @@ public class GoalProjectionService {
     private final GoalRepository goalRepo;
     private final IncomeRepository incomeRepo;
     private final ExpenseRepository expenseRepo;
-    private final LiabilityRepository liabilityRepo;
 
     private static final double ASSUMED_RETURN_RATE = 0.12;
     private static final double BUFFER_MULTIPLIER = 1.20;
@@ -62,7 +59,6 @@ public class GoalProjectionService {
         List<Goal> goals = goalRepo.findAll();
         List<Income> incomes = incomeRepo.findAll();
         List<Expense> expenses = expenseRepo.findAll();
-        List<Liability> liabilities = liabilityRepo.findAll();
 
         // ── 1. Monthly Surplus ──────────────────────────────────────────────
         double monthlyIncome = incomes.stream()
@@ -75,11 +71,10 @@ public class GoalProjectionService {
                         e.getFrequency() != null ? e.getFrequency().name() : null))
                 .sum();
 
-        double monthlyLiabilities = liabilities.stream()
-                .mapToDouble(l -> l.getMonthlyEmi() != null ? l.getMonthlyEmi() : 0)
-                .sum();
-
-        double monthlySurplus = Math.max(0, monthlyIncome - monthlyExpenses - monthlyLiabilities);
+        // NOTE: monthlyExpenses already includes EMI payments entered in Step 2 (category "EMIs (loan payments)").
+        // Do NOT subtract liabilities (Step 3 EMIs) again — that would double-count them.
+        // Surplus must match Step 2's formula: income − expenses.
+        double monthlySurplus = Math.max(0, monthlyIncome - monthlyExpenses);
 
         // ── 2. Per-goal Projections ─────────────────────────────────────────
         List<GoalProjectionDTO.GoalDetail> goalDetails = new ArrayList<>();
