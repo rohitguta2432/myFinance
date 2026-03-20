@@ -84,7 +84,7 @@ const Step2IncomeExpenses = () => {
         if (modalType === 'income') {
             const incomeItem = {
                 ...baseItem,
-                id: editingId || crypto.randomUUID(),
+                id: editingId || `inc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
                 source: category,
                 taxDeducted,
                 tdsPercentage: taxDeducted ? parseFloat(tdsPercentage) || 0 : 0,
@@ -101,7 +101,7 @@ const Step2IncomeExpenses = () => {
         } else {
             const expenseItem = {
                 ...baseItem,
-                id: editingId || crypto.randomUUID(),
+                id: editingId || `exp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
                 description: description.trim() || undefined
             };
             if (editingId) {
