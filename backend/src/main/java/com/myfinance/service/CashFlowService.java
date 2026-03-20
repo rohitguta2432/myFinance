@@ -66,6 +66,35 @@ public class CashFlowService {
     }
 
     @Transactional
+    public IncomeDTO updateIncome(Long id, IncomeDTO dto) {
+        log.info("cashflow.income.update id={} source={} amount={}", id, dto.getSourceName(), dto.getAmount());
+        Income income = incomeRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Income not found: " + id));
+        income.setSourceName(dto.getSourceName());
+        income.setAmount(dto.getAmount());
+        income.setFrequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()));
+        income.setTaxDeducted(dto.getTaxDeducted());
+        income.setTdsPercentage(dto.getTdsPercentage());
+        IncomeDTO saved = toIncomeDTO(incomeRepo.save(income));
+        log.info("cashflow.income.update.success id={}", saved.getId());
+        return saved;
+    }
+
+    @Transactional
+    public ExpenseDTO updateExpense(Long id, ExpenseDTO dto) {
+        log.info("cashflow.expense.update id={} category={} amount={}", id, dto.getCategory(), dto.getAmount());
+        Expense expense = expenseRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Expense not found: " + id));
+        expense.setCategory(dto.getCategory());
+        expense.setAmount(dto.getAmount());
+        expense.setFrequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()));
+        expense.setIsEssential(dto.getIsEssential());
+        ExpenseDTO saved = toExpenseDTO(expenseRepo.save(expense));
+        log.info("cashflow.expense.update.success id={}", saved.getId());
+        return saved;
+    }
+
+    @Transactional
     public void deleteIncome(Long id) {
         log.info("cashflow.income.delete id={}", id);
         incomeRepo.deleteById(id);

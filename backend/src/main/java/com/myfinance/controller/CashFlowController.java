@@ -28,6 +28,16 @@ public class CashFlowController {
         return ResponseEntity.ok(cashFlowService.addExpense(dto));
     }
 
+    @PutMapping("/income/{id}")
+    public ResponseEntity<IncomeDTO> updateIncome(@PathVariable Long id, @RequestBody IncomeDTO dto) {
+        return ResponseEntity.ok(cashFlowService.updateIncome(id, dto));
+    }
+
+    @PutMapping("/expense/{id}")
+    public ResponseEntity<ExpenseDTO> updateExpense(@PathVariable Long id, @RequestBody ExpenseDTO dto) {
+        return ResponseEntity.ok(cashFlowService.updateExpense(id, dto));
+    }
+
     @DeleteMapping("/income/{id}")
     public ResponseEntity<Void> deleteIncome(@PathVariable Long id) {
         cashFlowService.deleteIncome(id);
