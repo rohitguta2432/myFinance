@@ -28,6 +28,11 @@ logging:
     com.myfinance: DEBUG
     org.springframework.web: INFO
 
+# ─── Google OAuth (SSO) ────────────────────────────────
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:636804588566-ehgnmkdrbin3vpqd88gsah16vpn0uihi.apps.googleusercontent.com}
+
 # ─── AWS Bedrock (AI Chat) ────────────────────────────
 aws:
   bedrock:

@@ -173,7 +173,7 @@ export default function ActionPlanTab() {
     return (
         <section className="min-h-screen pb-24">
             {/* Header */}
-            <div className="max-w-3xl mx-auto px-4 pt-10 space-y-6">
+            <div className="w-full max-w-6xl mx-auto px-4 pt-10 space-y-6">
 
 
                 {/* Page header */}

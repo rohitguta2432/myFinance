@@ -34,12 +34,12 @@ public class TaxCalculationService {
     // ─── Public entry point ─────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public TaxCalculationDTO calculate(double deductions80C, double deductions80D,
+    public TaxCalculationDTO calculate(Long userId, double deductions80C, double deductions80D,
                                         double otherDeductions) {
-        log.info("tax-calculation.start 80C={} 80D={} other={}", deductions80C, deductions80D, otherDeductions);
+        log.info("tax-calculation.start user={} 80C={} 80D={} other={}", userId, deductions80C, deductions80D, otherDeductions);
 
         // 1) Income annualization
-        List<Income> incomes = incomeRepo.findAll();
+        List<Income> incomes = incomeRepo.findByUserId(userId);
         Map<String, Double> incomeCategories = new LinkedHashMap<>();
         for (Income inc : incomes) {
             String source = inc.getSourceName() != null ? inc.getSourceName() : "Other";
@@ -48,7 +48,7 @@ public class TaxCalculationService {
         double grossTotalIncome = incomeCategories.values().stream().mapToDouble(Double::doubleValue).sum();
 
         // 2) Auto-populated deductions from stored data
-        List<Asset> assets = assetRepo.findAll();
+        List<Asset> assets = assetRepo.findByUserId(userId);
         double autoEpf = assets.stream()
                 .filter(a -> containsAny(a.getAssetType(), "EPF"))
                 .mapToDouble(a -> safe(a.getCurrentValue()))
@@ -58,14 +58,14 @@ public class TaxCalculationService {
                 .mapToDouble(a -> safe(a.getCurrentValue()))
                 .sum();
 
-        List<Insurance> insurances = insuranceRepo.findAll();
+        List<Insurance> insurances = insuranceRepo.findByUserId(userId);
         double autoLifeInsurance = insurances.stream()
                 .filter(ins -> ins.getInsuranceType() == InsuranceType.LIFE)
                 .mapToDouble(ins -> safe(ins.getPremiumAmount()))
                 .sum();
 
         // 3) HRA exemption (auto-calculated from expenses + income)
-        List<Expense> expenses = expenseRepo.findAll();
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
         double monthlyRent = expenses.stream()
                 .filter(e -> "Rent/Mortgage".equalsIgnoreCase(e.getCategory()))
                 .mapToDouble(e -> toMonthly(safe(e.getAmount()), e.getFrequency()))

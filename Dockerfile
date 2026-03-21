@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=512"
+ENV VITE_AUTH_REQUIRED=false
 RUN npm run build
 
 # ---- Runtime Stage ----

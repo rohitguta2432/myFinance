@@ -6,12 +6,32 @@ const BASE_URL = '/api/v1';
  */
 async function request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
+    
+    let userId = null;
+    try {
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+            const state = JSON.parse(authStorage).state;
+            if (state && state.user && state.user.id) {
+                userId = state.user.id;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to parse auth storage', e);
+    }
+
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
+
+    if (userId) {
+        headers['X-User-Id'] = userId;
+    }
+
     const config = {
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
         ...options,
+        headers,
     };
 
     const response = await fetch(url, config);

@@ -19,21 +19,20 @@ public class ProfileService {
     private final ProfileRepository profileRepo;
 
     @Transactional(readOnly = true)
-    public ProfileDTO getProfile() {
-        log.info("profile.get started");
-        return profileRepo.findAll().stream()
-                .findFirst()
+    public ProfileDTO getProfile(Long userId) {
+        log.info("profile.get started for user={}", userId);
+        return profileRepo.findByUserId(userId)
                 .map(this::toDTO)
                 .orElse(new ProfileDTO());
     }
 
     @Transactional
-    public ProfileDTO saveProfile(ProfileDTO dto) {
-        log.info("profile.save age={} state={} city={}", dto.getAge(), dto.getState(), dto.getCity());
-        Profile profile = profileRepo.findAll().stream()
-                .findFirst()
+    public ProfileDTO saveProfile(Long userId, ProfileDTO dto) {
+        log.info("profile.save user={} age={} state={} city={}", userId, dto.getAge(), dto.getState(), dto.getCity());
+        Profile profile = profileRepo.findByUserId(userId)
                 .orElse(new Profile());
 
+        profile.setUserId(userId);
         profile.setAge(dto.getAge());
         profile.setState(dto.getState());
         profile.setCity(dto.getCity());

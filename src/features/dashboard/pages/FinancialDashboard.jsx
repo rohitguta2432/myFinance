@@ -149,7 +149,7 @@ const FinancialDashboard = () => {
     return (
         <>
 
-            <div className="max-w-[1200px] mx-auto px-4 py-6 pb-24 space-y-6">
+            <div className="w-full max-w-6xl mx-auto px-6 lg:px-10 py-6 pb-24 space-y-6">
 
                 {/* ── Greeting + Date ── */}
                 <div className="flex items-center justify-between">

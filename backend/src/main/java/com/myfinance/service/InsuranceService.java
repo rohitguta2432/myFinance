@@ -21,25 +21,26 @@ public class InsuranceService {
     private final InsuranceRepository insuranceRepo;
 
     @Transactional(readOnly = true)
-    public List<InsuranceDTO> getInsurance() {
-        log.info("insurance.get started");
-        var list = insuranceRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    public List<InsuranceDTO> getInsurance(Long userId) {
+        log.info("insurance.get started for user={}", userId);
+        var list = insuranceRepo.findByUserId(userId).stream().map(this::toDTO).collect(Collectors.toList());
         log.info("insurance.get.success count={}", list.size());
         return list;
     }
 
     @Transactional
-    public InsuranceDTO saveInsurance(InsuranceDTO dto) {
-        log.info("insurance.save type={} policy={} coverage={}",
-                dto.getInsuranceType(), dto.getPolicyName(), dto.getCoverageAmount());
+    public InsuranceDTO saveInsurance(Long userId, InsuranceDTO dto) {
+        log.info("insurance.save user={} type={} policy={} coverage={}",
+                userId, dto.getInsuranceType(), dto.getPolicyName(), dto.getCoverageAmount());
 
         InsuranceType type = EnumUtils.safeEnum(InsuranceType.class, dto.getInsuranceType());
 
         // Upsert: find existing by type or create new
         Insurance insurance = (type != null)
-                ? insuranceRepo.findByInsuranceType(type).orElse(new Insurance())
+                ? insuranceRepo.findByUserIdAndInsuranceType(userId, type).orElse(new Insurance())
                 : new Insurance();
 
+        insurance.setUserId(userId);
         insurance.setInsuranceType(type);
         insurance.setPolicyName(dto.getPolicyName());
         insurance.setCoverageAmount(dto.getCoverageAmount());

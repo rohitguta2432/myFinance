@@ -446,7 +446,7 @@ const Step6TaxOptimization = () => {
 
             {/* Bottom Navigation */}
             <div className="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-lg border-t border-white/5 p-4 z-50">
-                <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+                <div className="w-full px-6 flex items-center justify-between">
                     <button
                         onClick={() => navigate('/assessment/step-5')}
                         className="px-6 py-3 bg-surface-dark hover:bg-surface-active text-white font-bold text-sm rounded-xl transition-all"

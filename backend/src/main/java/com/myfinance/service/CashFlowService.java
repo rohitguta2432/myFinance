@@ -23,10 +23,10 @@ public class CashFlowService {
     private final ExpenseRepository expenseRepo;
 
     @Transactional(readOnly = true)
-    public FinancialsResponse getCashFlow() {
-        log.info("cashflow.get started");
-        var incomes = incomeRepo.findAll().stream().map(this::toIncomeDTO).collect(Collectors.toList());
-        var expenses = expenseRepo.findAll().stream().map(this::toExpenseDTO).collect(Collectors.toList());
+    public FinancialsResponse getCashFlow(Long userId) {
+        log.info("cashflow.get started user={}", userId);
+        var incomes = incomeRepo.findByUserId(userId).stream().map(this::toIncomeDTO).collect(Collectors.toList());
+        var expenses = expenseRepo.findByUserId(userId).stream().map(this::toExpenseDTO).collect(Collectors.toList());
         log.info("cashflow.get.success incomes={} expenses={}", incomes.size(), expenses.size());
         return FinancialsResponse.builder()
                 .incomes(incomes)
@@ -35,10 +35,11 @@ public class CashFlowService {
     }
 
     @Transactional
-    public IncomeDTO addIncome(IncomeDTO dto) {
-        log.info("cashflow.income.add source={} amount={} frequency={}",
-                dto.getSourceName(), dto.getAmount(), dto.getFrequency());
+    public IncomeDTO addIncome(Long userId, IncomeDTO dto) {
+        log.info("cashflow.income.add user={} source={} amount={} frequency={}",
+                userId, dto.getSourceName(), dto.getAmount(), dto.getFrequency());
         Income income = Income.builder()
+                .userId(userId)
                 .sourceName(dto.getSourceName())
                 .amount(dto.getAmount())
                 .frequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()))
@@ -51,10 +52,11 @@ public class CashFlowService {
     }
 
     @Transactional
-    public ExpenseDTO addExpense(ExpenseDTO dto) {
-        log.info("cashflow.expense.add category={} amount={} frequency={}",
-                dto.getCategory(), dto.getAmount(), dto.getFrequency());
+    public ExpenseDTO addExpense(Long userId, ExpenseDTO dto) {
+        log.info("cashflow.expense.add user={} category={} amount={} frequency={}",
+                userId, dto.getCategory(), dto.getAmount(), dto.getFrequency());
         Expense expense = Expense.builder()
+                .userId(userId)
                 .category(dto.getCategory())
                 .amount(dto.getAmount())
                 .frequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()))
@@ -66,10 +68,11 @@ public class CashFlowService {
     }
 
     @Transactional
-    public IncomeDTO updateIncome(Long id, IncomeDTO dto) {
-        log.info("cashflow.income.update id={} source={} amount={}", id, dto.getSourceName(), dto.getAmount());
+    public IncomeDTO updateIncome(Long userId, Long id, IncomeDTO dto) {
+        log.info("cashflow.income.update user={} id={} source={} amount={}", userId, id, dto.getSourceName(), dto.getAmount());
         Income income = incomeRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Income not found: " + id));
+                .filter(i -> i.getUserId() != null && i.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Income not found or unauthorized: " + id));
         income.setSourceName(dto.getSourceName());
         income.setAmount(dto.getAmount());
         income.setFrequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()));
@@ -81,10 +84,11 @@ public class CashFlowService {
     }
 
     @Transactional
-    public ExpenseDTO updateExpense(Long id, ExpenseDTO dto) {
-        log.info("cashflow.expense.update id={} category={} amount={}", id, dto.getCategory(), dto.getAmount());
+    public ExpenseDTO updateExpense(Long userId, Long id, ExpenseDTO dto) {
+        log.info("cashflow.expense.update user={} id={} category={} amount={}", userId, id, dto.getCategory(), dto.getAmount());
         Expense expense = expenseRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found: " + id));
+                .filter(e -> e.getUserId() != null && e.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Expense not found or unauthorized: " + id));
         expense.setCategory(dto.getCategory());
         expense.setAmount(dto.getAmount());
         expense.setFrequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()));
@@ -95,15 +99,21 @@ public class CashFlowService {
     }
 
     @Transactional
-    public void deleteIncome(Long id) {
-        log.info("cashflow.income.delete id={}", id);
-        incomeRepo.deleteById(id);
+    public void deleteIncome(Long userId, Long id) {
+        log.info("cashflow.income.delete user={} id={}", userId, id);
+        Income income = incomeRepo.findById(id)
+                .filter(i -> i.getUserId() != null && i.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Income not found or unauthorized: " + id));
+        incomeRepo.delete(income);
     }
 
     @Transactional
-    public void deleteExpense(Long id) {
-        log.info("cashflow.expense.delete id={}", id);
-        expenseRepo.deleteById(id);
+    public void deleteExpense(Long userId, Long id) {
+        log.info("cashflow.expense.delete user={} id={}", userId, id);
+        Expense expense = expenseRepo.findById(id)
+                .filter(e -> e.getUserId() != null && e.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Expense not found or unauthorized: " + id));
+        expenseRepo.delete(expense);
     }
 
     private IncomeDTO toIncomeDTO(Income i) {

@@ -19,18 +19,19 @@ public class GoalService {
     private final GoalRepository goalRepo;
 
     @Transactional(readOnly = true)
-    public List<GoalDTO> getGoals() {
-        log.info("goals.get started");
-        var goals = goalRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    public List<GoalDTO> getGoals(Long userId) {
+        log.info("goals.get started for user={}", userId);
+        var goals = goalRepo.findByUserId(userId).stream().map(this::toDTO).collect(Collectors.toList());
         log.info("goals.get.success count={}", goals.size());
         return goals;
     }
 
     @Transactional
-    public GoalDTO addGoal(GoalDTO dto) {
-        log.info("goals.add type={} name={} target={}",
-                dto.getGoalType(), dto.getName(), dto.getTargetAmount());
+    public GoalDTO addGoal(Long userId, GoalDTO dto) {
+        log.info("goals.add user={} type={} name={} target={}",
+                userId, dto.getGoalType(), dto.getName(), dto.getTargetAmount());
         Goal goal = Goal.builder()
+                .userId(userId)
                 .goalType(dto.getGoalType())
                 .name(dto.getName())
                 .targetAmount(dto.getTargetAmount())
@@ -46,9 +47,12 @@ public class GoalService {
     }
 
     @Transactional
-    public void deleteGoal(Long id) {
-        log.info("goals.delete id={}", id);
-        goalRepo.deleteById(id);
+    public void deleteGoal(Long userId, Long id) {
+        log.info("goals.delete user={} id={}", userId, id);
+        Goal goal = goalRepo.findById(id)
+                .filter(g -> g.getUserId() != null && g.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Goal not found or unauthorized: " + id));
+        goalRepo.delete(goal);
     }
 
     private GoalDTO toDTO(Goal g) {

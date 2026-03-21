@@ -16,18 +16,18 @@ public class GoalController {
     private final GoalService goalService;
 
     @GetMapping
-    public ResponseEntity<List<GoalDTO>> getGoals() {
-        return ResponseEntity.ok(goalService.getGoals());
+    public ResponseEntity<List<GoalDTO>> getGoals(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(goalService.getGoals(userId));
     }
 
     @PostMapping
-    public ResponseEntity<GoalDTO> addGoal(@RequestBody GoalDTO dto) {
-        return ResponseEntity.ok(goalService.addGoal(dto));
+    public ResponseEntity<GoalDTO> addGoal(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody GoalDTO dto) {
+        return ResponseEntity.ok(goalService.addGoal(userId, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGoal(@PathVariable Long id) {
-        goalService.deleteGoal(id);
+    public ResponseEntity<Void> deleteGoal(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @PathVariable Long id) {
+        goalService.deleteGoal(userId, id);
         return ResponseEntity.ok().build();
     }
 }

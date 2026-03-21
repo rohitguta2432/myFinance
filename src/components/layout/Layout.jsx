@@ -1,10 +1,14 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, DollarSign, Wallet, Flag, Shield, Calculator, CheckCircle } from 'lucide-react';
+import { ArrowLeft, User, ShieldCheck, DollarSign, Wallet, Flag, Shield, Calculator, CheckCircle, LogOut } from 'lucide-react';
 import ThemeToggle from '../ui/ThemeToggle';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
+
 const Layout = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const user = useAuthStore((s) => s.user);
+    const logout = useAuthStore((s) => s.logout);
 
     // Step info based on current path
     const getStepInfo = () => {
@@ -21,8 +25,9 @@ const Layout = () => {
 
     const { step, progress, title } = getStepInfo();
     const isHome = location.pathname === '/';
+    const isDashboardRoute = location.pathname === '/dashboard';
+    const isAssessment = step > 0 && step <= 6;
     const isComplete = location.pathname.includes('complete');
-    const showHeader = step > 0 && step <= 6;
 
     // Steps config for sidebar
     const steps = [
@@ -36,25 +41,69 @@ const Layout = () => {
 
     return (
         <div className="min-h-screen bg-background-dark flex flex-col font-display text-white antialiased selection:bg-primary/30">
-            {/* Sticky Header with Progress */}
-            {showHeader && (
-                <header className="sticky top-0 z-50 bg-background-dark/95 backdrop-blur-md border-b border-white/5">
-                    <div className="flex items-center p-4 pb-2 justify-between max-w-4xl mx-auto">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
-                        >
-                            <ArrowLeft className="w-6 h-6" />
-                        </button>
-                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-                            {title}
-                        </h2>
-                        <div className="shrink-0 flex items-center justify-center size-10">
-                            <ThemeToggle />
+            {/* ═══ UNIFIED TOP HEADER ═══ */}
+            <header className="sticky top-0 z-50 bg-primary/10 border-b border-primary/20 backdrop-blur-md">
+                <div className="px-6 lg:px-10 py-2 flex items-center justify-between w-full">
+                    {/* Left: brand + back button on assessment */}
+                    <div className="flex items-center gap-3">
+                        {isAssessment && (
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="text-white flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                        )}
+                        <div className="flex items-center gap-2">
+                            <div className="bg-primary/20 p-1.5 rounded-lg flex items-center justify-center">
+                                <ShieldCheck className="text-primary w-4 h-4" />
+                            </div>
+                            <span className="text-white text-base font-bold tracking-tight">MyFinancial</span>
                         </div>
+                        {/* Step title shown on assessment pages */}
+                        {isAssessment && (
+                            <span className="hidden md:inline text-slate-400 text-sm font-medium ml-4">
+                                — {title}
+                            </span>
+                        )}
                     </div>
-                    {/* Progress Bar — hidden on lg where sidebar shows */}
-                    <div className="flex flex-col gap-2 px-6 pb-4 max-w-4xl mx-auto lg:hidden">
+
+                    {/* Right: theme + user + logout */}
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                {user.pictureUrl ? (
+                                    <img
+                                        src={user.pictureUrl}
+                                        alt={user.name}
+                                        className="w-8 h-8 rounded-full border-2 border-primary/30 object-cover"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                        <User className="w-4 h-4 text-primary" />
+                                    </div>
+                                )}
+                                <span className="text-white/70 text-sm font-medium hidden lg:inline">{user.name}</span>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        navigate('/login');
+                                    }}
+                                    className="text-white/40 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+                                    title="Sign out"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Mobile Progress Bar — only on assessment steps */}
+                {isAssessment && (
+                    <div className="flex flex-col gap-2 px-6 pb-3 w-full lg:hidden">
                         <div className="flex justify-between items-end">
                             <p className="text-primary text-xs font-semibold uppercase tracking-wider">
                                 Step {step} of 6
@@ -70,13 +119,13 @@ const Layout = () => {
                             ></div>
                         </div>
                     </div>
-                </header>
-            )}
+                )}
+            </header>
 
             {/* Content Area: Sidebar + Main */}
-            <div className="flex-1 w-full max-w-6xl mx-auto flex">
-                {/* Desktop Sidebar — step navigator */}
-                {showHeader && (
+            <div className="flex-1 w-full flex">
+                {/* Desktop Sidebar — step navigator (assessment only) */}
+                {isAssessment && (
                     <aside className="hidden lg:flex flex-col w-64 shrink-0 p-6 pt-8 border-r border-white/5">
                         <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-6">Assessment Progress</p>
                         <nav className="space-y-1">
@@ -140,15 +189,22 @@ const Layout = () => {
                 )}
 
                 {/* Main Content */}
-                <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 animate-fade-in relative">
+                <main className={`flex-1 w-full animate-fade-in relative ${(isHome || isDashboardRoute) ? 'p-0' : 'max-w-6xl mx-auto p-4 md:p-6 lg:p-8'}`}>
                     <Outlet />
                 </main>
             </div>
 
-            {/* Footer */}
+            {/* ═══ UNIFIED FOOTER ═══ */}
             {!isComplete && (
-                <footer className="p-6 text-center text-xs text-white/30">
-                    © 2026 MyFinancial. Secure & Private.
+                <footer className="border-t border-white/5 py-4 px-6 lg:px-10">
+                    <div className="flex items-center justify-between text-xs text-white/30 w-full">
+                        <span>© 2026 MyFinancial. All rights reserved.</span>
+                        <div className="flex items-center gap-4">
+                            <a href="#" className="hover:text-white/50 transition-colors">Privacy</a>
+                            <a href="#" className="hover:text-white/50 transition-colors">Terms</a>
+                            <a href="#" className="hover:text-white/50 transition-colors">Help</a>
+                        </div>
+                    </div>
                 </footer>
             )}
         </div>

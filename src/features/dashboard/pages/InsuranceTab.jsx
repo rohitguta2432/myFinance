@@ -158,7 +158,7 @@ const InsuranceTab = () => {
     };
 
     return (
-        <div className="max-w-[1200px] mx-auto px-4 py-6 pb-24 space-y-8">
+        <div className="w-full max-w-6xl mx-auto px-4 py-6 pb-24 space-y-8">
 
                 {/* Page Title */}
                 <div>

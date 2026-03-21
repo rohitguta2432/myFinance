@@ -18,22 +18,23 @@ public class TaxService {
     private final TaxRepository taxRepo;
 
     @Transactional(readOnly = true)
-    public TaxDTO getTax() {
-        log.info("tax.get started");
-        return taxRepo.findAll().stream()
+    public TaxDTO getTax(Long userId) {
+        log.info("tax.get started user={}", userId);
+        return taxRepo.findByUserId(userId).stream()
                 .findFirst()
                 .map(this::toDTO)
                 .orElse(new TaxDTO());
     }
 
     @Transactional
-    public TaxDTO saveTax(TaxDTO dto) {
-        log.info("tax.save regime={}", dto.getSelectedRegime());
+    public TaxDTO saveTax(Long userId, TaxDTO dto) {
+        log.info("tax.save user={} regime={}", userId, dto.getSelectedRegime());
 
-        Tax tax = taxRepo.findAll().stream()
+        Tax tax = taxRepo.findByUserId(userId).stream()
                 .findFirst()
                 .orElse(new Tax());
 
+        tax.setUserId(userId);
         tax.setSelectedRegime(EnumUtils.safeEnum(TaxRegime.class, dto.getSelectedRegime()));
         tax.setPpfElssAmount(dto.getPpfElssAmount());
         tax.setEpfVpfAmount(dto.getEpfVpfAmount());

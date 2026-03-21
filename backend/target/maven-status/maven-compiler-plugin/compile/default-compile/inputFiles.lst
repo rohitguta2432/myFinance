@@ -1,4 +1,5 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/MyFinanceApplication.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/AuthController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/CashFlowController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/ChatController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/GoalController.java
@@ -20,6 +21,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/FinancialsResponse.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/GoalDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/GoalProjectionDTO.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/GoogleTokenRequest.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/IncomeDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/InsuranceDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/LiabilityDTO.java
@@ -28,6 +30,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/RiskScoringDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/TaxCalculationDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/TaxDTO.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/UserDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Asset.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Expense.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Goal.java
@@ -36,6 +39,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Liability.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Profile.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/Tax.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/User.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/enums/EmploymentType.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/enums/Frequency.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/model/enums/InsuranceType.java
@@ -51,6 +55,8 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/repository/LiabilityRepository.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/repository/ProfileRepository.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/repository/TaxRepository.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/repository/UserRepository.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/AuthService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/BedrockChatService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/CashFlowService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/GoalProjectionService.java

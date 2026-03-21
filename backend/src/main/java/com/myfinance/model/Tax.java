@@ -16,6 +16,9 @@ public class Tax {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     private TaxRegime selectedRegime;
 

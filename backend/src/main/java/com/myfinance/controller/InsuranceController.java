@@ -16,12 +16,12 @@ public class InsuranceController {
     private final InsuranceService insuranceService;
 
     @GetMapping
-    public ResponseEntity<List<InsuranceDTO>> getInsurance() {
-        return ResponseEntity.ok(insuranceService.getInsurance());
+    public ResponseEntity<List<InsuranceDTO>> getInsurance(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(insuranceService.getInsurance(userId));
     }
 
     @PostMapping
-    public ResponseEntity<InsuranceDTO> saveInsurance(@RequestBody InsuranceDTO dto) {
-        return ResponseEntity.ok(insuranceService.saveInsurance(dto));
+    public ResponseEntity<InsuranceDTO> saveInsurance(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody InsuranceDTO dto) {
+        return ResponseEntity.ok(insuranceService.saveInsurance(userId, dto));
     }
 }

@@ -592,7 +592,7 @@ const Step1PersonalRisk = () => {
 
             {/* Bottom Navigation */}
             <div className="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-lg border-t border-white/5 p-4 z-50">
-                <div className="max-w-[1200px] mx-auto flex items-center justify-end">
+                <div className="w-full px-6 flex items-center justify-end">
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-surface-dark border border-white/10 rounded-xl">
                             <CheckCircle2 className={`w-4 h-4 ${isFormValid ? 'text-primary' : 'text-slate-500'}`} />

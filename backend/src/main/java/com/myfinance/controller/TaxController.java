@@ -14,12 +14,12 @@ public class TaxController {
     private final TaxService taxService;
 
     @GetMapping
-    public ResponseEntity<TaxDTO> getTax() {
-        return ResponseEntity.ok(taxService.getTax());
+    public ResponseEntity<TaxDTO> getTax(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(taxService.getTax(userId));
     }
 
     @PostMapping
-    public ResponseEntity<TaxDTO> saveTax(@RequestBody TaxDTO dto) {
-        return ResponseEntity.ok(taxService.saveTax(dto));
+    public ResponseEntity<TaxDTO> saveTax(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody TaxDTO dto) {
+        return ResponseEntity.ok(taxService.saveTax(userId, dto));
     }
 }

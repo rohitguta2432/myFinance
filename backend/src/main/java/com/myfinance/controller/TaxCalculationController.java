@@ -14,9 +14,10 @@ public class TaxCalculationController {
 
     @GetMapping
     public TaxCalculationDTO calculate(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
             @RequestParam(defaultValue = "0") double deductions80C,
             @RequestParam(defaultValue = "0") double deductions80D,
             @RequestParam(defaultValue = "0") double otherDeductions) {
-        return taxCalculationService.calculate(deductions80C, deductions80D, otherDeductions);
+        return taxCalculationService.calculate(userId, deductions80C, deductions80D, otherDeductions);
     }
 }
