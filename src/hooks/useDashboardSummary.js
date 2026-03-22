@@ -8,12 +8,12 @@ import { useAuthStore } from '../features/auth/store/useAuthStore';
  */
 export function useDashboardSummary() {
     const user = useAuthStore((s) => s.user);
-    const userId = user?.id;
+    const userId = user?.id || 0; // Default to 0 for unauthenticated users
 
     return useQuery({
         queryKey: ['dashboard-summary', userId],
         queryFn: () => api.get(`/dashboard/summary/${userId}`),
-        enabled: !!userId,
+        enabled: true, // Always fetch dashboard summary (0 is valid for unauth profile)
         staleTime: 5 * 60 * 1000,   // 5 min — data rarely changes mid-session
         gcTime: 10 * 60 * 1000,     // keep in cache 10 min
         refetchOnWindowFocus: false,
