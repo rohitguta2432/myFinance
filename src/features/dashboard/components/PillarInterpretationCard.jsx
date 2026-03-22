@@ -79,14 +79,14 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                 <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-xl shrink-0">{pillar.icon}</span>
-                        <h4 className="text-sm font-bold text-white truncate">{pillar.name}</h4>
+                        <h4 className="text-base font-bold text-white truncate">{pillar.name}</h4>
                         <span
-                            className={`px-2 py-0.5 ${config.chipBg} ${config.chipText} text-[9px] font-bold uppercase tracking-widest rounded-full leading-none shrink-0`}
+                            className={`px-2 py-0.5 ${config.chipBg} ${config.chipText} text-[11px] font-bold uppercase tracking-widest rounded-full leading-none shrink-0`}
                         >
                             {config.label}
                         </span>
                         {isWorst && (
-                            <span className="px-1.5 py-0.5 bg-red-500 text-[8px] font-bold text-white uppercase tracking-widest rounded-full leading-none shrink-0">
+                            <span className="px-2 py-1 bg-red-500 text-[10px] font-bold text-white uppercase tracking-widest rounded-full leading-none shrink-0">
                                 RISK
                             </span>
                         )}
@@ -95,17 +95,17 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                     <div className="flex items-center gap-2 shrink-0 ml-2">
                         <div className="flex items-baseline gap-0.5">
                             <span
-                                className="text-base font-black tabular-nums"
+                                className="text-xl font-black tabular-nums"
                                 style={{ color: config.barTo }}
                             >
                                 {pillar.score}
                             </span>
-                            <span className="text-[10px] text-slate-500">/{pillar.maxScore}</span>
+                            <span className="text-xs text-slate-500">/{pillar.maxScore}</span>
                         </div>
-                        <div className={`flex items-center gap-0.5 text-[10px] font-semibold ${config.textColor} transition-transform duration-200`}>
+                        <div className={`flex items-center gap-0.5 text-xs font-semibold ${config.textColor} transition-transform duration-200`}>
                             {expanded
-                                ? <ChevronUp className="w-3.5 h-3.5" />
-                                : <ChevronDown className="w-3.5 h-3.5" />
+                                ? <ChevronUp className="w-4 h-4" />
+                                : <ChevronDown className="w-4 h-4" />
                             }
                         </div>
                     </div>
@@ -129,7 +129,7 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
             >
                 <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3">
                     {/* Hook text */}
-                    <p className="text-[13px] text-slate-300 leading-relaxed">
+                    <p className="text-sm text-slate-300 leading-relaxed">
                         {hookData.text}
                     </p>
 
@@ -156,13 +156,13 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                     {/* "What Should I Do?" toggle */}
                     <button
                         onClick={(e) => { e.stopPropagation(); setShowAction(!showAction); }}
-                        className={`flex items-center gap-2 text-xs font-semibold transition-all duration-200 ${config.textColor} hover:opacity-80`}
+                        className={`flex items-center gap-2 text-sm font-semibold transition-all duration-200 ${config.textColor} hover:opacity-80`}
                     >
-                        <Zap className="w-3.5 h-3.5" />
+                        <Zap className="w-4 h-4" />
                         {showAction ? 'Hide Action' : 'What Should I Do?'}
                         {showAction
-                            ? <ChevronUp className="w-3.5 h-3.5" />
-                            : <ChevronDown className="w-3.5 h-3.5" />
+                            ? <ChevronUp className="w-4 h-4" />
+                            : <ChevronDown className="w-4 h-4" />
                         }
                     </button>
 
@@ -172,8 +172,8 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                     >
                         <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/5">
                             <div className="flex items-start gap-2">
-                                <span className="text-sm mt-px">📌</span>
-                                <p className="text-xs text-slate-300 leading-relaxed">
+                                <span className="text-base mt-px">📌</span>
+                                <p className="text-sm text-slate-300 leading-relaxed">
                                     {hookData.action}
                                 </p>
                             </div>

@@ -47,6 +47,11 @@ const RowItem = ({ label, value, muted, highlight, strikethrough }) => (
 const TaxPlanningTab = () => {
     const data = useTaxAnalysis();
     const { regimeComparison, tds, rental, deductions, employerNps, fmt } = data;
+
+    if (!regimeComparison) {
+        return <div className="w-full max-w-6xl mx-auto px-4 py-6 text-center text-slate-500">Loading tax analysis...</div>;
+    }
+
     const { old: oldR, new: newR, recommended, savings, savingsFormatted } = regimeComparison;
 
     return (

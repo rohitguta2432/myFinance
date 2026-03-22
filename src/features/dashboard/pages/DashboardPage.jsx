@@ -44,27 +44,27 @@ const UpgradeModal = ({ isOpen, onClose, tabLabel }) => {
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-5">
                         <Lock className="w-7 h-7 text-amber-400" />
                     </div>
-                    <h3 className="text-xl font-black text-white mb-2">
+                    <h3 className="text-2xl font-black text-white mb-2">
                         {tabLabel} is a Premium Feature
                     </h3>
-                    <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                    <p className="text-base text-slate-400 mb-6 leading-relaxed">
                         Upgrade to unlock detailed analysis and personalized recommendations for your financial health.
                     </p>
                     {/* Feature list */}
                     <div className="text-left space-y-2.5 mb-8">
                         {PREMIUM_FEATURES.map((feat, i) => (
                             <div key={i} className="flex items-start gap-2.5">
-                                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                                <span className="text-xs text-slate-300 leading-relaxed">{feat}</span>
+                                <Check className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                                <span className="text-sm text-slate-300 leading-relaxed">{feat}</span>
                             </div>
                         ))}
                     </div>
                     {/* CTA */}
                     <button className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-background-dark font-bold rounded-xl shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all active:scale-[0.97] cursor-pointer">
                         Upgrade to Premium
-                        <span className="block text-[11px] font-medium opacity-80 mt-0.5">₹999/year — Cancel anytime</span>
+                        <span className="block text-sm font-medium opacity-80 mt-0.5">₹999/year — Cancel anytime</span>
                     </button>
-                    <p className="text-[10px] text-slate-600 mt-3">No credit card required · 7-day free trial</p>
+                    <p className="text-xs text-slate-600 mt-3">No credit card required · 7-day free trial</p>
                 </div>
             </div>
         </div>
@@ -125,11 +125,11 @@ const DashboardPage = () => {
                     {/* Premium Badge or Free Plan Label */}
                     {isPremium ? (
                         <div className="flex items-center gap-2 px-3 mb-4">
-                            <Crown className="w-4 h-4 text-amber-400" />
-                            <span className="text-[10px] uppercase tracking-[0.2em] font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Premium</span>
+                            <Crown className="w-5 h-5 text-amber-400" />
+                            <span className="text-xs uppercase tracking-[0.2em] font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Premium</span>
                         </div>
                     ) : (
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-4 px-3">Dashboard</p>
+                        <p className="text-xs uppercase tracking-widest font-bold text-slate-500 mb-4 px-3">Dashboard</p>
                     )}
 
                     {SIDEBAR_TABS.map((tab) => {
@@ -148,9 +148,9 @@ const DashboardPage = () => {
                                             : 'text-slate-400 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary' : isLocked ? 'text-slate-600' : ''}`} />
-                                <span className={`text-sm font-semibold flex-1 ${isActive ? 'text-primary' : isLocked ? 'text-slate-600' : ''}`}>{tab.label}</span>
-                                {isLocked && <Lock className="w-3.5 h-3.5 text-amber-500/50 shrink-0" />}
+                                <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-primary' : isLocked ? 'text-slate-600' : ''}`} />
+                                <span className={`text-base font-semibold flex-1 ${isActive ? 'text-primary' : isLocked ? 'text-slate-600' : ''}`}>{tab.label}</span>
+                                {isLocked && <Lock className="w-4 h-4 text-amber-500/50 shrink-0" />}
                             </button>
                         );
                     })}
@@ -161,8 +161,8 @@ const DashboardPage = () => {
                             onClick={() => navigate('/assessment/step-1')}
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer text-amber-400/70 hover:text-amber-400 hover:bg-amber-400/5"
                         >
-                            <RefreshCw className="w-4 h-4 shrink-0" />
-                            <span className="text-sm font-semibold">Retake Assessment</span>
+                            <RefreshCw className="w-5 h-5 shrink-0" />
+                            <span className="text-base font-semibold">Retake Assessment</span>
                         </button>
                     </div>
                 </nav>
@@ -174,8 +174,8 @@ const DashboardPage = () => {
                             onClick={() => { setUpgradeTabLabel('Premium'); setShowUpgradeModal(true); }}
                             className="w-full py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl text-center hover:border-amber-500/40 transition-all cursor-pointer group"
                         >
-                            <span className="text-[11px] font-bold text-amber-400 group-hover:text-amber-300">🔓 Upgrade to Premium</span>
-                            <span className="block text-[9px] text-slate-600 mt-0.5">Unlock all features</span>
+                            <span className="text-sm font-bold text-amber-400 group-hover:text-amber-300">🔓 Upgrade to Premium</span>
+                            <span className="block text-[11px] text-slate-600 mt-0.5">Unlock all features</span>
                         </button>
                     </div>
                 )}

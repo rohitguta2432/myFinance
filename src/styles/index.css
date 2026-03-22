@@ -6,12 +6,20 @@
   --surface-main: #162e1e;
   --surface-active: #1f3d2a;
   
-  /* Text and Border mappings */
+  /* Text and Border mappings — dark theme needs lighter slates for readability */
   --theme-text-white: #ffffff;
   --theme-text-slate-200: #e2e8f0;
   --theme-text-slate-300: #cbd5e1;
   --theme-text-slate-400: #94a3b8;
+  --theme-text-slate-500: #94a3b8; /* Tailwind default #64748b too faint on dark green */
+  --theme-text-slate-600: #94a3b8; /* Tailwind default #475569 nearly invisible */
+  --theme-text-slate-700: #cbd5e1; /* Tailwind default #334155 invisible */
+  --theme-text-slate-800: #e2e8f0; /* Tailwind default #1e293b invisible */
   --theme-border-white: #ffffff;
+  
+  /* Scrollbar */
+  --scrollbar-track: #102216;
+  --scrollbar-thumb: #1f3d2a;
   
   /* Utilities */
   --theme-white: #ffffff;
@@ -24,20 +32,23 @@
   --surface-main: #ffffff;
   --surface-active: #e2e8f0;
   
-  /* Text and Border mappings inverted */
+  /* Text and Border mappings — light bg needs Tailwind defaults (dark text) */
   --theme-text-white: #111827; /* Near black text instead of white */
   --theme-text-slate-200: #475569;
   --theme-text-slate-300: #64748b;
   --theme-text-slate-400: #475569; /* Darker slate for readability */
+  --theme-text-slate-500: #64748b; /* Tailwind default — readable on light bg */
+  --theme-text-slate-600: #475569; /* Tailwind default */
+  --theme-text-slate-700: #334155; /* Tailwind default */
+  --theme-text-slate-800: #1e293b; /* Tailwind default */
   --theme-border-white: #000000; /* Dark borders for opacity */
   
-  /* Utilities */
-  --theme-white: #ffffff; /* Keep bg-white as white in light mode? No, if we want bg-white to invert to black we change it. Let's keep it white and see. Wait, text-white uses --color-white! So we MUST change --theme-white to dark if we want text-white to be dark. */
-}
+  /* Scrollbar */
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
 
-/* Let's redefine. Tailwind uses --color-white for text-white, bg-white, border-white. */
-:root[data-theme="light"] {
-  --theme-white: #111827; /* text-white becomes nearly black */
+  /* Utilities — text-white becomes nearly black in light mode */
+  --theme-white: #111827;
 }
 
 @theme {
@@ -50,11 +61,15 @@
   --color-surface-dark: var(--surface-main);
   --color-surface-active: var(--surface-active);
   
-  /* Overwrite specific Tailwind default colors used heavily in the app */
+  /* Overwrite Tailwind slate colors — these auto-adapt between dark/light themes */
   --color-white: var(--theme-white);
   --color-slate-200: var(--theme-text-slate-200);
   --color-slate-300: var(--theme-text-slate-300);
   --color-slate-400: var(--theme-text-slate-400);
+  --color-slate-500: var(--theme-text-slate-500);
+  --color-slate-600: var(--theme-text-slate-600);
+  --color-slate-700: var(--theme-text-slate-700);
+  --color-slate-800: var(--theme-text-slate-800);
 
   --font-family-display: "Inter", sans-serif;
 }
@@ -75,22 +90,22 @@ body {
   min-height: 100vh;
 }
 
-/* Custom scrollbar for dark theme */
+/* Custom scrollbar — theme-aware */
 ::-webkit-scrollbar {
   width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #102216;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f3d2a;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0df259;
+  background: var(--color-primary);
 }
 
 /* Range slider styling */

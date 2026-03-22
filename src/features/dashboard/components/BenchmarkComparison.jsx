@@ -19,9 +19,9 @@ const BenchmarkRow = ({ bm, index }) => {
                 <span className="text-base">{bm.icon}</span>
             </div>
             <div className="w-28 shrink-0">
-                <span className="text-xs font-semibold text-slate-300 leading-tight block">{bm.label}</span>
+                <span className="text-sm font-semibold text-slate-300 leading-tight block">{bm.label}</span>
                 {bm.note && (
-                    <span className="text-[9px] text-slate-600 leading-none block mt-0.5 truncate" title={bm.note}>
+                    <span className="text-[11px] text-slate-600 leading-none block mt-0.5 truncate" title={bm.note}>
                         {bm.note}
                     </span>
                 )}
@@ -50,14 +50,14 @@ const BenchmarkRow = ({ bm, index }) => {
 
             {/* User Value */}
             <div className="w-16 text-right shrink-0">
-                <span className={`text-xs font-bold tabular-nums ${tc.text}`}>
+                <span className={`text-sm font-bold tabular-nums ${tc.text}`}>
                     {bm.userValue}
                 </span>
             </div>
 
             {/* Benchmark Target */}
             <div className="w-16 text-right shrink-0">
-                <span className="text-[10px] text-slate-500 tabular-nums">
+                <span className="text-xs text-slate-500 tabular-nums">
                     {bm.benchTarget}
                 </span>
             </div>
@@ -84,10 +84,10 @@ const BenchmarkComparison = () => {
     return (
         <div>
             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                     Your Numbers vs. Benchmarks
                 </h3>
-                <span className="text-[10px] text-slate-600">
+                <span className="text-xs text-slate-600">
                     Personalised for your profile
                 </span>
             </div>
@@ -96,16 +96,16 @@ const BenchmarkComparison = () => {
                 <div className="flex items-center gap-3 px-4 py-2 border-b border-white/5 bg-white/[0.02]">
                     <div className="w-8 shrink-0" />
                     <div className="w-28 shrink-0">
-                        <span className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">Metric</span>
+                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Metric</span>
                     </div>
                     <div className="flex-1">
-                        <span className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">Progress</span>
+                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Progress</span>
                     </div>
                     <div className="w-16 text-right shrink-0">
-                        <span className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">Yours</span>
+                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Yours</span>
                     </div>
                     <div className="w-16 text-right shrink-0">
-                        <span className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">Target</span>
+                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Target</span>
                     </div>
                     <div className="w-3 shrink-0" />
                 </div>
@@ -125,7 +125,7 @@ const BenchmarkComparison = () => {
                 ].map((l) => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: l.color }} />
-                        <span className="text-[9px] text-slate-600">{l.label}</span>
+                        <span className="text-[11px] text-slate-600">{l.label}</span>
                     </div>
                 ))}
             </div>

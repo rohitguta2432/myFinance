@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface TaxRepository extends JpaRepository<Tax, Long> {
     Optional<Tax> findByUserId(Long userId);
+    Optional<Tax> findFirstByUserIdOrUserIdIsNull(Long userId);
 }

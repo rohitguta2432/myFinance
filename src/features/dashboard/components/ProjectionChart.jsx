@@ -27,7 +27,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xl text-xs min-w-[180px]">
+        <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xl text-sm min-w-[180px]">
             <p className="text-slate-500 font-semibold mb-2">{d.year} · Age {d.age}</p>
             <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
@@ -61,10 +61,10 @@ const LegendItem = ({ color, label, value, icon: Icon }) => (
     <div className="flex items-center gap-2">
         <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
         <div>
-            <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                {Icon && <Icon className="w-3 h-3" />} {label}
+            <p className="text-xs text-slate-500 flex items-center gap-1">
+                {Icon && <Icon className="w-4 h-4" />} {label}
             </p>
-            <p className="text-sm font-bold text-slate-800">{value}</p>
+            <p className="text-base font-bold text-white">{value}</p>
         </div>
     </div>
 );
@@ -89,17 +89,17 @@ const ProjectionChart = () => {
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                     {projectionYears}-Year Wealth Projection
                 </h4>
-                <span className="text-[10px] text-slate-600">
+                <span className="text-xs text-slate-600">
                     Retiring at {retirementAge}
                 </span>
             </div>
 
             {/* Legend */}
             <div className="grid grid-cols-3 gap-3">
-                <LegendItem color="#34d399" label="Optimized (+20% savings)" value={finalOptimizedFormatted} icon={Zap} />
+                <LegendItem color="#34d399" label={`Optimized (+${projection.optimizationPct}% savings)`} value={finalOptimizedFormatted} icon={Zap} />
                 <LegendItem color="#60a5fa" label="Current Path" value={finalCurrentFormatted} icon={TrendingUp} />
                 <LegendItem color="#fbbf24" label="If started 5yr ago" value={finalEarlyFormatted} icon={Clock} />
             </div>
@@ -129,14 +129,14 @@ const ProjectionChart = () => {
                         />
                         <XAxis
                             dataKey="year"
-                            tick={{ fontSize: 10, fill: '#64748b' }}
+                            tick={{ fontSize: 12, fill: '#64748b' }}
                             tickLine={false}
                             axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
                             ticks={tickYears}
                         />
                         <YAxis
                             tickFormatter={formatYAxis}
-                            tick={{ fontSize: 10, fill: '#64748b' }}
+                            tick={{ fontSize: 12, fill: '#64748b' }}
                             tickLine={false}
                             axisLine={false}
                             width={50}
@@ -153,7 +153,7 @@ const ProjectionChart = () => {
                                 label={{
                                     value: m.amount,
                                     position: 'right',
-                                    style: { fontSize: 9, fill: '#475569' },
+                                    style: { fontSize: 11, fill: '#475569' },
                                 }}
                             />
                         ))}
@@ -193,9 +193,9 @@ const ProjectionChart = () => {
 
             {/* Extra by optimizing callout */}
             <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
-                <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
-                <p className="text-xs text-slate-300">
-                    Optimizing your savings by just 20% could earn you an extra{' '}
+                <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
+                <p className="text-sm text-slate-300">
+                    Optimizing your savings by just {projection.optimizationPct}% could earn you an extra{' '}
                     <span className="font-bold text-emerald-400">{extraByOptimizingFormatted}</span> by retirement.
                 </p>
             </div>
@@ -210,7 +210,7 @@ const ProjectionChart = () => {
                     {[
                         '12% CAGR — based on Indian equity market long-term average (BSE Sensex)',
                         `Monthly SIP of ₹${projection.monthlySavings?.toLocaleString('en-IN')} — derived from your income minus expenses & EMIs`,
-                        `Optimized scenario assumes 20% higher monthly savings (₹${projection.optimizedSavings?.toLocaleString('en-IN')}/mo)`,
+                        `Optimized scenario assumes ${projection.optimizationPct}% higher monthly savings (₹${projection.optimizedSavings?.toLocaleString('en-IN')}/mo)`,
                         'Returns compounded monthly using SIP future value formula',
                         'Does not account for inflation, taxation, or market volatility',
                         'Past performance does not guarantee future results',

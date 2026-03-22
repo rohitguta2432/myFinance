@@ -2,6 +2,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/AuthController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/CashFlowController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/ChatController.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/DashboardController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/GoalController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/GoalProjectionController.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/controller/InsuranceController.java
@@ -17,6 +18,7 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/ChatMessage.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/ChatRequest.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/ChatResponse.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/DashboardSummaryDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/ExpenseDTO.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/FinancialsResponse.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/dto/GoalDTO.java
@@ -69,6 +71,19 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/RiskScoringService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/TaxCalculationService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/TaxService.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/ActionPlanCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/BenchmarksCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/DashboardDataLoader.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/DashboardService.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/HealthScoreCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/InsuranceAnalysisCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/LockedInsightsCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/PillarInterpretationCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/PriorityActionsCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/ProjectionCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/RedFlagsCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/TaxAnalysisCalculator.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/dashboard/TimeMachineCalculator.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/EnumUtils.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/JsonUtils.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/client/WhatsAppCloudApiClient.java

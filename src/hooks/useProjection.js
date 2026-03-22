@@ -1,101 +1,98 @@
-import { useMemo } from 'react';
-import { useFinancialHealthScore } from './useFinancialHealthScore';
+import { useDashboardSummary } from './useDashboardSummary';
+
+/** Indian currency formatter */
+const fmt = (val) => {
+    if (val == null || isNaN(val)) return '₹0';
+    const n = Number(val);
+    if (Math.abs(n) >= 1e7) return `₹${(n / 1e7).toFixed(2)} Cr`;
+    if (Math.abs(n) >= 1e5) return `₹${(n / 1e5).toFixed(2)} L`;
+    if (Math.abs(n) >= 1e3) return `₹${(n / 1e3).toFixed(1)} K`;
+    return `₹${n.toLocaleString('en-IN')}`;
+};
 
 /**
- * 30-Year Financial Projection Hook
+ * Thin API consumer — maps backend projection data to the shape
+ * ProjectionChart component expects.
  *
- * Generates year-by-year wealth projection for 3 scenarios:
- * 1. Current Path     — current monthly surplus at 12% CAGR
- * 2. Optimized Path   — 20% more savings + 12% CAGR
- * 3. Early Start      — same surplus but started 5 years earlier
- *
- * Uses SIP Future Value: FV = P × [((1+r)^n - 1) / r] × (1+r)
+ * Backend YearPointDTO: { year, current, optimized }
+ * Component expects data[]: { year, age, currentPath, optimized, earlyStart }
  */
-
-const sipFV = (monthly, annualRate, months) => {
-    if (monthly <= 0 || months <= 0) return 0;
-    const r = annualRate / 12;
-    return monthly * (((Math.pow(1 + r, months) - 1) / r) * (1 + r));
-};
-
-const fmt = (v) => {
-    if (v >= 10000000) return `₹${(v / 10000000).toFixed(2)} Cr`;
-    if (v >= 100000) return `₹${(v / 100000).toFixed(1)}L`;
-    return `₹${Math.round(v).toLocaleString('en-IN')}`;
-};
-
 export const useProjection = () => {
-    const { rawData } = useFinancialHealthScore();
+    const { data: summaryData, isLoading, error } = useDashboardSummary();
 
-    return useMemo(() => {
-        if (!rawData) return null;
+    if (isLoading || error || !summaryData) {
+        return null;   // ProjectionChart checks: if (!projection || !projection.data?.length) return null
+    }
 
-        const {
-            monthlySurplus = 0,
-            age = 30,
-            retirementAge = 60,
-            liquidAssets = 0,
-            netWorth = 0,
-        } = rawData;
+    const p = summaryData.projection || {};
+    const tm = summaryData.timeMachine || {};
+    const points = p.currentPath || p.optimizedPath || [];
 
-        const savings = Math.max(0, monthlySurplus);
-        const optimizedSavings = Math.round(savings * 1.2); // 20% more
-        const rate = 0.12; // 12% CAGR
-        const currentYear = new Date().getFullYear();
-        const projectionYears = Math.max(10, Math.min(40, retirementAge - age));
+    if (!points.length) return null;
 
-        // Generate year-by-year data
-        const data = [];
-        for (let y = 0; y <= projectionYears; y++) {
-            const months = y * 12;
-            data.push({
-                year: currentYear + y,
-                age: age + y,
-                label: y === 0 ? 'Now' : y % 5 === 0 ? `${currentYear + y}` : '',
-                currentPath: Math.round(liquidAssets + sipFV(savings, rate, months)),
-                optimized: Math.round(liquidAssets + sipFV(optimizedSavings, rate, months)),
-                earlyStart: Math.round(liquidAssets + sipFV(savings, rate, months + 60)), // +5 years head start
-            });
-        }
+    // Derive age from timeMachine or default to 30
+    const currentAge = tm.actualStartAge ?? tm.currentAge ?? 30;
+    const projectionYears = points.length > 0 ? points[points.length - 1].year : 30;
+    const retirementAge = Math.round(currentAge + projectionYears);
 
-        // Summary stats
-        const finalCurrent = data[data.length - 1]?.currentPath || 0;
-        const finalOptimized = data[data.length - 1]?.optimized || 0;
-        const finalEarly = data[data.length - 1]?.earlyStart || 0;
-        const extraByOptimizing = finalOptimized - finalCurrent;
-        const missedByLateStart = finalEarly - finalCurrent;
+    // Compute earlyStart (5 years head start) — compound current values with extra 5 years growth
+    const annualRate = 0.12;
 
-        // Find milestone years (₹1Cr, ₹5Cr, ₹10Cr)
-        const milestones = [];
-        const thresholds = [10000000, 50000000, 100000000]; // 1Cr, 5Cr, 10Cr
-        for (const t of thresholds) {
-            const yearHit = data.find(d => d.currentPath >= t);
-            if (yearHit) {
-                milestones.push({ amount: fmt(t), year: yearHit.year, age: yearHit.age });
-            }
-        }
+    // Transform backend shape → chart shape
+    const data = points.map((pt) => {
+        const yr = pt.year ?? 0;
+        const currentVal = pt.current ?? 0;
+        const optimizedVal = pt.optimized ?? 0;
+
+        // earlyStart = what currentPath would be if started 5 years earlier
+        // Rough approximation: current * (1.12)^5 compound head start
+        const earlyStartVal = Math.round(currentVal * Math.pow(1 + annualRate, 5));
 
         return {
-            data,
-            projectionYears,
-            currentAge: age,
-            retirementAge,
-            monthlySavings: savings,
-            optimizedSavings,
-            finalCurrent,
-            finalCurrentFormatted: fmt(finalCurrent),
-            finalOptimized,
-            finalOptimizedFormatted: fmt(finalOptimized),
-            finalEarly,
-            finalEarlyFormatted: fmt(finalEarly),
-            extraByOptimizing,
-            extraByOptimizingFormatted: fmt(extraByOptimizing),
-            missedByLateStart,
-            missedByLateStartFormatted: fmt(missedByLateStart),
-            milestones,
-            fmt,
+            year: new Date().getFullYear() + yr,
+            age: Math.round(currentAge + yr),
+            currentPath: currentVal,
+            optimized: optimizedVal,
+            earlyStart: earlyStartVal,
         };
-    }, [rawData]);
-};
+    });
 
-export default useProjection;
+    const lastPoint = data[data.length - 1] || {};
+    const currentEnd = lastPoint.currentPath ?? 0;
+    const optimizedEnd = lastPoint.optimized ?? 0;
+    const earlyEnd = lastPoint.earlyStart ?? 0;
+    const extraByOptimizing = optimizedEnd - currentEnd;
+
+    // Milestones for reference lines — use formatted amounts
+    const milestoneAmounts = [
+        { amount: '₹1 Cr', value: 10000000 },
+        { amount: '₹5 Cr', value: 50000000 },
+        { amount: '₹10 Cr', value: 100000000 },
+    ];
+    const maxVal = Math.max(optimizedEnd, earlyEnd);
+    const milestones = milestoneAmounts.filter(m => m.value <= maxVal * 1.2);
+
+    // Monthly savings from summary data
+    const monthlyIncome = summaryData.scorecardMetrics?.monthlyIncome ?? 0;
+    const monthlyExpenses = summaryData.scorecardMetrics?.monthlyExpenses ?? 0;
+    const monthlySavings = Math.max(0, monthlyIncome - monthlyExpenses);
+    const optimizationPct = p.optimizationPct ?? 20;
+    const optimizedSavings = Math.round(monthlySavings * (1 + optimizationPct / 100));
+
+    return {
+        data,
+        finalCurrentFormatted: fmt(currentEnd),
+        finalOptimizedFormatted: fmt(optimizedEnd),
+        finalEarlyFormatted: fmt(earlyEnd),
+        extraByOptimizingFormatted: fmt(extraByOptimizing),
+        projectionYears,
+        retirementAge,
+        milestones,
+        optimizationPct,
+        monthlySavings,
+        optimizedSavings,
+        fmt,
+        isLoading: false,
+        error: null,
+    };
+};

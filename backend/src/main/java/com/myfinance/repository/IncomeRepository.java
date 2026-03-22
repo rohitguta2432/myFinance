@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface IncomeRepository extends JpaRepository<Income, Long> {
     List<Income> findByUserId(Long userId);
+    List<Income> findByUserIdOrUserIdIsNull(Long userId);
 }

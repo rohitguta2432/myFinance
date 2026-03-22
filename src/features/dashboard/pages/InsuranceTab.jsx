@@ -119,6 +119,10 @@ const InsuranceTab = () => {
     const data = useInsuranceAnalysis();
     const { termLife, healthInsurance, additionalCoverage, age, city, annualIncomeFormatted, totalEMI, totalEMIFormatted } = data;
 
+    if (!termLife || !healthInsurance) {
+        return <div className="w-full max-w-6xl mx-auto px-4 py-6 text-center text-slate-500">Loading insurance analysis...</div>;
+    }
+
     // Do/Don't content — Term
     const termDo = [
         `Buy a pure term plan with cover extending to at least age 60. Look for: (a) claim settlement ratio > 98%, (b) individual death claim settlement ratio (not group), (c) cover amount adequate to close the gap of ${termLife.coverGapFormatted}.`,

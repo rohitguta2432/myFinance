@@ -43,8 +43,8 @@ const ScoreRing = ({ score, label, color }) => {
                 <span className="text-5xl font-black text-white tabular-nums tracking-tight"
                     style={{ textShadow: `0 0 20px ${color}30` }}
                 >{Math.round(animatedScore)}</span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] mt-1" style={{ color }}>{label}</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">out of 100</span>
+                <span className="text-sm font-semibold uppercase tracking-[0.15em] mt-1" style={{ color }}>{label}</span>
+                <span className="text-xs text-slate-500 mt-0.5">out of 100</span>
             </div>
         </div>
     );
@@ -61,8 +61,8 @@ const RedFlag = ({ title, current, benchmark, severity }) => {
         <div className={`${bg} border rounded-xl p-3 flex items-start gap-3`}>
             <Icon className={`w-5 h-5 ${color} mt-0.5 shrink-0`} />
             <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white">{title}</p>
-                <div className="flex items-center gap-2 mt-1 text-[11px]">
+                <p className="text-base font-semibold text-white">{title}</p>
+                <div className="flex items-center gap-2 mt-1 text-sm">
                     <span className={color}>You: {current}</span>
                     <span className="text-slate-600">|</span>
                     <span className="text-slate-400">Benchmark: {benchmark}</span>
@@ -88,20 +88,20 @@ const LockedHookCard = ({ pillar, hookData }) => {
                     <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
                         <Lock className="w-5 h-5 text-white/60" />
                     </div>
-                    <button className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-black rounded-full uppercase tracking-wider shadow-lg hover:shadow-amber-500/20 transition-all active:scale-95">
+                    <button className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-bold text-black rounded-full uppercase tracking-wider shadow-lg hover:shadow-amber-500/20 transition-all active:scale-95">
                         Unlock Deep Insights
                     </button>
                 </div>
             </div>
             <div className="relative z-0">
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{pillar.icon}</span>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">{pillar.name} Insight</h4>
+                    <span className="text-xl">{pillar.icon}</span>
+                    <h4 className="text-base font-bold text-white uppercase tracking-wider">{pillar.name} Insight</h4>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed blur-[3px] select-none">
+                <p className="text-base text-slate-300 leading-relaxed blur-[3px] select-none">
                     {hookData.text}
                 </p>
-                <p className="text-[10px] text-slate-500 mt-2 italic blur-[2px] select-none">
+                <p className="text-xs text-slate-500 mt-2 italic blur-[2px] select-none">
                     {hookData.emotionalDriver}
                 </p>
             </div>
@@ -154,8 +154,8 @@ const FinancialDashboard = () => {
                 {/* ── Greeting + Date ── */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-black tracking-tight">Your Financial Snapshot</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <h2 className="text-2xl font-black tracking-tight">Your Financial Snapshot</h2>
+                        <p className="text-base text-slate-500 mt-0.5">
                             {city ? `📍 ${city}` : ''} · Last assessed {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
                     </div>
@@ -175,8 +175,8 @@ const FinancialDashboard = () => {
                                     <Icon className={`w-4 h-4 ${stat.color}`} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">{stat.label}</p>
-                                    <p className={`text-sm font-bold tabular-nums ${stat.color}`}>{stat.value}</p>
+                                    <p className="text-sm text-slate-500 uppercase tracking-wider font-medium">{stat.label}</p>
+                                    <p className={`text-lg font-bold tabular-nums ${stat.color}`}>{stat.value}</p>
                                 </div>
                             </div>
                         );
@@ -188,12 +188,12 @@ const FinancialDashboard = () => {
                     <div className="flex flex-col lg:flex-row gap-6">
                         {/* Left: Score Ring + Label */}
                         <div className="flex flex-col items-center lg:items-start gap-3 lg:w-[240px] shrink-0">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Financial Health Score</p>
+                            <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Financial Health Score</p>
                             <ScoreRing score={totalScore} label={scoreLabel.label} color={scoreLabel.color} />
                             {mostCritical && (
                                 <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg mt-1">
-                                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                                    <span className="text-[10px] text-slate-300 leading-tight">
+                                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                                    <span className="text-sm text-slate-300 leading-tight">
                                         <span className="text-red-400 font-bold">RISK:</span> {mostCritical.name}
                                     </span>
                                 </div>
@@ -207,8 +207,8 @@ const FinancialDashboard = () => {
                         {/* Right: Pillar Breakdown (collapsible insights) */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Health Pillars</h3>
-                                <span className="text-[10px] text-slate-600">Tap a pillar for insights</span>
+                                <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Health Pillars</h3>
+                                <span className="text-sm text-slate-600">Tap a pillar for insights</span>
                             </div>
                             <div className="grid gap-2">
                                 {sortedPillars.map((p, i) => (
@@ -232,11 +232,11 @@ const FinancialDashboard = () => {
                 {topFlags.length > 0 && (
                     <div>
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                            <h3 className="text-base font-bold uppercase tracking-[0.2em] text-slate-500">
                                 Top {topFlags.length} Red Flags
                             </h3>
                             {flagsTriggered > 3 && (
-                                <span className="text-[10px] text-slate-600">{flagsTriggered} total detected</span>
+                                <span className="text-sm text-slate-600">{flagsTriggered} total detected</span>
                             )}
                         </div>
                         <div className="space-y-3">
@@ -256,22 +256,22 @@ const FinancialDashboard = () => {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                    <span className={`px-1.5 py-0.5 ${s.badge} text-[8px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
+                                                    <span className={`px-2 py-1 ${s.badge} text-[11px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
                                                         {flag.severity}
                                                     </span>
-                                                    <h4 className="text-sm font-bold text-white">{flag.title}</h4>
+                                                    <h4 className="text-lg font-bold text-white">{flag.title}</h4>
                                                 </div>
-                                                <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                                <p className="text-base text-slate-400 leading-relaxed mb-2">
                                                     {flag.explanation}
                                                 </p>
                                                 <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
-                                                    <span className="text-sm mt-px">📌</span>
-                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                    <span className="text-base mt-px">📌</span>
+                                                    <p className="text-sm text-slate-300 leading-relaxed">
                                                         {flag.action}
                                                     </p>
                                                 </div>
                                                 {flag.impact > 0 && (
-                                                    <p className="text-[10px] text-slate-600 mt-1.5">
+                                                    <p className="text-sm text-slate-600 mt-2">
                                                         Financial impact: <span className={`font-semibold ${s.text}`}>{formatInLakh(flag.impact)}</span>
                                                         {flag.urgency > 1 && <span className="ml-2">⚡ {flag.urgency}× urgency</span>}
                                                     </p>
@@ -283,14 +283,14 @@ const FinancialDashboard = () => {
                             })}
                         </div>
                         {flagsHidden > 0 && (
-                            <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                            <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Lock className="w-3.5 h-3.5 text-slate-500" />
-                                    <span className="text-[11px] text-slate-500">
+                                    <Lock className="w-5 h-5 text-slate-500" />
+                                    <span className="text-base text-slate-500">
                                         +{flagsHidden} more flag{flagsHidden > 1 ? 's' : ''} detected
                                     </span>
                                 </div>
-                                <span className="text-[10px] text-primary font-semibold">Unlock Premium →</span>
+                                <span className="text-sm text-primary font-semibold">Unlock Premium →</span>
                             </div>
                         )}
                     </div>
@@ -299,11 +299,11 @@ const FinancialDashboard = () => {
                 {topActions.length > 0 && (
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                             Priority Actions
                         </h3>
                         {actionsTriggered > 3 && (
-                            <span className="text-[10px] text-slate-600">{actionsTriggered} actions identified</span>
+                            <span className="text-xs text-slate-600">{actionsTriggered} actions identified</span>
                         )}
                     </div>
                     <div className="space-y-3">
@@ -315,23 +315,23 @@ const FinancialDashboard = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="px-1.5 py-0.5 bg-emerald-500/15 text-[8px] font-bold text-emerald-400 uppercase tracking-widest rounded-full leading-none">
+                                            <span className="px-2 py-1 bg-emerald-500/15 text-[10px] font-bold text-emerald-400 uppercase tracking-widest rounded-full leading-none">
                                                 #{i + 1}
                                             </span>
-                                            <h4 className="text-sm font-bold text-white">{act.title}</h4>
+                                            <h4 className="text-base font-bold text-white">{act.title}</h4>
                                         </div>
-                                        <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                        <p className="text-sm text-slate-400 leading-relaxed mb-2">
                                             {act.description}
                                         </p>
                                         {act.howTo && (
                                             <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2 mb-2">
-                                                <span className="text-sm mt-px">▶</span>
-                                                <p className="text-xs text-slate-300 leading-relaxed">
+                                                <span className="text-base mt-px">▶</span>
+                                                <p className="text-sm text-slate-300 leading-relaxed">
                                                     {act.howTo}
                                                 </p>
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-3 text-[10px]">
+                                        <div className="flex items-center gap-3 text-xs">
                                             <span className="text-slate-500">
                                                 Impact: <span className="text-emerald-400 font-semibold">{formatInLakh(act.impact)}</span>
                                             </span>
@@ -358,14 +358,14 @@ const FinancialDashboard = () => {
                         ))}
                     </div>
                     {actionsHidden > 0 && (
-                        <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-3 flex items-center justify-between">
+                        <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Lock className="w-3.5 h-3.5 text-slate-500" />
-                                <span className="text-[11px] text-slate-500">
+                                <Lock className="w-4 h-4 text-slate-500" />
+                                <span className="text-sm text-slate-500">
                                     +{actionsHidden} more action{actionsHidden > 1 ? 's' : ''} identified
                                 </span>
                             </div>
-                            <span className="text-[10px] text-primary font-semibold">Unlock Premium →</span>
+                            <span className="text-xs text-primary font-semibold">Unlock Premium →</span>
                         </div>
                     )}
                 </div>
@@ -383,13 +383,13 @@ const FinancialDashboard = () => {
                         style={{ background: 'radial-gradient(circle at 50% 0%, rgba(245,158,11,0.2), transparent 60%)' }}
                     />
                     <div className="relative z-10">
-                        <h3 className="text-xl font-black mb-2">Unlock Your Full Financial Blueprint</h3>
-                        <p className="text-sm text-slate-400 mb-5 max-w-md mx-auto">
+                        <h3 className="text-2xl font-black mb-2">Unlock Your Full Financial Blueprint</h3>
+                        <p className="text-base text-slate-400 mb-5 max-w-lg mx-auto">
                             Get personalized action plans, detailed pillar breakdowns, and step-by-step recommendations to reach 90+ score.
                         </p>
                         <button className="px-8 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-background-dark font-bold rounded-xl shadow-[0_0_25px_rgba(245,158,11,0.3)] transition-all active:scale-[0.97]">
                             Upgrade to Premium
-                            <span className="block text-[10px] font-medium opacity-80 mt-0.5">₹999/year — Cancel anytime</span>
+                            <span className="block text-xs font-medium opacity-80 mt-0.5">₹999/year — Cancel anytime</span>
                         </button>
                     </div>
                 </div>

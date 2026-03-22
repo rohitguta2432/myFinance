@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface InsuranceRepository extends JpaRepository<Insurance, Long> {
     List<Insurance> findByUserId(Long userId);
+    List<Insurance> findByUserIdOrUserIdIsNull(Long userId);
     Optional<Insurance> findByUserIdAndInsuranceType(Long userId, InsuranceType insuranceType);
     Optional<Insurance> findByInsuranceType(InsuranceType insuranceType);
 }
