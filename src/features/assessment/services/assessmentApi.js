@@ -73,7 +73,7 @@ const mapExpenseToDTO = (data) => ({
     category: data.category,
     amount: parseFloat(data.amount) || 0,
     frequency: FREQ_TO_DB[data.frequency] || data.frequency?.toUpperCase(),
-    isEssential: data.type === 'essential',
+    isEssential: data.type?.toLowerCase() === 'essential',
 });
 
 const mapExpenseFromDTO = (dto) => ({

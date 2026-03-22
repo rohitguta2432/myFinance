@@ -21,12 +21,10 @@ export const useBalanceSheetQuery = () => {
 
 export const useAddAssetMutation = () => {
     const queryClient = useQueryClient();
-    const store = useAssessmentStore();
 
     return useMutation({
         mutationFn: addAsset,
-        onSuccess: (savedAsset) => {
-            store.addAsset(savedAsset);
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
             queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
@@ -35,12 +33,10 @@ export const useAddAssetMutation = () => {
 
 export const useAddLiabilityMutation = () => {
     const queryClient = useQueryClient();
-    const store = useAssessmentStore();
 
     return useMutation({
         mutationFn: addLiability,
-        onSuccess: (savedLiability) => {
-            store.addLiability(savedLiability);
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
             queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
@@ -49,12 +45,10 @@ export const useAddLiabilityMutation = () => {
 
 export const useDeleteAssetMutation = () => {
     const queryClient = useQueryClient();
-    const store = useAssessmentStore();
 
     return useMutation({
         mutationFn: deleteAsset,
-        onSuccess: (_, id) => {
-            store.removeAsset(id);
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
             queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },
@@ -63,12 +57,10 @@ export const useDeleteAssetMutation = () => {
 
 export const useDeleteLiabilityMutation = () => {
     const queryClient = useQueryClient();
-    const store = useAssessmentStore();
 
     return useMutation({
         mutationFn: deleteLiability,
-        onSuccess: (_, id) => {
-            store.removeLiability(id);
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
             queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
         },

@@ -9,7 +9,7 @@ import { usePortfolioAnalysisQuery } from '../hooks/usePortfolioAnalysis';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
-    const { incomes, expenses, assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
+    const { incomes, expenses, assets, removeAsset, liabilities, removeLiability } = useAssessmentStore();
 
     // API Integration
     const { data: balanceData } = useBalanceSheetQuery();
@@ -126,7 +126,6 @@ const Step3AssetsLiabilities = () => {
 
     const handleSave = async () => {
         const newItem = {
-            id: Date.now(),
             category,
             subCategory: activeTab === 'assets' ? subCategory : undefined,
             name: name || (activeTab === 'assets' ? subCategory : category),
@@ -140,14 +139,19 @@ const Step3AssetsLiabilities = () => {
             moratoriumMonths: activeTab === 'liabilities' && category === '🎓 Education Loan' ? (parseInt(moratoriumMonths, 10) || 0) : undefined,
         };
 
-        if (activeTab === 'assets') {
-            addAsset(newItem);
-            try { await addAssetApi(newItem); } catch (e) { console.warn('Asset API save failed:', e.message); }
-        } else {
-            addLiability(newItem);
-            try { await addLiabilityApi(newItem); } catch (e) { console.warn('Liability API save failed:', e.message); }
+        try {
+            if (activeTab === 'assets') {
+                await addAssetApi(newItem);
+                toast.success('Asset saved successfully');
+            } else {
+                await addLiabilityApi(newItem);
+                toast.success('Liability saved successfully');
+            }
+            setIsModalOpen(false);
+        } catch (e) {
+            console.error('Save failed:', e.message);
+            toast.error(`Failed to save ${activeTab === 'assets' ? 'asset' : 'liability'}. Please try again.`);
         }
-        setIsModalOpen(false);
     };
 
     // ── Backend-computed portfolio analysis ──────────────────────────────
