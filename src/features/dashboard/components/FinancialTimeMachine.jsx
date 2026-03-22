@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, ChevronRight, Flame } from 'lucide-react';
+import { ChevronRight, Flame } from 'lucide-react';
 import { useTimeMachine } from '../../../hooks/useTimeMachine';
+import ProjectionChart from './ProjectionChart';
 
 const FinancialTimeMachine = () => {
     const data = useTimeMachine();
@@ -71,7 +72,7 @@ const FinancialTimeMachine = () => {
                         >
                             ₹{tickerCost.toLocaleString('en-IN')}/day
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-slate-500 mt-1">
                             is slipping away while you wait
                         </p>
                     </div>
@@ -80,49 +81,50 @@ const FinancialTimeMachine = () => {
                 {/* 3 Mini Stats */}
                 <div className="grid grid-cols-3 gap-2 mb-5">
                     <div className="rounded-xl p-3 text-center"
-                        style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}
+                        style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
                     >
-                        <p className="text-sm font-black text-emerald-400 tabular-nums">{missedWealthFormatted}</p>
+                        <p className="text-sm font-black text-emerald-600 tabular-nums">{missedWealthFormatted}</p>
                         <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">missed by not starting 5 yrs ago</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
-                        style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)' }}
+                        style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
                     >
-                        <p className="text-sm font-black text-amber-400 tabular-nums">{totalDelayCostFormatted}</p>
+                        <p className="text-sm font-black text-amber-600 tabular-nums">{totalDelayCostFormatted}</p>
                         <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">total delay cost so far</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
-                        style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)' }}
+                        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                     >
-                        <p className="text-sm font-black text-red-400 tabular-nums">{oneYearPenaltyFormatted}</p>
+                        <p className="text-sm font-black text-red-600 tabular-nums">{oneYearPenaltyFormatted}</p>
                         <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">more if you wait another year</p>
                     </div>
                 </div>
 
                 {/* Top Action */}
                 {topAction && (
-                    <div className="mb-4">
+                    <div className="mb-5">
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-2">
                             Your #1 action to stop the bleed
                         </p>
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/20 transition-colors cursor-pointer">
                             <span className="text-lg">{topAction.icon}</span>
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-white truncate">{topAction.title}</p>
+                                <p className="text-xs font-bold text-slate-800 truncate">{topAction.title}</p>
                             </div>
                             <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
                         </div>
                     </div>
                 )}
 
-                {/* CTA */}
-                <button className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-bold text-black rounded-xl shadow-lg hover:shadow-amber-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                    <Lock className="w-3.5 h-3.5" />
-                    Unlock Full 30-Year Projection
-                </button>
+                {/* Divider */}
+                <div className="h-px bg-white/5 my-5" />
+
+                {/* 30-Year Projection Chart */}
+                <ProjectionChart />
             </div>
         </div>
     );
 };
 
 export default FinancialTimeMachine;
+

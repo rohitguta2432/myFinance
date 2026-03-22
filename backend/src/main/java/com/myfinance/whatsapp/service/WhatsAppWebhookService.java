@@ -28,7 +28,7 @@ public class WhatsAppWebhookService {
     public String verifyWebhook(String mode, String token, String challenge) {
         log.info("whatsapp.webhook.verify mode={}", mode);
 
-        if ("subscribe".equals(mode) && config.getVerifyToken().equals(token)) {
+        if ("subscribe".equals(mode) && token != null && token.equals(config.getVerifyToken())) {
             log.info("whatsapp.webhook.verify.success");
             return challenge;
         }

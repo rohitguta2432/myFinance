@@ -71,3 +71,10 @@
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/service/TaxService.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/EnumUtils.java
 /home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/util/JsonUtils.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/client/WhatsAppCloudApiClient.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/config/WhatsAppConfig.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/controller/WhatsAppWebhookController.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/dto/WebhookPayload.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/dto/WhatsAppOutboundMessage.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/service/WhatsAppMessageService.java
+/home/t0266li/Documents/myFinance/backend/src/main/java/com/myfinance/whatsapp/service/WhatsAppWebhookService.java
