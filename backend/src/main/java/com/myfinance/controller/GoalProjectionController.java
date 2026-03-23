@@ -14,7 +14,8 @@ public class GoalProjectionController {
     private final GoalProjectionService projectionService;
 
     @GetMapping
-    public ResponseEntity<GoalProjectionDTO> getProjection() {
-        return ResponseEntity.ok(projectionService.project());
+    public ResponseEntity<GoalProjectionDTO> getProjection(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(projectionService.project(userId));
     }
 }

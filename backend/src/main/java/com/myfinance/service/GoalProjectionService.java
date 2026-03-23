@@ -53,12 +53,12 @@ public class GoalProjectionService {
     // ─── Main Projection ────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public GoalProjectionDTO project() {
-        log.info("goal.projection.calculate started");
+    public GoalProjectionDTO project(Long userId) {
+        log.info("goal.projection.calculate started user={}", userId);
 
-        List<Goal> goals = goalRepo.findAll();
-        List<Income> incomes = incomeRepo.findAll();
-        List<Expense> expenses = expenseRepo.findAll();
+        List<Goal> goals = goalRepo.findByUserIdOrUserIdIsNull(userId);
+        List<Income> incomes = incomeRepo.findByUserIdOrUserIdIsNull(userId);
+        List<Expense> expenses = expenseRepo.findByUserIdOrUserIdIsNull(userId);
 
         // ── 1. Monthly Surplus ──────────────────────────────────────────────
         double monthlyIncome = incomes.stream()
