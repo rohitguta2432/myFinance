@@ -148,6 +148,17 @@ const Step4FinancialGoals = () => {
         goalProjectionMap[g.id] = g;
     });
 
+    // --- Emergency Fund data from backend ---
+    const efMonthlyExpenses = projection?.monthlyExpenses ?? 0;
+    const efTargetMonths = projection?.emergencyTargetMonths ?? 6;
+    const efTarget = projection?.emergencyFundTarget ?? 0;
+    const efCurrent = projection?.emergencyFundCurrent ?? 0;
+    const efGap = projection?.emergencyFundGap ?? 0;
+    const efCoverage = projection?.emergencyCoverageMonths ?? 0;
+    const efAggressive = projection?.emergencyAggressiveMonths ?? 0;
+    const efConservative = projection?.emergencyConservativeMonths ?? 0;
+    const efProgressPercent = efTarget > 0 ? Math.min(100, (efCurrent / efTarget) * 100) : 0;
+    const efFullyCovered = efGap <= 0;
 
     return (
         <div className="flex flex-col h-full">
@@ -174,6 +185,134 @@ const Step4FinancialGoals = () => {
                     ))}
                 </div>
             </div>
+
+            {/* ═══ Emergency Fund Status Card ═══ */}
+            {efMonthlyExpenses > 0 && (() => {
+                const statusColor = efFullyCovered ? 'emerald' : efProgressPercent >= 50 ? 'amber' : 'red';
+                const statusLabel = efFullyCovered ? 'Fully Covered' : efProgressPercent >= 50 ? 'Partially Covered' : 'Needs Attention';
+                const formatMonths = (m) => {
+                    const rounded = Math.ceil(m);
+                    return `${rounded} ${rounded === 1 ? 'month' : 'months'}`;
+                };
+
+                return (
+                <div className="mb-6 bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 p-5">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="font-bold text-white flex items-center gap-2 text-base">
+                                    <ShieldAlert className="w-5 h-5 text-emerald-400" />
+                                    Emergency Fund Status
+                                </h3>
+                                <p className="text-sm text-slate-400 mt-1">
+                                    You need <span className="text-white font-semibold">{efTargetMonths} months</span> of expenses
+                                    <span className="text-slate-500 ml-1">
+                                        ({efTargetMonths === 9 ? 'Business / Self-Employed' : 'Salaried / Retired'})
+                                    </span>
+                                </p>
+                            </div>
+                            {/* Status badge */}
+                            <div className={`px-3 py-1.5 rounded-full text-xs font-bold border
+                                ${statusColor === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : ''}
+                                ${statusColor === 'amber' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : ''}
+                                ${statusColor === 'red' ? 'bg-red-500/15 text-red-400 border-red-500/30' : ''}
+                            `}>
+                                {statusLabel}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Key numbers */}
+                    <div className="grid grid-cols-3 divide-x divide-white/5 border-y border-white/5">
+                        <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400 mb-1">Monthly Expenses</p>
+                            <p className="text-white font-bold text-base">₹{Math.round(efMonthlyExpenses).toLocaleString('en-IN')}</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">from your cash flow</p>
+                        </div>
+                        <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400 mb-1">Target Corpus</p>
+                            <p className="text-white font-bold text-base">{formatToCrLakh(efTarget)}</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">{efTargetMonths} × monthly expenses</p>
+                        </div>
+                        <div className="p-4 text-center">
+                            <p className="text-xs text-slate-400 mb-1">Liquid Assets</p>
+                            <p className={`font-bold text-base ${efCurrent > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatToCrLakh(efCurrent)}</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">FDs, Savings, Debt MFs</p>
+                        </div>
+                    </div>
+
+                    {/* Coverage progress */}
+                    <div className="p-5">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-slate-400">Coverage</span>
+                            <span className="text-sm font-semibold text-white">
+                                {efCoverage.toFixed(1)} / {efTargetMonths} months
+                            </span>
+                        </div>
+                        <div className="h-3 w-full bg-background-dark rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-1000 ${efFullyCovered ? 'bg-emerald-500' : 'bg-gradient-to-r from-emerald-500 to-primary'}`}
+                                style={{ width: `${efProgressPercent}%` }}
+                            />
+                        </div>
+                        {!efFullyCovered && efGap > 0 && (
+                            <p className="text-xs text-amber-400 mt-2 font-medium">
+                                You need {formatToCrLakh(efGap)} more to reach your target
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Scenarios */}
+                    {efFullyCovered ? (
+                        <div className="mx-5 mb-5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                            <p className="text-emerald-400 font-bold text-sm flex items-center gap-2">
+                                <CheckCircle2 className="w-5 h-5" />
+                                Emergency fund fully covered! 🎉
+                            </p>
+                            <p className="text-sm text-emerald-400/80 mt-1.5 ml-7">
+                                Your liquid assets cover {efCoverage.toFixed(1)} months of expenses — exceeding the {efTargetMonths}-month target.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="px-5 pb-5 space-y-3">
+                            <p className="text-xs uppercase tracking-wider font-bold text-slate-500">
+                                How to build it
+                            </p>
+                            {monthlySurplus > 0 ? (
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/15">
+                                        <p className="text-sm font-bold text-white">Aggressive — Save</p>
+                                        <p className="text-xs text-slate-400 mt-1">
+                                            Save ₹{Math.round(monthlySurplus).toLocaleString('en-IN')}/month
+                                        </p>
+                                        <p className="text-emerald-400 font-bold text-xs mt-1">
+                                            → ready in {formatMonths(efAggressive)}
+                                        </p>
+                                    </div>
+                                    <div className="bg-blue-500/5 rounded-xl p-4 border border-blue-500/15">
+                                        <p className="text-sm font-bold text-white">Conservative — Save</p>
+                                        <p className="text-xs text-slate-400 mt-1">
+                                            Save ₹{Math.round(monthlySurplus * 0.5).toLocaleString('en-IN')}/month
+                                        </p>
+                                        <p className="text-blue-400 font-bold text-xs mt-1">
+                                            → ready in {formatMonths(efConservative)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                                    <p className="text-sm text-red-400 flex items-start gap-2">
+                                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                                        <span>Your monthly surplus is ₹0. Go back to <span className="font-bold text-white">Step 2</span> to increase income or reduce expenses to start building this fund.</span>
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                );
+            })()}
 
             {/* Goals List */}
             <div className="flex-1 space-y-4 overflow-y-auto pb-4 pt-2">
