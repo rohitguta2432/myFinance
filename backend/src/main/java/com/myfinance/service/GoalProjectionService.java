@@ -56,9 +56,9 @@ public class GoalProjectionService {
     public GoalProjectionDTO project(Long userId) {
         log.info("goal.projection.calculate started user={}", userId);
 
-        List<Goal> goals = goalRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Income> incomes = incomeRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Expense> expenses = expenseRepo.findByUserIdOrUserIdIsNull(userId);
+        List<Goal> goals = goalRepo.findByUserId(userId);
+        List<Income> incomes = incomeRepo.findByUserId(userId);
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
 
         // ── 1. Monthly Surplus ──────────────────────────────────────────────
         double monthlyIncome = incomes.stream()
