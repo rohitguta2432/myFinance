@@ -1,12 +1,9 @@
 package com.myfinance.service;
 
 import com.myfinance.dto.GoalProjectionDTO;
-import com.myfinance.model.Expense;
-import com.myfinance.model.Goal;
-import com.myfinance.model.Income;
-import com.myfinance.repository.ExpenseRepository;
-import com.myfinance.repository.GoalRepository;
-import com.myfinance.repository.IncomeRepository;
+import com.myfinance.model.*;
+import com.myfinance.model.enums.EmploymentType;
+import com.myfinance.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +21,18 @@ public class GoalProjectionService {
     private final GoalRepository goalRepo;
     private final IncomeRepository incomeRepo;
     private final ExpenseRepository expenseRepo;
+    private final AssetRepository assetRepo;
+    private final ProfileRepository profileRepo;
+
+    // Liquid asset types (same classification as PortfolioAnalysisService)
+    private static final Set<String> LIQUID_ASSET_TYPES = Set.of(
+            "📉 Mutual Funds — Debt",
+            "🏦 Bank/Savings Account",
+            "📊 Fixed Deposit (FD)",
+            "💰 Recurring Deposit (RD)",
+            "📄 Bonds/Debentures",
+            "🏢REITs/InvITs"
+    );
 
     private static final double ASSUMED_RETURN_RATE = 0.12;
     private static final double BUFFER_MULTIPLIER = 1.20;
@@ -125,8 +135,36 @@ public class GoalProjectionService {
         double remainingBuffer = monthlySurplus - totalSipRequired;
         double shortfall = totalSipRequired - monthlySurplus;
 
-        log.info("goal.projection.calculate.success goals={} totalSip={} surplus={} achievable={}",
-                goals.size(), Math.round(totalSipRequired), Math.round(monthlySurplus), isAchievable);
+        // ── 4. Emergency Fund ───────────────────────────────────────────────
+        // Determine target months based on employment type
+        Profile profile = profileRepo.findByUserId(userId).orElse(null);
+        EmploymentType empType = profile != null ? profile.getEmploymentType() : null;
+        int emergencyTargetMonths = (empType == EmploymentType.SELF_EMPLOYED
+                || empType == EmploymentType.BUSINESS
+                || empType == EmploymentType.UNEMPLOYED) ? 9 : 6;
+
+        double emergencyFundTarget = monthlyExpenses * emergencyTargetMonths;
+
+        // Sum liquid assets (Debt-type from Step 3)
+        List<Asset> assets = assetRepo.findByUserId(userId);
+        double liquidAssets = assets.stream()
+                .filter(a -> LIQUID_ASSET_TYPES.contains(a.getAssetType()))
+                .mapToDouble(a -> a.getCurrentValue() != null ? a.getCurrentValue() : 0)
+                .sum();
+
+        double emergencyFundGap = Math.max(0, emergencyFundTarget - liquidAssets);
+        double emergencyCoverageMonths = monthlyExpenses > 0
+                ? liquidAssets / monthlyExpenses : 0;
+
+        // Timeline: how many months to fill the gap from surplus
+        double aggressiveMonths = (monthlySurplus > 0 && emergencyFundGap > 0)
+                ? emergencyFundGap / monthlySurplus : 0;
+        double conservativeMonths = (monthlySurplus > 0 && emergencyFundGap > 0)
+                ? emergencyFundGap / (monthlySurplus * 0.5) : 0;
+
+        log.info("goal.projection.calculate.success goals={} totalSip={} surplus={} achievable={} emergencyGap={}",
+                goals.size(), Math.round(totalSipRequired), Math.round(monthlySurplus),
+                isAchievable, Math.round(emergencyFundGap));
 
         return GoalProjectionDTO.builder()
                 .goals(goalDetails)
@@ -138,6 +176,14 @@ public class GoalProjectionService {
                 .isAchievable(isAchievable)
                 .remainingBuffer(remainingBuffer)
                 .shortfall(shortfall)
+                .monthlyExpenses(monthlyExpenses)
+                .emergencyTargetMonths(emergencyTargetMonths)
+                .emergencyFundTarget(emergencyFundTarget)
+                .emergencyFundCurrent(liquidAssets)
+                .emergencyFundGap(emergencyFundGap)
+                .emergencyCoverageMonths(emergencyCoverageMonths)
+                .emergencyAggressiveMonths(aggressiveMonths)
+                .emergencyConservativeMonths(conservativeMonths)
                 .build();
     }
 }

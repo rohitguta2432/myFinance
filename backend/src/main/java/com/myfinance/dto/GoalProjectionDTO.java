@@ -24,6 +24,16 @@ public class GoalProjectionDTO {
     private Double remainingBuffer;
     private Double shortfall;
 
+    // ── Emergency Fund ──
+    private Double monthlyExpenses;
+    private Integer emergencyTargetMonths;        // 6 (salaried/retired) or 9 (business/self-employed)
+    private Double emergencyFundTarget;           // monthlyExpenses × targetMonths
+    private Double emergencyFundCurrent;          // liquid assets (Debt-category assets)
+    private Double emergencyFundGap;              // max(0, target - current)
+    private Double emergencyCoverageMonths;       // current / monthlyExpenses
+    private Double emergencyAggressiveMonths;     // gap / surplus (100% allocated)
+    private Double emergencyConservativeMonths;   // gap / (surplus × 0.5)
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

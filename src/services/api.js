@@ -25,8 +25,8 @@ async function request(endpoint, options = {}) {
         ...options.headers,
     };
 
-    if (userId) {
-        headers['X-User-Id'] = userId;
+    if (userId != null && !isNaN(userId)) {
+        headers['X-User-Id'] = String(userId);
     }
 
     const config = {
