@@ -86,13 +86,13 @@ public class PortfolioAnalysisService {
     // ─── Main Calculation ───────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public PortfolioAnalysisDTO analyse() {
-        log.info("portfolio.analysis.calculate started");
+    public PortfolioAnalysisDTO analyse(Long userId) {
+        log.info("portfolio.analysis.calculate started user={}", userId);
 
-        List<Asset> assets = assetRepo.findAll();
-        List<Liability> liabilities = liabilityRepo.findAll();
-        List<Income> incomes = incomeRepo.findAll();
-        List<Expense> expenses = expenseRepo.findAll();
+        List<Asset> assets = assetRepo.findByUserId(userId);
+        List<Liability> liabilities = liabilityRepo.findByUserId(userId);
+        List<Income> incomes = incomeRepo.findByUserId(userId);
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
 
         // ── 1. Classification & Allocation ──────────────────────────────────
         double equityTotal = 0, debtTotal = 0, realEstateTotal = 0, goldTotal = 0, otherTotal = 0;

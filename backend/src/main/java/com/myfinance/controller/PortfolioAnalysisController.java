@@ -14,7 +14,8 @@ public class PortfolioAnalysisController {
     private final PortfolioAnalysisService portfolioAnalysisService;
 
     @GetMapping
-    public ResponseEntity<PortfolioAnalysisDTO> analyse() {
-        return ResponseEntity.ok(portfolioAnalysisService.analyse());
+    public ResponseEntity<PortfolioAnalysisDTO> analyse(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(portfolioAnalysisService.analyse(userId));
     }
 }
