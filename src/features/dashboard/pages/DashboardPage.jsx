@@ -8,9 +8,9 @@ import TaxPlanningTab from './TaxPlanningTab';
 
 const SIDEBAR_TABS = [
     { id: 'summary', label: 'Summary', icon: BarChart3, premium: false },
-    { id: 'actions', label: 'Action Plan', icon: Zap, premium: true },
-    { id: 'insurance', label: 'Insurance', icon: Shield, premium: true },
-    { id: 'tax', label: 'Tax Planning', icon: Calculator, premium: true },
+    { id: 'actions', label: 'Action Plan', icon: Zap, premium: false },
+    { id: 'insurance', label: 'Insurance', icon: Shield, premium: false },
+    { id: 'tax', label: 'Tax Planning', icon: Calculator, premium: false },
 ];
 
 const PREMIUM_FEATURES = [
