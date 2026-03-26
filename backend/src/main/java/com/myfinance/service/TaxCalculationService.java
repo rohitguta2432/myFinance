@@ -83,11 +83,19 @@ public class TaxCalculationService {
             hraExemption = Math.min(actualHraReceived, Math.min(fiftyPercentBasic, rentMinus10Basic));
         }
 
-        // 4) Tax calculation — both regimes
-        RegimeBreakdown oldRegime = calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, otherDeductions);
+        // 4) 30% standard deduction on rental income (Section 24)
+        double rentalIncome = incomeCategories.entrySet().stream()
+                .filter(e -> e.getKey().toLowerCase().contains("rent"))
+                .mapToDouble(Map.Entry::getValue)
+                .sum();
+        double rentalStdDeduction = rentalIncome * 0.30;
+        double totalOtherDeductions = otherDeductions + rentalStdDeduction;
+
+        // 5) Tax calculation — both regimes
+        RegimeBreakdown oldRegime = calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, totalOtherDeductions);
         RegimeBreakdown newRegime = calculateNewRegime(grossTotalIncome);
 
-        // 5) Recommendation
+        // 6) Recommendation
         String recommended = oldRegime.getTotalTax() <= newRegime.getTotalTax() ? "old" : "new";
         double savings = Math.abs(oldRegime.getTotalTax() - newRegime.getTotalTax());
 
