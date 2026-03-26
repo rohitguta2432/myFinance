@@ -110,7 +110,7 @@ const LockedHookCard = ({ pillar, hookData }) => {
 };
 
 /* ─── MAIN DASHBOARD ─── */
-const FinancialDashboard = () => {
+const FinancialDashboard = ({ isPremium = false }) => {
     const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData } = useFinancialHealthScore();
     const hookTexts = useHookText(sortedPillars, rawData);
     const { topFlags, hiddenCount: flagsHidden, totalTriggered: flagsTriggered } = useRedFlags();
@@ -226,7 +226,7 @@ const FinancialDashboard = () => {
                 </div>
 
                 {/* ── Financial Time Machine ── */}
-                <FinancialTimeMachine />
+                <FinancialTimeMachine isPremium={isPremium} />
 
                 {/* ── Red Flags ── */}
                 {topFlags.length > 0 && (

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Flame } from 'lucide-react';
+import { ChevronRight, Flame, Lock } from 'lucide-react';
 import { useTimeMachine } from '../../../hooks/useTimeMachine';
 import ProjectionChart from './ProjectionChart';
 
-const FinancialTimeMachine = () => {
+const FinancialTimeMachine = ({ isPremium = false }) => {
     const data = useTimeMachine();
     const [tickerCost, setTickerCost] = useState(0);
 
@@ -119,8 +119,24 @@ const FinancialTimeMachine = () => {
                 {/* Divider */}
                 <div className="h-px bg-white/5 my-5" />
 
-                {/* 30-Year Projection Chart */}
-                <ProjectionChart />
+                {/* 30-Year Projection — gated for premium */}
+                <div className="relative overflow-hidden rounded-xl">
+                    {!isPremium && (
+                        <div className="absolute inset-0 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
+                                    <Lock className="w-5 h-5 text-white/60" />
+                                </div>
+                                <button className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-bold text-black rounded-full uppercase tracking-wider shadow-lg hover:shadow-amber-500/20 transition-all active:scale-95">
+                                    Unlock Deep Insights
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    <div className={!isPremium ? 'select-none pointer-events-none' : ''}>
+                        <ProjectionChart />
+                    </div>
+                </div>
             </div>
         </div>
     );

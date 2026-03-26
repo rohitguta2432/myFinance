@@ -106,7 +106,7 @@ const DashboardPage = () => {
                 return <TaxPlanningTab />;
             case 'summary':
             default:
-                return <FinancialDashboard />;
+                return <FinancialDashboard isPremium={isPremium} />;
         }
     };
 
