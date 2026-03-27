@@ -21,6 +21,7 @@ public class NetWorthService {
 
     private final AssetRepository assetRepo;
     private final LiabilityRepository liabilityRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public BalanceSheetResponse getBalanceSheet(Long userId) {
@@ -46,6 +47,7 @@ public class NetWorthService {
                 .allocationPercentage(dto.getAllocationPercentage())
                 .build();
         AssetDTO saved = toAssetDTO(assetRepo.save(asset));
+        auditLogService.log(userId, "ADD_ASSET", "asset", saved.getId(), null);
         log.info("networth.asset.add.success id={}", saved.getId());
         return saved;
     }
@@ -63,6 +65,7 @@ public class NetWorthService {
                 .interestRate(dto.getInterestRate())
                 .build();
         LiabilityDTO saved = toLiabilityDTO(liabilityRepo.save(liability));
+        auditLogService.log(userId, "ADD_LIABILITY", "liability", saved.getId(), null);
         log.info("networth.liability.add.success id={}", saved.getId());
         return saved;
     }
@@ -74,6 +77,7 @@ public class NetWorthService {
                 .filter(a -> a.getUserId() != null && a.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Asset not found or unauthorized: " + id));
         assetRepo.delete(asset);
+        auditLogService.log(userId, "DELETE_ASSET", "asset", id, null);
     }
 
     @Transactional
@@ -83,6 +87,7 @@ public class NetWorthService {
                 .filter(l -> l.getUserId() != null && l.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Liability not found or unauthorized: " + id));
         liabilityRepo.delete(liability);
+        auditLogService.log(userId, "DELETE_LIABILITY", "liability", id, null);
     }
 
     private AssetDTO toAssetDTO(Asset a) {

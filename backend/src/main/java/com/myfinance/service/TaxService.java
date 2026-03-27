@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaxService {
 
     private final TaxRepository taxRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public TaxDTO getTax(Long userId) {
@@ -47,6 +48,7 @@ public class TaxService {
         tax.setCalculatedTaxNew(dto.getCalculatedTaxNew());
 
         TaxDTO saved = toDTO(taxRepo.save(tax));
+        auditLogService.log(userId, "SAVE_TAX", "tax");
         log.info("tax.save.success id={}", saved.getId());
         return saved;
     }

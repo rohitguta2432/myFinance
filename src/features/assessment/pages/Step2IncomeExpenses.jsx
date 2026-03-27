@@ -9,6 +9,36 @@ import { CashFlowSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const EMI_CATEGORY = 'EMIs (loan payments)';
 
+const INCOME_EMOJI = {
+    'Salary': '💼', 'Business Income': '🏢', 'Agriculture Income': '🌾',
+    'Freelancing': '💻', 'Rental Income': '🏠', 'Dividend Income': '📈',
+    'Interest Income': '🏦', 'Bonus/Incentive': '🎁',
+    'Capital Gains (from selling stocks/property)': '📊', 'Pension': '🏖️', 'Other': '➕',
+};
+
+const EXPENSE_EMOJI = {
+    'Rent/Mortgage': '🏠', 'EMIs (loan payments)': '💳',
+    'Utilities (electricity, water, gas)': '💡', 'Transportation': '🚗',
+    'Food & Groceries': '🛒', 'Shopping (clothes, personal care)': '🛍️',
+    'Entertainment (movies, dining out)': '🎬', 'Subscriptions (Netflix, gym, etc.)': '📺',
+    'Healthcare': '🏥', 'Education': '🎓', 'Insurance Premiums': '🛡️',
+    'Childcare': '👶', 'Pet Care': '🐾', 'Travel & Vacations': '✈️',
+    'Gifts & Donations': '🎁', 'Other': '➕',
+};
+
+// Strip existing emoji prefix and get clean name + emoji
+const getIncomeDisplay = (source) => {
+    const clean = source?.replace(/^[\p{Emoji}\p{Emoji_Presentation}\s]+/u, '') || source;
+    const emoji = INCOME_EMOJI[clean] || Object.entries(INCOME_EMOJI).find(([k]) => clean?.includes(k))?.[1] || '💰';
+    return { emoji, name: clean };
+};
+
+const getExpenseDisplay = (category) => {
+    const clean = category?.replace(/^[\p{Emoji}\p{Emoji_Presentation}\s]+/u, '') || category;
+    const emoji = EXPENSE_EMOJI[clean] || Object.entries(EXPENSE_EMOJI).find(([k]) => clean?.includes(k))?.[1] || '📋';
+    return { emoji, name: clean };
+};
+
 const Step2IncomeExpenses = () => {
     const navigate = useNavigate();
     const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense, liabilities } = useAssessmentStore();
@@ -163,19 +193,20 @@ const Step2IncomeExpenses = () => {
                 {incomes.map((inc) => (
                     <div key={inc.id} className="flex justify-between items-center bg-surface-dark p-4 rounded-xl border border-white/5 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="bg-primary/10 p-2 rounded-lg text-primary">
-                                <DollarSign className="w-5 h-5" />
+                            <div className="bg-primary/10 p-2.5 rounded-lg text-lg">
+                                {getIncomeDisplay(inc.source).emoji}
                             </div>
                             <div>
-                                <p className="font-bold text-sm text-white">{inc.source}</p>
+                                <p className="font-bold text-sm text-white">{getIncomeDisplay(inc.source).name}</p>
                                 <p className="text-xs text-slate-400">
-                                    {inc.frequency} • ₹ {inc.amount.toLocaleString()}
-                                    {inc.taxDeducted && <span className="ml-2 text-primary">({inc.tdsPercentage}% TDS)</span>}
+                                    {inc.frequency}
+                                    {inc.taxDeducted && <span className="ml-1 text-primary/70">({inc.tdsPercentage}% TDS)</span>}
                                     {inc.description && <span className="block text-slate-500 mt-0.5">{inc.description}</span>}
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                            <span className="text-base font-bold text-white tabular-nums">₹ {inc.amount.toLocaleString('en-IN')}</span>
                             <button
                                 onClick={() => openModal('income', inc)}
                                 className="text-slate-400 hover:text-primary transition-colors"
@@ -208,18 +239,19 @@ const Step2IncomeExpenses = () => {
                 {expenses.map((exp) => (
                     <div key={exp.id} className="flex justify-between items-center bg-surface-dark p-4 rounded-xl border border-white/5 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="bg-red-500/10 p-2 rounded-lg text-red-400">
-                                <TrendingDown className="w-5 h-5" />
+                            <div className="bg-red-500/10 p-2.5 rounded-lg text-lg">
+                                {getExpenseDisplay(exp.category).emoji}
                             </div>
                             <div>
-                                <p className="font-bold text-sm text-white">{exp.category} <span className="text-[10px] font-normal bg-surface-active px-1.5 py-0.5 rounded ml-1 text-slate-400">{exp.type}</span></p>
+                                <p className="font-bold text-sm text-white">{getExpenseDisplay(exp.category).name} <span className="text-[10px] font-normal bg-surface-active px-1.5 py-0.5 rounded ml-1 text-slate-400">{exp.type}</span></p>
                                 <p className="text-xs text-slate-400">
-                                    {exp.frequency} • ₹ {exp.amount.toLocaleString()}
+                                    {exp.frequency}
                                     {exp.description && <span className="block text-slate-500 mt-0.5">{exp.description}</span>}
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                            <span className="text-base font-bold text-white tabular-nums">₹ {exp.amount.toLocaleString('en-IN')}</span>
                             <button
                                 onClick={() => openModal('expense', exp)}
                                 className="text-slate-400 hover:text-primary transition-colors"
@@ -263,28 +295,28 @@ const Step2IncomeExpenses = () => {
                                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/20"></div>
                             </div>
 
-                            <div className="space-y-3 font-mono text-sm sm:text-base">
+                            <div className="space-y-4 font-mono text-base">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-slate-300">Income</span>
-                                    <span className="text-primary font-bold">₹{totalMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                    <span className="text-slate-300 font-sans">Income</span>
+                                    <span className="text-primary font-bold text-lg tabular-nums">₹{totalMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-slate-300">Expenses</span>
-                                    <span className="text-red-400">₹{nonEMIExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                    <span className="text-slate-300 font-sans">Expenses</span>
+                                    <span className="text-red-400 font-bold text-lg tabular-nums">-₹{nonEMIExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-slate-400">
-                                    <span>EMIs (loans)</span>
-                                    <span>₹{totalMonthlyEMIs.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-400 font-sans">EMIs (loans)</span>
+                                    <span className="text-slate-400 font-semibold tabular-nums">-₹{totalMonthlyEMIs.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                 </div>
 
-                                <div className="border-t border-dashed border-white/20 my-3 pt-3 flex justify-between items-center text-lg">
-                                    <span className="text-white font-bold">SURPLUS</span>
-                                    <span className="text-white font-bold">₹{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                <div className="border-t border-dashed border-white/20 my-3 pt-4 flex justify-between items-center">
+                                    <span className="text-white font-bold text-lg font-sans">SURPLUS</span>
+                                    <span className={`font-black text-xl tabular-nums ${surplus >= 0 ? 'text-primary' : 'text-red-400'}`}>₹{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                 </div>
 
                                 <div className="pt-2 flex justify-between items-center">
-                                    <span className="text-slate-300">Savings Rate:</span>
-                                    <span className={`font-bold ${savingsRate >= 20 ? 'text-primary' : 'text-red-400'}`}>{savingsRate}%</span>
+                                    <span className="text-slate-300 font-sans">Savings Rate</span>
+                                    <span className={`font-black text-lg ${savingsRate >= 20 ? 'text-primary' : 'text-red-400'}`}>{savingsRate}%</span>
                                 </div>
                             </div>
 
@@ -407,36 +439,36 @@ const Step2IncomeExpenses = () => {
                                 >
                                     {modalType === 'income' ? (
                                         <>
-                                            <option>Salary</option>
-                                            <option>Business Income</option>
-                                            <option>Agriculture Income</option>
-                                            <option>Freelancing</option>
-                                            <option>Rental Income</option>
-                                            <option>Dividend Income</option>
-                                            <option>Interest Income</option>
-                                            <option>Bonus/Incentive</option>
-                                            <option>Capital Gains (from selling stocks/property)</option>
-                                            <option>Pension</option>
-                                            <option>Other</option>
+                                            <option>💼 Salary</option>
+                                            <option>🏢 Business Income</option>
+                                            <option>🌾 Agriculture Income</option>
+                                            <option>💻 Freelancing</option>
+                                            <option>🏠 Rental Income</option>
+                                            <option>📈 Dividend Income</option>
+                                            <option>🏦 Interest Income</option>
+                                            <option>🎁 Bonus/Incentive</option>
+                                            <option>📊 Capital Gains (from selling stocks/property)</option>
+                                            <option>🏖️ Pension</option>
+                                            <option>➕ Other</option>
                                         </>
                                     ) : (
                                         <>
-                                            <option>Rent/Mortgage</option>
-                                            <option>EMIs (loan payments)</option>
-                                            <option>Utilities (electricity, water, gas)</option>
-                                            <option>Transportation</option>
-                                            <option>Food & Groceries</option>
-                                            <option>Shopping (clothes, personal care)</option>
-                                            <option>Entertainment (movies, dining out)</option>
-                                            <option>Subscriptions (Netflix, gym, etc.)</option>
-                                            <option>Healthcare</option>
-                                            <option>Education</option>
-                                            <option>Insurance Premiums</option>
-                                            <option>Childcare</option>
-                                            <option>Pet Care</option>
-                                            <option>Travel & Vacations</option>
-                                            <option>Gifts & Donations</option>
-                                            <option>Other</option>
+                                            <option>🏠 Rent/Mortgage</option>
+                                            <option>💳 EMIs (loan payments)</option>
+                                            <option>💡 Utilities (electricity, water, gas)</option>
+                                            <option>🚗 Transportation</option>
+                                            <option>🛒 Food & Groceries</option>
+                                            <option>🛍️ Shopping (clothes, personal care)</option>
+                                            <option>🎬 Entertainment (movies, dining out)</option>
+                                            <option>📺 Subscriptions (Netflix, gym, etc.)</option>
+                                            <option>🏥 Healthcare</option>
+                                            <option>🎓 Education</option>
+                                            <option>🛡️ Insurance Premiums</option>
+                                            <option>👶 Childcare</option>
+                                            <option>🐾 Pet Care</option>
+                                            <option>✈️ Travel & Vacations</option>
+                                            <option>🎁 Gifts & Donations</option>
+                                            <option>➕ Other</option>
                                         </>
                                     )}
                                 </select>

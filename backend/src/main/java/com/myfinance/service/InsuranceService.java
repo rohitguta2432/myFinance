@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class InsuranceService {
 
     private final InsuranceRepository insuranceRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<InsuranceDTO> getInsurance(Long userId) {
@@ -48,6 +49,7 @@ public class InsuranceService {
         insurance.setRenewalDate(dto.getRenewalDate());
 
         InsuranceDTO saved = toDTO(insuranceRepo.save(insurance));
+        auditLogService.log(userId, "SAVE_INSURANCE", "insurance");
         log.info("insurance.save.success id={}", saved.getId());
         return saved;
     }

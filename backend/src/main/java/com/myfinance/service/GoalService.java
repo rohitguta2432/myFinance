@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class GoalService {
 
     private final GoalRepository goalRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<GoalDTO> getGoals(Long userId) {
@@ -42,6 +43,7 @@ public class GoalService {
                 .importance(dto.getImportance())
                 .build();
         GoalDTO saved = toDTO(goalRepo.save(goal));
+        auditLogService.log(userId, "ADD_GOAL", "goal", saved.getId(), null);
         log.info("goals.add.success id={}", saved.getId());
         return saved;
     }
@@ -53,6 +55,7 @@ public class GoalService {
                 .filter(g -> g.getUserId() != null && g.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Goal not found or unauthorized: " + id));
         goalRepo.delete(goal);
+        auditLogService.log(userId, "DELETE_GOAL", "goal", id, null);
     }
 
     private GoalDTO toDTO(Goal g) {

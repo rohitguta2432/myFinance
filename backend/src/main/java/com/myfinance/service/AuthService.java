@@ -24,6 +24,7 @@ import java.util.Collections;
 public class AuthService {
 
     private final UserRepository userRepo;
+    private final AuditLogService auditLogService;
 
     @Value("${google.oauth.client-id}")
     private String googleClientId;
@@ -49,7 +50,9 @@ public class AuthService {
                     existing.setName(name);
                     existing.setPictureUrl(picture);
                     existing.setLastLoginAt(LocalDateTime.now());
-                    return userRepo.save(existing);
+                    User saved = userRepo.save(existing);
+                    auditLogService.log(saved.getId(), "LOGIN", "user", saved.getId(), "Returning user");
+                    return saved;
                 })
                 .orElseGet(() -> {
                     log.info("auth.google.newUser googleId={} email={}", googleId, email);
@@ -59,7 +62,9 @@ public class AuthService {
                             .name(name)
                             .pictureUrl(picture)
                             .build();
-                    return userRepo.save(newUser);
+                    User saved = userRepo.save(newUser);
+                    auditLogService.log(saved.getId(), "LOGIN", "user", saved.getId(), "New user signup");
+                    return saved;
                 });
 
         log.info("auth.google.success userId={} email={}", user.getId(), user.getEmail());

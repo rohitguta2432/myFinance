@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileService {
 
     private final ProfileRepository profileRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public ProfileDTO getProfile(Long userId) {
@@ -46,6 +47,7 @@ public class ProfileService {
         profile.setRiskAnswers(JsonUtils.toJson(dto.getRiskAnswers()));
 
         ProfileDTO saved = toDTO(profileRepo.save(profile));
+        auditLogService.log(userId, "SAVE_PROFILE", "profile");
         log.info("profile.save.success id={}", saved.getId());
         return saved;
     }

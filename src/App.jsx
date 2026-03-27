@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'react-hot-toast';
@@ -15,8 +15,15 @@ import Step4FinancialGoals from './features/assessment/pages/Step4FinancialGoals
 import Step5InsuranceGap from './features/assessment/pages/Step5InsuranceGap';
 import Step6TaxOptimization from './features/assessment/pages/Step6TaxOptimization';
 import AssessmentComplete from './features/assessment/pages/AssessmentComplete';
+import AdminDashboard from './features/admin/pages/AdminDashboard';
 
 const queryClient = new QueryClient();
+
+function ConditionalChatWidget() {
+    const { pathname } = useLocation();
+    if (pathname.startsWith('/admin') || pathname === '/login') return null;
+    return <AiChatWidget />;
+}
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -31,6 +38,9 @@ export default function App() {
 
               {/* All routes require SSO login */}
               <Route element={<ProtectedRoute />}>
+                {/* Admin — full page, no Layout wrapper */}
+                <Route path="/admin" element={<AdminDashboard />} />
+
                 <Route element={<Layout />}>
                   <Route path="/" element={<Home />} />
                   <Route path="/assessment/step-1" element={<Step1PersonalRisk />} />
@@ -44,6 +54,7 @@ export default function App() {
                 </Route>
               </Route>
             </Routes>
+            <ConditionalChatWidget />
         </BrowserRouter>
         <Toaster
           position="top-right"
@@ -74,7 +85,6 @@ export default function App() {
             },
           }}
         />
-        <AiChatWidget />
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

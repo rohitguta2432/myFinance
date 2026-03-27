@@ -21,6 +21,7 @@ public class CashFlowService {
 
     private final IncomeRepository incomeRepo;
     private final ExpenseRepository expenseRepo;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public FinancialsResponse getCashFlow(Long userId) {
@@ -47,6 +48,7 @@ public class CashFlowService {
                 .tdsPercentage(dto.getTdsPercentage())
                 .build();
         IncomeDTO saved = toIncomeDTO(incomeRepo.save(income));
+        auditLogService.log(userId, "ADD_INCOME", "income", saved.getId(), null);
         log.info("cashflow.income.add.success id={}", saved.getId());
         return saved;
     }
@@ -63,6 +65,7 @@ public class CashFlowService {
                 .isEssential(dto.getIsEssential())
                 .build();
         ExpenseDTO saved = toExpenseDTO(expenseRepo.save(expense));
+        auditLogService.log(userId, "ADD_EXPENSE", "expense", saved.getId(), null);
         log.info("cashflow.expense.add.success id={}", saved.getId());
         return saved;
     }
@@ -79,6 +82,7 @@ public class CashFlowService {
         income.setTaxDeducted(dto.getTaxDeducted());
         income.setTdsPercentage(dto.getTdsPercentage());
         IncomeDTO saved = toIncomeDTO(incomeRepo.save(income));
+        auditLogService.log(userId, "UPDATE_INCOME", "income", id, null);
         log.info("cashflow.income.update.success id={}", saved.getId());
         return saved;
     }
@@ -94,6 +98,7 @@ public class CashFlowService {
         expense.setFrequency(EnumUtils.safeEnum(Frequency.class, dto.getFrequency()));
         expense.setIsEssential(dto.getIsEssential());
         ExpenseDTO saved = toExpenseDTO(expenseRepo.save(expense));
+        auditLogService.log(userId, "UPDATE_EXPENSE", "expense", id, null);
         log.info("cashflow.expense.update.success id={}", saved.getId());
         return saved;
     }
@@ -105,6 +110,7 @@ public class CashFlowService {
                 .filter(i -> i.getUserId() != null && i.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Income not found or unauthorized: " + id));
         incomeRepo.delete(income);
+        auditLogService.log(userId, "DELETE_INCOME", "income", id, null);
     }
 
     @Transactional
@@ -114,6 +120,7 @@ public class CashFlowService {
                 .filter(e -> e.getUserId() != null && e.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Expense not found or unauthorized: " + id));
         expenseRepo.delete(expense);
+        auditLogService.log(userId, "DELETE_EXPENSE", "expense", id, null);
     }
 
     private IncomeDTO toIncomeDTO(Income i) {

@@ -95,6 +95,12 @@ const Step4FinancialGoals = () => {
 
         if (editingId) {
             updateGoal(editingId, goalData);
+            // Persist: delete old + re-add (no PUT endpoint for goals)
+            try {
+                await deleteGoalApi(editingId);
+                const saved = await addGoalApi({ ...goalData, id: editingId });
+                if (saved?.id) updateGoal(editingId, { ...goalData, id: saved.id });
+            } catch (e) { console.warn('Goal update API failed:', e.message); }
         } else {
             const newGoal = { ...goalData, id: Date.now() };
             addGoal(newGoal); // optimistic
@@ -364,8 +370,12 @@ const Step4FinancialGoals = () => {
                                 <p className="text-xs text-slate-400 mb-1">Required Monthly SIP</p>
                                 <p className="font-bold text-white text-lg">₹ {Math.round(sip).toLocaleString('en-IN')}</p>
                                 <div className="mt-2 text-xs">
-                                    <p className="text-slate-500">Currently Investing: ₹0</p>
-                                    <p className="text-amber-400 flex items-center gap-1 mt-0.5"><AlertTriangle className="w-3 h-3" /> Shortfall: ₹{Math.round(sip).toLocaleString('en-IN')}/month</p>
+                                    <p className="text-slate-500">Currently Saved: {formatToCrLakh(goal.currentSavings || 0)}</p>
+                                    {sip > 0 && (
+                                        <p className="text-amber-400 flex items-center gap-1 mt-0.5">
+                                            <AlertTriangle className="w-3 h-3" /> Shortfall: ₹{Math.round(sip).toLocaleString('en-IN')}/month
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
