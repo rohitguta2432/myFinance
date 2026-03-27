@@ -5,13 +5,15 @@ const AUTH_REQUIRED = import.meta.env.VITE_AUTH_REQUIRED !== 'false';
 
 export default function ProtectedRoute() {
     const user = useAuthStore((s) => s.user);
+    const isSessionValid = useAuthStore((s) => s.isSessionValid);
+    const logout = useAuthStore((s) => s.logout);
 
-    // In production (VITE_AUTH_REQUIRED=false), skip login enforcement
     if (!AUTH_REQUIRED) {
         return <Outlet />;
     }
 
-    if (!user) {
+    if (!user || !isSessionValid()) {
+        if (user) logout(); // clear expired session
         return <Navigate to="/login" replace />;
     }
 

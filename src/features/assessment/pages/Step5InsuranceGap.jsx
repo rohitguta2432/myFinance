@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckC
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
+import { InsuranceGapSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 // Hardcoded Constants
 const REAL_RATE = 0.01887; // 1.887%

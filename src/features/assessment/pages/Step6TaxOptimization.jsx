@@ -5,13 +5,14 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useTaxQuery, useTaxMutation } from '../hooks/useTax';
 import { useTaxCalculationQuery } from '../hooks/useTaxCalculation';
+import { TaxOptimizationSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const Step6TaxOptimization = () => {
     const navigate = useNavigate();
     const { taxRegime, setTaxRegime, investments80C, setInvestments80C } = useAssessmentStore();
 
     // API: existing CRUD for persisting tax choices
-    const { data: taxData } = useTaxQuery();
+    const { data: taxData, isLoading: isFetchingTax } = useTaxQuery();
     const { mutateAsync: saveTaxApi, isPending: isSaving } = useTaxMutation();
 
     useEffect(() => {
@@ -111,6 +112,8 @@ const Step6TaxOptimization = () => {
         { label: 'Cess (4%)', old: oldRegime.cess, new: newRegime.cess },
         { label: 'FINAL TAX', old: oldRegime.totalTax, new: newRegime.totalTax, final: true },
     ];
+
+    if (isFetchingTax) return <TaxOptimizationSkeleton />;
 
     return (
         <div className="flex flex-col h-full bg-background-dark pb-24">

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useGoalsQuery, useAddGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
 import { useGoalProjectionQuery } from '../hooks/useGoalProjection';
+import { GoalsSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const GOAL_TYPES = [
     { id: 'home', label: 'Home Purchase', icon: Home, defaultCost: 7500000, defaultHorizon: 15 },
@@ -29,7 +30,7 @@ const Step4FinancialGoals = () => {
     const { goals, addGoal, removeGoal, updateGoal } = useAssessmentStore();
 
     // API Integration
-    const { data: goalsData } = useGoalsQuery();
+    const { data: goalsData, isLoading: isFetchingGoals } = useGoalsQuery();
     const { mutateAsync: addGoalApi } = useAddGoalMutation();
     const { mutateAsync: deleteGoalApi, isPending: isDeletingGoal } = useDeleteGoalMutation();
 
@@ -159,6 +160,8 @@ const Step4FinancialGoals = () => {
     const efConservative = projection?.emergencyConservativeMonths ?? 0;
     const efProgressPercent = efTarget > 0 ? Math.min(100, (efCurrent / efTarget) * 100) : 0;
     const efFullyCovered = efGap <= 0;
+
+    if (isFetchingGoals) return <GoalsSkeleton />;
 
     return (
         <div className="flex flex-col h-full">

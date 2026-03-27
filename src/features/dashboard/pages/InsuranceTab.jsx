@@ -5,6 +5,7 @@ import {
     Wallet, Building2, User, Check, X
 } from 'lucide-react';
 import { useInsuranceAnalysis } from '../../../hooks/useInsuranceAnalysis';
+import { InsuranceSkeleton } from '../../../components/ui/DashboardSkeleton';
 
 
 
@@ -120,7 +121,7 @@ const InsuranceTab = () => {
     const { termLife, healthInsurance, additionalCoverage, age, city, annualIncomeFormatted, totalEMI, totalEMIFormatted } = data;
 
     if (!termLife || !healthInsurance) {
-        return <div className="w-full max-w-6xl mx-auto px-4 py-6 text-center text-slate-500">Loading insurance analysis...</div>;
+        return <InsuranceSkeleton />;
     }
 
     // Do/Don't content — Term

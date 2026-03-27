@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Lock, Zap, TrendingUp, AlertTriangle, ChevronRight, Info, ArrowUpRight, CheckCircle2, XCircle, AlertCircle, Wallet, PiggyBank, BarChart3, RefreshCw } from 'lucide-react';
+import { SummarySkeleton } from '../../../components/ui/DashboardSkeleton';
 import { useFinancialHealthScore } from '../../../hooks/useFinancialHealthScore';
 import { useHookText } from '../../../hooks/useHookText';
 import { useRedFlags } from '../../../hooks/useRedFlags';
@@ -27,7 +28,7 @@ const ScoreRing = ({ score, label, color }) => {
     return (
         <div className="relative flex items-center justify-center">
             <svg width="200" height="200" viewBox="0 0 200 200" className="transform -rotate-90">
-                <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={stroke} />
+                <circle cx="100" cy="100" r={radius} fill="none" className="stroke-slate-500/10" strokeWidth={stroke} />
                 <circle
                     cx="100" cy="100" r={radius} fill="none"
                     stroke={color}
@@ -40,7 +41,7 @@ const ScoreRing = ({ score, label, color }) => {
                 />
             </svg>
             <div className="absolute flex flex-col items-center">
-                <span className="text-5xl font-black text-white tabular-nums tracking-tight"
+                <span className="text-5xl font-black tabular-nums tracking-tight text-slate-800"
                     style={{ textShadow: `0 0 20px ${color}30` }}
                 >{Math.round(animatedScore)}</span>
                 <span className="text-sm font-semibold uppercase tracking-[0.15em] mt-1" style={{ color }}>{label}</span>
@@ -111,7 +112,7 @@ const LockedHookCard = ({ pillar, hookData }) => {
 
 /* ─── MAIN DASHBOARD ─── */
 const FinancialDashboard = ({ isPremium = false }) => {
-    const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData } = useFinancialHealthScore();
+    const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData, isLoading } = useFinancialHealthScore();
     const hookTexts = useHookText(sortedPillars, rawData);
     const { topFlags, hiddenCount: flagsHidden, totalTriggered: flagsTriggered } = useRedFlags();
     const { topActions, hiddenCount: actionsHidden, totalTriggered: actionsTriggered } = usePriorityActions();
@@ -145,6 +146,8 @@ const FinancialDashboard = ({ isPremium = false }) => {
         if (v >= 100000) return `₹${(v / 100000).toFixed(1)} L`;
         return `₹${Math.round(v).toLocaleString('en-IN')}`;
     };
+
+    if (isLoading) return <SummarySkeleton />;
 
     return (
         <>

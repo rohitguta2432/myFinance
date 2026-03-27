@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { useActionPlan } from '../../../hooks/useActionPlan';
+import { ActionPlanSkeleton } from '../../../components/ui/DashboardSkeleton';
 
 /* ── Category / Pillar badge config ── */
 const CATEGORY_CONFIG = {
@@ -163,7 +164,9 @@ const ActionCard = ({ action, rank }) => {
 
 /* ── Main Page ── */
 export default function ActionPlanTab() {
-    const { actions, count, fmt } = useActionPlan();
+    const { actions, count, fmt, isLoading } = useActionPlan();
+
+    if (isLoading) return <ActionPlanSkeleton />;
 
     // FY label
     const now = new Date();

@@ -29,21 +29,17 @@ export default function App() {
               {/* Public route */}
               <Route path="/login" element={<LoginPage />} />
 
-              {/* Public routes with Layout */}
-              <Route element={<Layout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/assessment/step-1" element={<Step1PersonalRisk />} />
-                <Route path="/assessment/step-2" element={<Step2IncomeExpenses />} />
-                <Route path="/assessment/step-3" element={<Step3AssetsLiabilities />} />
-                <Route path="/assessment/step-4" element={<Step4FinancialGoals />} />
-                <Route path="/assessment/step-5" element={<Step5InsuranceGap />} />
-                <Route path="/assessment/step-6" element={<Step6TaxOptimization />} />
-                <Route path="/assessment/complete" element={<AssessmentComplete />} />
-              </Route>
-
-              {/* Protected routes */}
+              {/* All routes require SSO login */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/assessment/step-1" element={<Step1PersonalRisk />} />
+                  <Route path="/assessment/step-2" element={<Step2IncomeExpenses />} />
+                  <Route path="/assessment/step-3" element={<Step3AssetsLiabilities />} />
+                  <Route path="/assessment/step-4" element={<Step4FinancialGoals />} />
+                  <Route path="/assessment/step-5" element={<Step5InsuranceGap />} />
+                  <Route path="/assessment/step-6" element={<Step6TaxOptimization />} />
+                  <Route path="/assessment/complete" element={<AssessmentComplete />} />
                   <Route path="/dashboard" element={<DashboardPage />} />
                 </Route>
               </Route>

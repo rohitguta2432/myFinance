@@ -6,13 +6,14 @@ import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
 import { useRiskScoringQuery } from '../hooks/useRiskScoring';
 import { usePortfolioAnalysisQuery } from '../hooks/usePortfolioAnalysis';
+import { AssetsLiabilitiesSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
     const { incomes, expenses, assets, removeAsset, liabilities, removeLiability } = useAssessmentStore();
 
     // API Integration
-    const { data: balanceData } = useBalanceSheetQuery();
+    const { data: balanceData, isLoading: isFetchingBalance } = useBalanceSheetQuery();
     const { mutateAsync: addAssetApi } = useAddAssetMutation();
     const { mutateAsync: addLiabilityApi } = useAddLiabilityMutation();
     const { mutateAsync: deleteAssetApi, isPending: isDeletingAsset } = useDeleteAssetMutation();
@@ -236,6 +237,8 @@ const Step3AssetsLiabilities = () => {
         return null;
     };
     const alert = getMismatchAlert();
+
+    if (isFetchingBalance) return <AssetsLiabilitiesSkeleton />;
 
     return (
         <div className="flex flex-col h-full overflow-y-auto pb-44">

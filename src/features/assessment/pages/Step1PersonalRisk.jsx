@@ -4,6 +4,7 @@ import { ArrowRight, ShieldCheck, Minus, Plus, ChevronDown, CheckCircle, CheckCi
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useProfileQuery, useProfileMutation } from '../hooks/useProfile';
+import { ProfileSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const Step1PersonalRisk = () => {
     const navigate = useNavigate();
@@ -207,6 +208,8 @@ const Step1PersonalRisk = () => {
             setChildDependents(Math.max(0, dependents));
         }
     }, [dependents]);
+
+    if (isFetching) return <ProfileSkeleton />;
 
     return (
         <div className="flex flex-col gap-6 pb-24">

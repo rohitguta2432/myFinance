@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
 import { Pencil } from 'lucide-react';
+import { CashFlowSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const EMI_CATEGORY = 'EMIs (loan payments)';
 
@@ -13,7 +14,7 @@ const Step2IncomeExpenses = () => {
     const { incomes, addIncome, removeIncome, updateIncome, expenses, addExpense, removeExpense, updateExpense, liabilities } = useAssessmentStore();
 
     // API Integration
-    const { data: financialsData } = useFinancialsQuery();
+    const { data: financialsData, isLoading: isFetchingFinancials } = useFinancialsQuery();
     const { mutateAsync: addIncomeApi } = useAddIncomeMutation();
     const { mutateAsync: addExpenseApi } = useAddExpenseMutation();
     const { mutateAsync: deleteIncomeApi, isPending: isDeletingIncome } = useDeleteIncomeMutation();
@@ -147,6 +148,8 @@ const Step2IncomeExpenses = () => {
     const hypotheticalTotalExpenses = totalMonthlyExpenses - (totalDiscretionary * 0.30);
     const hypotheticalSurplus = totalMonthlyIncome - hypotheticalTotalExpenses;
     const hypotheticalSavingsRate = totalMonthlyIncome > 0 ? Math.round((hypotheticalSurplus / totalMonthlyIncome) * 100) : 0;
+
+    if (isFetchingFinancials) return <CashFlowSkeleton />;
 
     return (
         <div className="flex flex-col h-full pb-32">

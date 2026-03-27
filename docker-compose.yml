@@ -33,6 +33,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION:-us-east-1}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-636804588566-ehgnmkdrbin3vpqd88gsah16vpn0uihi.apps.googleusercontent.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,11 +42,32 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-636804588566-ehgnmkdrbin3vpqd88gsah16vpn0uihi.apps.googleusercontent.com}
+        VITE_AUTH_REQUIRED: "true"
     container_name: myfinance-frontend
+    restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-webroot:/var/www/certbot
     depends_on:
       - backend
 
+  certbot:
+    image: certbot/certbot
+    container_name: myfinance-certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
 volumes:
   pgdata:
+  certbot-etc:
+  certbot-var:
+  certbot-webroot:

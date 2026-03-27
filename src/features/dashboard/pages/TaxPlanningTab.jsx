@@ -5,6 +5,7 @@ import {
     ArrowUpRight, Sparkles, TrendingDown, Zap,
 } from 'lucide-react';
 import { useTaxAnalysis } from '../../../hooks/useTaxAnalysis';
+import { TaxSkeleton } from '../../../components/ui/DashboardSkeleton';
 
 
 
@@ -49,7 +50,7 @@ const TaxPlanningTab = () => {
     const { regimeComparison, tds, rental, deductions, employerNps, fmt } = data;
 
     if (!regimeComparison) {
-        return <div className="w-full max-w-6xl mx-auto px-4 py-6 text-center text-slate-500">Loading tax analysis...</div>;
+        return <TaxSkeleton />;
     }
 
     const { old: oldR, new: newR, recommended, savings, savingsFormatted } = regimeComparison;
