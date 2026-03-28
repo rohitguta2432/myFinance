@@ -25,7 +25,7 @@ const GuidancePanel = ({ items, type }) => {
                 onClick={() => setOpen(!open)}
                 className={`w-full flex items-center justify-between px-4 py-3 ${headerBg} transition-colors hover:opacity-90`}
             >
-                <span className={`text-xs font-bold uppercase tracking-wider ${color}`}>{label}</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${color}`}>{label}</span>
                 {open ? <ChevronUp className={`w-4 h-4 ${color}`} /> : <ChevronDown className={`w-4 h-4 ${color}`} />}
             </button>
             {open && (
@@ -35,7 +35,7 @@ const GuidancePanel = ({ items, type }) => {
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isDoList ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
                                 <Icon className={`w-3 h-3 ${color}`} />
                             </div>
-                            <p className="text-xs text-slate-300 leading-relaxed">{item}</p>
+                            <p className="text-sm text-slate-400 leading-relaxed">{item}</p>
                         </div>
                     ))}
                 </div>
@@ -48,7 +48,7 @@ const GuidancePanel = ({ items, type }) => {
 const CoverBar = ({ pct, color, label, isAdequate }) => (
     <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider" style={{ color }}>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color }}>
                 {label}
             </span>
             <span className="text-xs font-bold tabular-nums text-white">
@@ -75,8 +75,8 @@ const MetricRow = ({ label, sublabel, value, icon }) => (
         <div className="flex items-center gap-2.5">
             {icon && <span className="text-sm">{icon}</span>}
             <div>
-                <p className="text-xs font-semibold text-slate-300">{label}</p>
-                {sublabel && <p className="text-[10px] text-slate-500">{sublabel}</p>}
+                <p className="text-xs font-semibold text-slate-400">{label}</p>
+                {sublabel && <p className="text-xs text-slate-500">{sublabel}</p>}
             </div>
         </div>
         <span className="text-sm font-bold tabular-nums text-white">{value}</span>
@@ -95,10 +95,10 @@ const AdditionalCard = ({ card }) => (
             </div>
             <div>
                 <h4 className="text-sm font-bold text-white">{card.title}</h4>
-                <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">Recommended for you</span>
+                <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Recommended for you</span>
             </div>
         </div>
-        <p className="text-xs text-slate-300 leading-relaxed mb-3">{card.explanation}</p>
+        <p className="text-sm text-slate-400 leading-relaxed mb-3">{card.explanation}</p>
         <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2">
             <Wallet className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span className="text-[11px] text-slate-400">
@@ -167,7 +167,7 @@ const InsuranceTab = () => {
 
                 {/* Page Title */}
                 <div>
-                    <h2 className="text-xl font-black tracking-tight">Insurance Analysis</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">Insurance Analysis</h2>
                     <p className="text-xs text-slate-500 mt-0.5">
                         {city ? `📍 ${city}` : ''} · Personalised coverage assessment
                     </p>
@@ -184,8 +184,8 @@ const InsuranceTab = () => {
                                 <Shield className="w-5 h-5 text-blue-400" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-white">Term Life Insurance</h3>
-                                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Pillar of family security</span>
+                                <h3 className="text-lg font-bold text-white">Term Life Insurance</h3>
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pillar of family security</span>
                             </div>
                         </div>
                     </div>
@@ -193,17 +193,17 @@ const InsuranceTab = () => {
                     <div className="p-6 space-y-5">
                         {/* Importance Statement */}
                         <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-4">
-                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <h4 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                 <Info className="w-3.5 h-3.5" /> Why Term Insurance Matters
                             </h4>
-                            <p className="text-xs text-slate-300 leading-relaxed">
+                            <p className="text-sm text-slate-400 leading-relaxed">
                                 Term insurance is the foundation of your family's financial security. If you are the primary income earner, your family's lifestyle, loan repayments, children's education, and retirement depend on your income. Term insurance replaces that income if you are no longer there to provide it. It is the only instrument that provides crore-level cover at a monthly cost of ₹500–2,000, making it the highest-leverage financial product available to you.
                             </p>
                         </div>
 
                         {/* Calculation Display */}
                         <div className="bg-background-dark rounded-xl border border-white/5 p-4">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Your Numbers</h4>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Your Numbers</h4>
                             <MetricRow
                                 label="HLV Method"
                                 sublabel={`Annual Salary × (${60} − ${age})`}
@@ -266,8 +266,8 @@ const InsuranceTab = () => {
                                 <HeartPulse className="w-5 h-5 text-teal-400" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-white">Health Insurance</h3>
-                                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Medical protection</span>
+                                <h3 className="text-lg font-bold text-white">Health Insurance</h3>
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Medical protection</span>
                             </div>
                         </div>
                     </div>
@@ -275,17 +275,17 @@ const InsuranceTab = () => {
                     <div className="p-6 space-y-5">
                         {/* Importance Statement */}
                         <div className="bg-teal-500/5 border border-teal-500/10 rounded-xl p-4">
-                            <h4 className="text-xs font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <h4 className="text-xs font-semibold text-teal-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                 <Info className="w-3.5 h-3.5" /> Why Health Insurance Matters
                             </h4>
-                            <p className="text-xs text-slate-300 leading-relaxed">
+                            <p className="text-sm text-slate-400 leading-relaxed">
                                 Medical costs in India have grown faster than inflation for a decade. A single ICU admission with surgery in a metro hospital costs ₹3–8 lakh. Without adequate health insurance, one hospitalisation can wipe out years of savings. Additionally, health insurance premiums qualify for a tax deduction under Section 80D — so being uninsured not only exposes you to financial risk but also costs you tax money.
                             </p>
                         </div>
 
                         {/* City Benchmark */}
                         <div className="bg-background-dark rounded-xl border border-white/5 p-4">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">City-Based Benchmark</h4>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">City-Based Benchmark</h4>
                             <div className="grid grid-cols-3 gap-2 mb-3">
                                 {[
                                     { tier: 'Metro', cover: '₹20 L', cities: 'Mumbai, Delhi, Bengaluru…', active: healthInsurance.cityTier === 'metro' },
@@ -296,9 +296,9 @@ const InsuranceTab = () => {
                                         ? 'border-teal-500/30 bg-teal-500/10'
                                         : 'border-white/5 bg-white/[0.02]'
                                         }`}>
-                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${t.active ? 'text-teal-400' : 'text-slate-500'}`}>{t.tier}</p>
+                                        <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${t.active ? 'text-teal-400' : 'text-slate-500'}`}>{t.tier}</p>
                                         <p className={`text-sm font-black ${t.active ? 'text-white' : 'text-slate-600'}`}>{t.cover}</p>
-                                        <p className="text-[9px] text-slate-600 mt-0.5">{t.cities}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">{t.cities}</p>
                                     </div>
                                 ))}
                             </div>
@@ -337,7 +337,7 @@ const InsuranceTab = () => {
                                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-bold text-amber-400 mb-1">Employer-Dependent Cover</p>
-                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                    <p className="text-sm text-slate-400 leading-relaxed">
                                         Your cover is employer-dependent — you need a personal policy. Corporate health insurance ends the day you change jobs, leaving your family exposed.
                                     </p>
                                 </div>
@@ -350,7 +350,7 @@ const InsuranceTab = () => {
                                 <ArrowUpRight className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-bold text-teal-400 mb-1">Super Top-Up Recommended</p>
-                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                    <p className="text-sm text-slate-400 leading-relaxed">
                                         With a deductible matching your base plan of {healthInsurance.baseCoverFormatted}, add a ₹50L super top-up to reach {healthInsurance.totalWithTopUp} total cover at minimal cost.
                                     </p>
                                 </div>
@@ -359,19 +359,19 @@ const InsuranceTab = () => {
 
                         {/* Section 80D */}
                         <div className="bg-background-dark rounded-xl border border-white/5 p-4">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Section 80D Tax Benefits</h4>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Section 80D Tax Benefits</h4>
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-primary">₹25,000</p>
-                                    <p className="text-[10px] text-slate-500">Self / Family</p>
+                                    <p className="text-xs text-slate-500">Self / Family</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-primary">₹25,000</p>
-                                    <p className="text-[10px] text-slate-500">Parents (&lt;60)</p>
+                                    <p className="text-xs text-slate-500">Parents (&lt;60)</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-primary">₹50,000</p>
-                                    <p className="text-[10px] text-slate-500">Parents (60+)</p>
+                                    <p className="text-xs text-slate-500">Parents (60+)</p>
                                 </div>
                             </div>
                         </div>
@@ -394,8 +394,8 @@ const InsuranceTab = () => {
                                 <Shield className="w-4 h-4 text-amber-400" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-white">Additional Coverage</h3>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Based on your profile</p>
+                                <h3 className="text-lg font-bold text-white">Additional Coverage</h3>
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Based on your profile</p>
                             </div>
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

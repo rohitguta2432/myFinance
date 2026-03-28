@@ -38,6 +38,11 @@ server/myfinance-backend/.mvn/wrapper/maven-wrapper.properties
 # Secrets & Keys
 *.pem
 
+# Docs / diagrams
+docs/confluence/
+myfinance-core-flow.drawio
+init-letsencrypt.sh
+
 # Cloudflare Tunnel
 cloudflared
 cloudflare*.log

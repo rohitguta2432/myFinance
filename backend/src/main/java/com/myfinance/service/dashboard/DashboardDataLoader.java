@@ -29,15 +29,14 @@ public class DashboardDataLoader {
     public UserFinancialData load(Long userId) {
         log.info("dashboard.data.load userId={}", userId);
 
-        // Use OrUserIdIsNull variants so data saved with NULL user_id is also found
-        Profile profile = profileRepo.findFirstByUserIdOrUserIdIsNull(userId).orElse(Profile.builder().age(30).build());
-        List<Asset> assets = assetRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Liability> liabilities = liabilityRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Income> incomes = incomeRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Expense> expenses = expenseRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Insurance> insurances = insuranceRepo.findByUserIdOrUserIdIsNull(userId);
-        List<Goal> goals = goalRepo.findByUserIdOrUserIdIsNull(userId);
-        Tax tax = taxRepo.findFirstByUserIdOrUserIdIsNull(userId).orElse(null);
+        Profile profile = profileRepo.findByUserId(userId).orElse(Profile.builder().age(30).build());
+        List<Asset> assets = assetRepo.findByUserId(userId);
+        List<Liability> liabilities = liabilityRepo.findByUserId(userId);
+        List<Income> incomes = incomeRepo.findByUserId(userId);
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
+        List<Insurance> insurances = insuranceRepo.findByUserId(userId);
+        List<Goal> goals = goalRepo.findByUserId(userId);
+        Tax tax = taxRepo.findByUserId(userId).orElse(null);
 
         // Compute base financials
         double monthlyIncome = incomes.stream().mapToDouble(i -> toMonthly(i.getAmount(), i.getFrequency())).sum();

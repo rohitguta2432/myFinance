@@ -45,7 +45,7 @@ public class BedrockChatService {
         log.info("✅ Bedrock client initialized — region={}, model={}", awsRegion, modelId);
     }
 
-    public ChatResponse chat(ChatRequest request) {
+    public ChatResponse chat(Long userId, ChatRequest request) {
         try {
             String systemPrompt = buildSystemPrompt(request.financialContext());
             String requestBody = buildRequestBody(systemPrompt, request.message(), request.history());

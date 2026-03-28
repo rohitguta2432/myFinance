@@ -128,11 +128,11 @@ public class RiskScoringService {
     //  Main calculation endpoint
     // ══════════════════════════════════════════════════════════
     @Transactional(readOnly = true)
-    public RiskScoringDTO calculateRiskScore() {
-        log.info("risk.scoring.calculate started");
+    public RiskScoringDTO calculateRiskScore(Long userId) {
+        log.info("risk.scoring.calculate started userId={}", userId);
 
         // 1. Fetch profile (age, dependents, employment, risk answers)
-        Profile profile = profileRepo.findAll().stream().findFirst().orElse(null);
+        Profile profile = profileRepo.findByUserId(userId).orElse(null);
         if (profile == null) {
             log.warn("risk.scoring.calculate.failed reason=no_profile");
             return RiskScoringDTO.builder()
@@ -165,10 +165,10 @@ public class RiskScoringService {
                 rawQuizTotal, round2(baseScore), age, adultDeps, childDeps, toleranceScore);
 
         // ─── CAPACITY SCORE (0–10 scale) ─────────────────────
-        List<Asset> assets = assetRepo.findAll();
-        List<Liability> liabilities = liabilityRepo.findAll();
-        List<Income> incomes = incomeRepo.findAll();
-        List<Expense> expenses = expenseRepo.findAll();
+        List<Asset> assets = assetRepo.findByUserId(userId);
+        List<Liability> liabilities = liabilityRepo.findByUserId(userId);
+        List<Income> incomes = incomeRepo.findByUserId(userId);
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
 
         // Liquid assets (Bank, FD, RD, Debt MF)
         double liquidAssets = assets.stream()

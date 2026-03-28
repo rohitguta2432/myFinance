@@ -143,7 +143,7 @@ const Home = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-white font-bold text-lg mb-1">Post-Tax Return Analysis</h3>
-                                        <p className="text-white/60 text-sm leading-snug">See the real growth of your wealth after taxes and inflation eats into your returns.</p>
+                                        <p className="text-slate-400 text-sm leading-snug">See the real growth of your wealth after taxes and inflation eats into your returns.</p>
                                     </div>
                                 </div>
                                 <div className="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
@@ -164,7 +164,7 @@ const Home = () => {
                                         <div className="inline-block bg-white/10 rounded px-2 py-0.5 mb-2">
                                             <span className="text-[10px] text-primary font-bold uppercase tracking-wider">FY 2026-27 Ready</span>
                                         </div>
-                                        <p className="text-white/60 text-sm leading-snug">Compare Old vs. New regime instantly tailored to your specific deductions.</p>
+                                        <p className="text-slate-400 text-sm leading-snug">Compare Old vs. New regime instantly tailored to your specific deductions.</p>
                                     </div>
                                 </div>
                             </div>
@@ -179,7 +179,7 @@ const Home = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-white font-bold text-lg mb-1">Goal-Based Roadmap</h3>
-                                        <p className="text-white/60 text-sm leading-snug">Map your savings to life events like buying a home, education, or retirement.</p>
+                                        <p className="text-slate-400 text-sm leading-snug">Map your savings to life events like buying a home, education, or retirement.</p>
                                     </div>
                                 </div>
                             </div>

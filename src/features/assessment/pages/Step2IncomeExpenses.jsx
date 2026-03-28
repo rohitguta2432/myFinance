@@ -186,7 +186,7 @@ const Step2IncomeExpenses = () => {
             {/* Main Content */}
             <div className="flex-1 space-y-4 overflow-y-auto pb-4">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Your Cash Flow Reality Check</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Your Cash Flow Reality Check</h1>
                     <p className="text-slate-400 text-sm">Understanding your money flow is step one to controlling it.</p>
                 </div>
                 {/* List Incomes */}

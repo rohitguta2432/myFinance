@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { api } from '../../services/api';
 
 // ─── QUICK SUGGESTION CHIPS ─────────────────────────
 const QUICK_SUGGESTIONS = [
@@ -43,13 +44,7 @@ const FAQ_ITEMS = [
 
 // ─── API CALL ────────────────────────────────────────
 async function sendMessage(message, history, financialContext) {
-  const response = await fetch('/api/v1/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history, financialContext }),
-  });
-  if (!response.ok) throw new Error(`Chat API error: ${response.status}`);
-  return response.json();
+  return api.post('/chat', { message, history, financialContext });
 }
 
 // ─── BUILD FINANCIAL CONTEXT FROM USER DATA ──────────

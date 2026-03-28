@@ -121,7 +121,7 @@ const Step6TaxOptimization = () => {
 
                 {/* Header */}
                 <div className="mb-2">
-                    <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Tax Optimization <span className="text-slate-400 text-lg font-normal">(FY 2026-27)</span></h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Tax Optimization <span className="text-slate-400 text-lg font-normal">(FY 2026-27)</span></h1>
                     <p className="text-slate-400 text-sm">Most Indians overpay few thousands to lakhs annually. Let's find the best regime for you and maximize deductions.</p>
                 </div>
 

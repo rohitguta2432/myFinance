@@ -244,7 +244,7 @@ const Step3AssetsLiabilities = () => {
         <div className="flex flex-col h-full overflow-y-auto pb-44">
             {/* Header Content */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Your Current Wealth Position</h1>
+                <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Your Current Wealth Position</h1>
                 <p className="text-slate-400 text-sm">Let's map what you own and what you owe.</p>
             </div>
 

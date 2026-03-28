@@ -26,6 +26,7 @@ if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
 
     aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 22 --cidr 0.0.0.0/0 >/dev/null
     aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 80 --cidr 0.0.0.0/0 >/dev/null
+    aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 443 --cidr 0.0.0.0/0 >/dev/null
     aws ec2 authorize-security-group-ingress --group-id ${SG_ID} --protocol tcp --port 8080 --cidr 0.0.0.0/0 >/dev/null
 else
     echo "SG already exists: $SG_ID"
@@ -95,9 +96,10 @@ rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${KEY_NAME}.pem" \
 echo "Building and bringing up Docker containers remotely..."
 ssh -o StrictHostKeyChecking=no -i ${KEY_NAME}.pem ubuntu@${PUBLIC_IP} << 'EOF'
 cd /home/ubuntu/app
-sudo docker compose up -d --build
+chmod +x init-letsencrypt.sh
+sudo ./init-letsencrypt.sh
 EOF
 
 echo "Deployment complete!🚀"
-echo "You can access the UI at: http://${PUBLIC_IP}"
-echo "You can access the API at: http://${PUBLIC_IP}:8080/api/v1/assessment/profile"
+echo "You can access the UI at: https://app.myfinancial.in"
+echo "You can access the API at: https://app.myfinancial.in/api/v1/assessment/profile"

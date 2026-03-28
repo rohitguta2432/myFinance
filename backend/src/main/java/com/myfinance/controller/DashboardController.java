@@ -19,18 +19,12 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping("/summary/{userId}")
+    @GetMapping("/summary")
     @Operation(summary = "Get full dashboard summary")
-    public ResponseEntity<DashboardSummaryDTO> getSummary(@PathVariable String userId) {
-        // Google OAuth IDs (21+ digits) overflow Java Long — parse safely
-        Long parsedUserId;
-        try {
-            parsedUserId = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            parsedUserId = 0L;
-        }
-        log.info("dashboard.summary.request userId={} parsed={}", userId, parsedUserId);
-        DashboardSummaryDTO summary = dashboardService.getSummary(parsedUserId);
+    public ResponseEntity<DashboardSummaryDTO> getSummary(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        log.info("dashboard.summary.request userId={}", userId);
+        DashboardSummaryDTO summary = dashboardService.getSummary(userId);
         return ResponseEntity.ok(summary);
     }
 }

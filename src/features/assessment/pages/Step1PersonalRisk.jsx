@@ -225,7 +225,7 @@ const Step1PersonalRisk = () => {
                     {/* Age Slider */}
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm">
                         <div className="flex justify-between items-center mb-4">
-                            <label className="text-sm font-medium text-slate-400">Your Age <span className="text-red-400">*</span></label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Your Age <span className="text-red-400">*</span></label>
                             <span className="text-2xl font-mono font-bold text-primary">{age}</span>
                         </div>
                         <div className="relative w-full h-6 flex items-center">
@@ -246,7 +246,7 @@ const Step1PersonalRisk = () => {
 
                     {/* State & City — cascading searchable dropdowns */}
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
-                        <label className="text-sm font-medium text-slate-400 block">Location <span className="text-red-400">*</span></label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Location <span className="text-red-400">*</span></label>
                         <div className="grid grid-cols-2 gap-3">
                             {/* State Dropdown */}
                             <div className="relative">
@@ -375,7 +375,7 @@ const Step1PersonalRisk = () => {
 
                     {/* Marital Status — 4 options */}
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-3">
-                        <label className="text-sm font-medium text-slate-400 block">Marital Status <span className="text-red-400">*</span></label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Marital Status <span className="text-red-400">*</span></label>
                         <div className="grid grid-cols-2 gap-2">
                             {['Single', 'Married', 'Divorced', 'Widowed'].map((status) => (
                                 <button
@@ -396,7 +396,7 @@ const Step1PersonalRisk = () => {
                     <div className="rounded-xl bg-surface-dark border border-white/5 p-5 shadow-sm space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <label className="text-sm font-medium text-slate-400 block">Dependents</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Dependents</label>
                                 <p className="text-xs text-slate-500 mt-0.5">Parents, children, spouse</p>
                             </div>
                             <div className="flex items-center gap-3 bg-surface-active rounded-lg p-1">
@@ -419,7 +419,7 @@ const Step1PersonalRisk = () => {
                         {parseInt(dependents || 0) >= 1 && (
                             <div className="pt-3 border-t border-white/5 flex items-center justify-between animate-fade-in">
                                 <div>
-                                    <label className="text-sm font-medium text-slate-400 block">How many are children?</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">How many are children?</label>
                                     <p className="text-xs text-slate-500 mt-0.5">Under 18 years old</p>
                                 </div>
                                 <div className="flex items-center gap-3 bg-surface-active rounded-lg p-1">

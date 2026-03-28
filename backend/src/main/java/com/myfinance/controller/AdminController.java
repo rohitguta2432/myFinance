@@ -21,43 +21,64 @@ import java.util.Map;
 @Tag(name = "Admin", description = "Admin dashboard — user audit and analytics")
 public class AdminController {
 
+    // Allowlist of user IDs permitted to access admin endpoints
+    private static final java.util.Set<Long> ADMIN_USER_IDS = java.util.Set.of(1L);
+
     private final AdminService adminService;
     private final AuditLogService auditLogService;
 
+    private boolean isAdmin(Long userId) {
+        return userId != null && ADMIN_USER_IDS.contains(userId);
+    }
+
     @GetMapping("/stats")
     @Operation(summary = "Get aggregate admin stats")
-    public ResponseEntity<AdminStatsDTO> getStats() {
+    public ResponseEntity<AdminStatsDTO> getStats(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
         return ResponseEntity.ok(adminService.getStats());
     }
 
     @GetMapping("/users")
     @Operation(summary = "Get all users with summary financial data")
-    public ResponseEntity<List<AdminUserSummaryDTO>> getAllUsers() {
+    public ResponseEntity<List<AdminUserSummaryDTO>> getAllUsers(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
         return ResponseEntity.ok(adminService.getAllUsers());
     }
 
     @GetMapping("/users/{id}")
     @Operation(summary = "Get detailed user breakdown")
-    public ResponseEntity<AdminUserDetailDTO> getUserDetail(@PathVariable Long id) {
+    public ResponseEntity<AdminUserDetailDTO> getUserDetail(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
+            @PathVariable Long id) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
         return ResponseEntity.ok(adminService.getUserDetail(id));
     }
 
     @GetMapping("/activity")
     @Operation(summary = "Get daily user activity for last N days")
     public ResponseEntity<List<Map<String, Object>>> getActivity(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
             @RequestParam(defaultValue = "7") int days) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
         return ResponseEntity.ok(auditLogService.getDailyActivity(days));
     }
 
     @GetMapping("/audit-logs")
     @Operation(summary = "Get recent audit logs")
-    public ResponseEntity<List<AuditLog>> getAuditLogs() {
+    public ResponseEntity<List<AuditLog>> getAuditLogs(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
         return ResponseEntity.ok(auditLogService.getRecentLogs());
     }
 
-    @GetMapping("/audit-logs/user/{userId}")
+    @GetMapping("/audit-logs/user/{auditUserId}")
     @Operation(summary = "Get audit logs for a specific user")
-    public ResponseEntity<List<AuditLog>> getAuditLogsByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(auditLogService.getLogsByUser(userId));
+    public ResponseEntity<List<AuditLog>> getAuditLogsByUser(
+            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
+            @PathVariable Long auditUserId) {
+        if (!isAdmin(userId)) return ResponseEntity.status(403).build();
+        return ResponseEntity.ok(auditLogService.getLogsByUser(auditUserId));
     }
 }

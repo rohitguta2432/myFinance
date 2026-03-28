@@ -4,11 +4,8 @@ import { ArrowLeft, ArrowRight, Shield, HeartPulse, Edit2, AlertTriangle, CheckC
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
+import { useInsuranceGapQuery } from '../hooks/useInsuranceGap';
 import { InsuranceGapSkeleton } from '../../../components/ui/AssessmentSkeleton';
-
-// Hardcoded Constants
-const REAL_RATE = 0.01887; // 1.887%
-const LIFE_EXPECTANCY = 90;
 
 const formatCurrency = (amount) => {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
@@ -20,15 +17,7 @@ const Step5InsuranceGap = () => {
     const navigate = useNavigate();
     const {
         age,
-        maritalStatus,
-        dependents,
-        childDependents,
         employmentType,
-        incomes,
-        expenses,
-        assets,
-        liabilities,
-        goals,
         insurance,
         updateInsurance,
         addPersonalHealth,
@@ -38,99 +27,13 @@ const Step5InsuranceGap = () => {
         toggleChecklist
     } = useAssessmentStore();
 
-    // API Integration (Dummy for now to avoid crashes)
+    // API Integration
     const { mutateAsync: saveInsuranceApi, isPending: isSaving } = useInsuranceMutation();
+    const { data: gapData } = useInsuranceGapQuery();
 
-    // -- Calculators --
-
-    // Living Expenses Cover
-    const calculateLivingExpensesCover = () => {
-        // Annual Living Expenses
-        const annualExpenses = (expenses || []).reduce((sum, item) => {
-            const amount = parseFloat(item.amount) || 0;
-            return sum + (item.frequency === 'yearly' ? amount : item.frequency === 'weekly' ? amount * 52 : amount * 12);
-        }, 0);
-
-        // Use user age or spouse age if married. Let's assume average age of couple is same as user if spouseAge isn't collected explicitly everywhere, but we have it in personal life policies.
-        // Let's find max spouse age from personal life policies, or fallback to user age
-        let partnerAge = age;
-        (insurance?.personalLife || []).forEach(p => {
-            if (p.spouseAge) partnerAge = Math.max(partnerAge, parseInt(p.spouseAge));
-        });
-
-        const yearsRemaining = Math.max(1, LIFE_EXPECTANCY - partnerAge);
-
-        if (annualExpenses === 0) return 0;
-
-        // PV of Annuity: C * [1 - (1+r)^-n] / r
-        const pv = annualExpenses * (1 - Math.pow(1 + REAL_RATE, -yearsRemaining)) / REAL_RATE;
-        return pv;
-    };
-
-    // Goals Cover (Present Value of All Goals Gap)
-    const calculateTotalGoalsCover = () => {
-        let totalPv = 0;
-        (goals || []).forEach(goal => {
-            const numCost = parseFloat(goal.cost) || 0;
-            const numHorizon = parseInt(goal.horizon) || 0;
-            const numSavings = parseFloat(goal.currentSavings) || 0;
-            const numInflation = parseFloat(goal.inflation) / 100 || 0;
-
-            const futureCost = numCost * Math.pow(1 + numInflation, numHorizon);
-            const bufferedCost = futureCost * 1.20;
-            const savingsGrowth = numSavings * Math.pow(1 + 0.12, numHorizon);
-            const gap = Math.max(0, bufferedCost - savingsGrowth);
-
-            if (gap > 0) {
-                // Discount gap to today using real rate
-                const pvGoal = gap / Math.pow(1 + REAL_RATE, numHorizon);
-                totalPv += pvGoal;
-            }
-        });
-        return totalPv;
-    };
-
-    // Outstanding Liabilities
-    const calculateLiabilitiesCover = () => {
-        return (liabilities || []).reduce((sum, l) => sum + (parseFloat(l.amount) || 0), 0);
-    };
-
-    // Deductible Assets (Savings, FDs, Liquid MFs, Stocks)
-    const calculateDeductibleAssets = () => {
-        return (assets || []).reduce((sum, a) => {
-            const cat = a.category ? a.category.toLowerCase() : '';
-            if (cat.includes('savings') || cat.includes('fixed') || cat.includes('deposit') || cat.includes('mutual') || cat.includes('liqui') || cat.includes('stock') || cat.includes('equity')) {
-                return sum + (parseFloat(a.amount) || 0);
-            }
-            return sum;
-        }, 0);
-    };
-
-    const livingExpCover = calculateLivingExpensesCover();
-    const goalsCover = calculateTotalGoalsCover();
-    const liabilitiesCover = calculateLiabilitiesCover();
-    const liquidAssets = calculateDeductibleAssets();
-
-    const recommendedLifeCover = Math.max(0, livingExpCover + goalsCover + liabilitiesCover - liquidAssets);
-
-    // Recommended Health Cover
-    const calculateRecommendedHealthCover = () => {
-        const base = 1000000; // 10L
-        let famSize = 1; // self
-        if (maritalStatus === 'married') famSize += 1;
-        famSize += parseInt(childDependents || 0);
-        famSize += parseInt(dependents || 0) > famSize ? (parseInt(dependents) - famSize) : 0; // rough generic add 
-
-        let multiplier = 1.0;
-        if (famSize === 2) multiplier = 1.2;
-        else if (famSize === 3) multiplier = 1.3;
-        else if (famSize === 4) multiplier = 1.5;
-        else if (famSize >= 5) multiplier = 1.7;
-
-        return base * multiplier;
-    };
-
-    const recommendedHealthCover = calculateRecommendedHealthCover();
+    // Recommended covers from backend
+    const recommendedLifeCover = gapData?.recommendedLifeCover ?? 0;
+    const recommendedHealthCover = gapData?.recommendedHealthCover ?? 0;
 
     // Actual Covers
     const actualCorpHealth = parseFloat(insurance?.corporateHealth) || 0;
@@ -217,7 +120,7 @@ const Step5InsuranceGap = () => {
                                 <Building2 className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-white text-md">Corporate Insurance</h3>
+                                <h3 className="font-bold text-white text-lg">Corporate Insurance</h3>
                                 <p className="text-xs text-slate-400">Do you have employer-provided insurance?</p>
                             </div>
                         </div>
@@ -286,7 +189,7 @@ const Step5InsuranceGap = () => {
                                 <div className="bg-teal-500/10 p-2 rounded-xl text-teal-400">
                                     <HeartPulse className="w-5 h-5" />
                                 </div>
-                                <h3 className="font-bold text-white text-md">Personal Health</h3>
+                                <h3 className="font-bold text-white text-lg">Personal Health</h3>
                             </div>
                             <button onClick={() => setIsHealthModalOpen(true)} className="text-xs flex items-center gap-1 bg-teal-500/10 text-teal-400 px-3 py-1.5 rounded-full font-bold hover:bg-teal-500/20 transition">
                                 <Plus className="w-3 h-3" /> Add Policy
@@ -356,7 +259,7 @@ const Step5InsuranceGap = () => {
                                 <div className="bg-blue-500/10 p-2 rounded-xl text-blue-400">
                                     <Shield className="w-5 h-5" />
                                 </div>
-                                <h3 className="font-bold text-white text-md">Personal Life</h3>
+                                <h3 className="font-bold text-white text-lg">Personal Life</h3>
                             </div>
                             <button onClick={() => setIsLifeModalOpen(true)} className="text-xs flex items-center gap-1 bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-full font-bold hover:bg-blue-500/20 transition">
                                 <Plus className="w-3 h-3" /> Add Policy
@@ -431,7 +334,7 @@ const Step5InsuranceGap = () => {
 
                 {/* SECTION D: Quick Checklist */}
                 <section className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-lg">
-                    <h3 className="font-bold text-white text-md mb-1">Quick Checklist</h3>
+                    <h3 className="font-bold text-white text-lg mb-1">Quick Checklist</h3>
                     <p className="text-xs text-slate-400 mb-4">Do you have these secondary protections? (Optional)</p>
 
                     <div className="space-y-2">

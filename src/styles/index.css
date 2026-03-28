@@ -206,6 +206,57 @@ input[type="range"]::-moz-range-track {
   }
 }
 
+/* ─── Typography Utility Classes ─── */
+@utility typo-page-title {
+  font-size: var(--text-2xl);
+  line-height: var(--tw-leading, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-white);
+}
+
+@utility typo-section {
+  font-size: var(--text-lg);
+  line-height: var(--tw-leading, 1.75rem);
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+@utility typo-card-title {
+  font-size: var(--text-sm);
+  line-height: var(--tw-leading, 1.25rem);
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+@utility typo-body {
+  font-size: var(--text-sm);
+  line-height: var(--tw-leading, 1.25rem);
+  color: var(--color-slate-400);
+}
+
+@utility typo-label {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, 1rem);
+  font-weight: 600;
+  color: var(--color-slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@utility typo-helper {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, 1rem);
+  color: var(--color-slate-500);
+}
+
+@utility typo-modal {
+  font-size: var(--text-xl);
+  line-height: var(--tw-leading, 1.75rem);
+  font-weight: 700;
+  color: var(--color-white);
+}
+
 /* Number input: remove spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

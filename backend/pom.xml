@@ -34,7 +34,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <!-- H2 removed — PostgreSQL only -->
+        <!-- H2 in-memory DB for tests -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -80,6 +85,91 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.44.4</version>
+                <configuration>
+                    <java>
+                        <palantirJavaFormat>
+                            <version>2.50.0</version>
+                        </palantirJavaFormat>
+                        <removeUnusedImports/>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JaCoCo — Code coverage analyzer -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Git Commit ID — embeds git info into build -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.1</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals><goal>revision</goal></goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>git.branch</includeOnlyProperty>
+                        <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
+                        <includeOnlyProperty>git.commit.id.full</includeOnlyProperty>
+                        <includeOnlyProperty>git.commit.message.short</includeOnlyProperty>
+                        <includeOnlyProperty>git.commit.time</includeOnlyProperty>
+                        <includeOnlyProperty>git.build.time</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <offline>true</offline>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

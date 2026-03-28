@@ -157,8 +157,8 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 {/* ── Greeting + Date ── */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-black tracking-tight">Your Financial Snapshot</h2>
-                        <p className="text-base text-slate-500 mt-0.5">
+                        <h2 className="text-2xl font-bold tracking-tight">Your Financial Snapshot</h2>
+                        <p className="text-sm text-slate-400 mt-0.5">
                             {city ? `📍 ${city}` : ''} · Last assessed {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
                     </div>

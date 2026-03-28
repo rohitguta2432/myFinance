@@ -296,6 +296,11 @@ export const saveTax = async (data) => {
     return mapTaxFromDTO(dto);
 };
 
+// Insurance Gap — recommended life + health cover (backend calculation)
+export const getInsuranceGap = async () => {
+    return await api.get('/insurance/gap');
+};
+
 // Portfolio Analysis — computed by backend (classification, allocation %, DTI, etc.)
 export const getPortfolioAnalysis = async () => {
     return await api.get('/portfolio-analysis');

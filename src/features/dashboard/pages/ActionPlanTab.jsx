@@ -186,7 +186,7 @@ export default function ActionPlanTab() {
                             <Target size={24} className="text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black text-white tracking-tight">Action Plan</h1>
+                            <h1 className="text-2xl font-bold text-white tracking-tight">Action Plan</h1>
                             <p className="text-sm text-slate-500">{fyLabel} · {count} action{count !== 1 ? 's' : ''} for your profile</p>
                         </div>
                     </div>

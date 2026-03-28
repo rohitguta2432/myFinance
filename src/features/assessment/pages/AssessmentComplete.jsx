@@ -45,7 +45,7 @@ const AssessmentComplete = () => {
                     <div className="inline-block bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
                         🎉 Assessment Complete!
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                    <h1 className="text-2xl font-bold tracking-tight text-white mb-3">
                         Your Financial Position Summary is ready!
                     </h1>
                     <p className="text-slate-400 text-sm">

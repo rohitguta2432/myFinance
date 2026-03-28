@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +34,59 @@ public class CashFlowService {
                 .incomes(incomes)
                 .expenses(expenses)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public CashFlowSummaryDTO getSummary(Long userId) {
+        log.info("cashflow.summary.get started user={}", userId);
+        List<Income> incomes = incomeRepo.findByUserId(userId);
+        List<Expense> expenses = expenseRepo.findByUserId(userId);
+
+        double totalMonthlyIncome = incomes.stream()
+                .mapToDouble(i -> toMonthly(i.getAmount(), i.getFrequency()))
+                .sum();
+
+        double totalMonthlyExpenses = expenses.stream()
+                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency()))
+                .sum();
+
+        double totalEMIs = expenses.stream()
+                .filter(e -> "EMIs (loan payments)".equals(e.getCategory()))
+                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency()))
+                .sum();
+
+        double discretionaryTotal = expenses.stream()
+                .filter(e -> Boolean.FALSE.equals(e.getIsEssential()))
+                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency()))
+                .sum();
+
+        double surplus = totalMonthlyIncome - totalMonthlyExpenses;
+        int savingsRate = totalMonthlyIncome > 0
+                ? (int) Math.round((surplus / totalMonthlyIncome) * 100)
+                : 0;
+
+        log.info("cashflow.summary.get.success user={} income={} expenses={} surplus={} savingsRate={}%",
+                userId, totalMonthlyIncome, totalMonthlyExpenses, surplus, savingsRate);
+
+        return CashFlowSummaryDTO.builder()
+                .totalMonthlyIncome(totalMonthlyIncome)
+                .totalMonthlyExpenses(totalMonthlyExpenses)
+                .surplus(surplus)
+                .savingsRate(savingsRate)
+                .totalEMIs(totalEMIs)
+                .discretionaryTotal(discretionaryTotal)
+                .build();
+    }
+
+    private double toMonthly(Double amount, Frequency frequency) {
+        if (amount == null) return 0.0;
+        if (frequency == null) return amount;
+        return switch (frequency) {
+            case QUARTERLY -> amount / 3.0;
+            case YEARLY -> amount / 12.0;
+            case ONE_TIME -> amount / 12.0;
+            default -> amount; // MONTHLY
+        };
     }
 
     @Transactional

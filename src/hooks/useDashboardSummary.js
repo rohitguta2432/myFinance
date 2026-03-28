@@ -3,7 +3,8 @@ import { api } from '../services/api';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 
 /**
- * Central hook — single API call to GET /api/v1/dashboard/summary/{userId}.
+ * Central hook — single API call to GET /api/v1/dashboard/summary.
+ * User is identified via X-User-Id header (added automatically by api.js).
  * All 10 dashboard computation hooks now consume slices of this response.
  */
 export function useDashboardSummary() {
@@ -12,7 +13,7 @@ export function useDashboardSummary() {
 
     return useQuery({
         queryKey: ['dashboard-summary', userId],
-        queryFn: () => api.get(`/dashboard/summary/${userId}`),
+        queryFn: () => api.get('/dashboard/summary'),
         enabled: true, // Always fetch dashboard summary (0 is valid for unauth profile)
         staleTime: 5 * 60 * 1000,   // 5 min — data rarely changes mid-session
         gcTime: 10 * 60 * 1000,     // keep in cache 10 min

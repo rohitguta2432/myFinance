@@ -22,6 +22,12 @@ public class CashFlowController {
         return ResponseEntity.ok(cashFlowService.getCashFlow(userId));
     }
 
+    @Operation(summary = "Get monthly cash flow summary — surplus, savings rate, EMIs, discretionary")
+    @GetMapping("/summary")
+    public ResponseEntity<CashFlowSummaryDTO> getSummary(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+        return ResponseEntity.ok(cashFlowService.getSummary(userId));
+    }
+
     @Operation(summary = "Add income source")
     @PostMapping("/income")
     public ResponseEntity<IncomeDTO> addIncome(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody IncomeDTO dto) {
