@@ -1,0 +1,38 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://app.myfinancial.in/)",
+      "Bash(curl -sk -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://app.myfinancial.in/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\nRedirect: %{redirect_url}\\\\n\" --max-time 10 http://app.myfinancial.in/)",
+      "Bash(grep -E \"\\\\.\\(jsx?|tsx?\\)$\")",
+      "Bash(gh pr:*)"
+    ],
+    "deny": [
+      "Edit(.env)",
+      "Write(.env)",
+      "Edit(package-lock.json)",
+      "Write(package-lock.json)",
+      "Edit(deploy_aws.sh)",
+      "Write(deploy_aws.sh)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r file; if [[ \"$file\" == *.java ]]; then cd /home/t0266li/Documents/myFinance/backend && mvn test -q 2>&1 | tail -15; exit ${PIPESTATUS[0]}; elif [[ \"$file\" == *.jsx || \"$file\" == *.js || \"$file\" == *.ts || \"$file\" == *.tsx ]]; then source ~/.nvm/nvm.sh && nvm use v20.20.2 > /dev/null 2>&1 && cd /home/t0266li/Documents/myFinance && node_modules/.bin/eslint \"$file\" 2>&1 | tail -10; fi; }",
+            "timeout": 120,
+            "statusMessage": "Checking for breakage..."
+          }
+        ]
+      }
+    ]
+  }
+}

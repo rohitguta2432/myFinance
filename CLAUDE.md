@@ -120,3 +120,12 @@ npm run lint    # ESLint for frontend
 ## Specs & Docs
 
 Business and architecture specs live in `specs/` — read these before making changes to assessment flow or API contracts.
+
+## gstack
+
+Use /browse from gstack for all web browsing. Never use mcp__claude-in-chrome__* tools.
+Available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review,
+/design-consultation, /design-shotgun, /review, /ship, /land-and-deploy, /canary, /benchmark, /browse,
+/connect-chrome, /qa, /qa-only, /design-review, /setup-browser-cookies, /setup-deploy, /retro,
+/investigate, /document-release, /codex, /cso, /autoplan, /careful, /freeze, /guard,
+/unfreeze, /gstack-upgrade.
