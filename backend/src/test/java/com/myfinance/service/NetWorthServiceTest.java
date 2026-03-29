@@ -50,9 +50,14 @@ class NetWorthServiceTest {
 
     private Liability buildLiability(Long id, String type, String name, Double outstanding,
                                      Double emi, Double rate) {
+        return buildLiability(id, type, name, outstanding, emi, rate, null);
+    }
+
+    private Liability buildLiability(Long id, String type, String name, Double outstanding,
+                                     Double emi, Double rate, Integer monthsLeft) {
         return Liability.builder().id(id).userId(USER_ID)
                 .liabilityType(type).name(name).outstandingAmount(outstanding)
-                .monthlyEmi(emi).interestRate(rate).build();
+                .monthlyEmi(emi).interestRate(rate).monthsLeft(monthsLeft).build();
     }
 
     // ─── getBalanceSheet ────────────────────────────────────────────────────────
@@ -93,6 +98,31 @@ class NetWorthServiceTest {
 
             assertThat(result.getAssets()).isEmpty();
             assertThat(result.getLiabilities()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("should return monthsLeft in liability DTO")
+        void returnsMonthsLeft() {
+            when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
+                    buildLiability(1L, "Home Loan", "HDFC", 3000000.0, 25000.0, 8.5, 240)));
+
+            BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
+
+            assertThat(result.getLiabilities()).hasSize(1);
+            assertThat(result.getLiabilities().get(0).getMonthsLeft()).isEqualTo(240);
+        }
+
+        @Test
+        @DisplayName("should handle null monthsLeft gracefully")
+        void nullMonthsLeft() {
+            when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
+                    buildLiability(1L, "Personal Loan", "Quick Loan", 50000.0, 5000.0, 12.0, null)));
+
+            BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
+
+            assertThat(result.getLiabilities().get(0).getMonthsLeft()).isNull();
         }
 
         @Test
@@ -166,6 +196,43 @@ class NetWorthServiceTest {
             assertThat(result.getMonthlyEmi()).isEqualTo(25000.0);
             assertThat(result.getInterestRate()).isEqualTo(8.5);
             verify(liabilityRepo).save(any(Liability.class));
+        }
+
+        @Test
+        @DisplayName("should persist and return monthsLeft when provided")
+        void addsLiabilityWithMonthsLeft() {
+            LiabilityDTO dto = LiabilityDTO.builder()
+                    .liabilityType("Education Loan").name("SBI Edu Loan")
+                    .outstandingAmount(800000.0).monthlyEmi(12000.0).interestRate(7.5)
+                    .monthsLeft(60)
+                    .build();
+
+            Liability saved = buildLiability(1L, "Education Loan", "SBI Edu Loan", 800000.0, 12000.0, 7.5, 60);
+            when(liabilityRepo.save(any(Liability.class))).thenReturn(saved);
+            doNothing().when(auditLogService).log(eq(USER_ID), eq("ADD_LIABILITY"), eq("liability"), eq(1L), any());
+
+            LiabilityDTO result = service.addLiability(USER_ID, dto);
+
+            assertThat(result.getMonthsLeft()).isEqualTo(60);
+            verify(liabilityRepo).save(argThat(l -> l.getMonthsLeft() != null && l.getMonthsLeft() == 60));
+        }
+
+        @Test
+        @DisplayName("should handle null monthsLeft in add")
+        void addsLiabilityWithNullMonthsLeft() {
+            LiabilityDTO dto = LiabilityDTO.builder()
+                    .liabilityType("Credit Card Debt").name("HDFC CC")
+                    .outstandingAmount(50000.0).monthlyEmi(5000.0).interestRate(36.0)
+                    .monthsLeft(null)
+                    .build();
+
+            Liability saved = buildLiability(1L, "Credit Card Debt", "HDFC CC", 50000.0, 5000.0, 36.0, null);
+            when(liabilityRepo.save(any(Liability.class))).thenReturn(saved);
+            doNothing().when(auditLogService).log(eq(USER_ID), eq("ADD_LIABILITY"), eq("liability"), eq(1L), any());
+
+            LiabilityDTO result = service.addLiability(USER_ID, dto);
+
+            assertThat(result.getMonthsLeft()).isNull();
         }
     }
 

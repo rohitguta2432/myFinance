@@ -1,21 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBalanceSheet, addAsset, addLiability, deleteAsset, deleteLiability } from '../services/assessmentApi';
-import { useAssessmentStore } from '../store/useAssessmentStore';
 
 /**
  * Step 3: Assets & Liabilities — fetch on mount, add via mutations.
+ * Store hydration is handled by useEffect in the Step3 component.
  */
 export const useBalanceSheetQuery = () => {
     return useQuery({
         queryKey: ['balance-sheet'],
         queryFn: getBalanceSheet,
         staleTime: 5 * 60 * 1000,
-        onSuccess: (data) => {
-            useAssessmentStore.setState({
-                assets: data.assets,
-                liabilities: data.liabilities,
-            });
-        },
     });
 };
 

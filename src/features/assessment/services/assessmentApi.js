@@ -10,7 +10,7 @@ const MARITAL_FROM_DB = Object.fromEntries(Object.entries(MARITAL_TO_DB).map(([k
 const RISK_TO_DB = { 'low': 'CONSERVATIVE', 'medium': 'MODERATE', 'high': 'AGGRESSIVE' };
 const RISK_FROM_DB = Object.fromEntries(Object.entries(RISK_TO_DB).map(([k, v]) => [v, k]));
 
-const FREQ_TO_DB = { 'Monthly': 'MONTHLY', 'Yearly': 'YEARLY', 'One-time': 'ONE_TIME' };
+const FREQ_TO_DB = { 'Monthly': 'MONTHLY', 'Quarterly': 'QUARTERLY', 'Yearly': 'YEARLY', 'One-time': 'ONE_TIME' };
 const FREQ_FROM_DB = Object.fromEntries(Object.entries(FREQ_TO_DB).map(([k, v]) => [v, k]));
 
 const INSURANCE_TO_DB = { 'life': 'LIFE', 'health': 'HEALTH' };

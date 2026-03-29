@@ -27,4 +27,6 @@ public class Liability {
     private Double monthlyEmi;
 
     private Double interestRate;
+
+    private Integer monthsLeft;
 }

@@ -13,4 +13,5 @@ public class LiabilityDTO {
     private Double outstandingAmount;
     private Double monthlyEmi;
     private Double interestRate;
+    private Integer monthsLeft;
 }

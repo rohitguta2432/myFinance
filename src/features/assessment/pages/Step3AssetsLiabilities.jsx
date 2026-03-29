@@ -10,7 +10,7 @@ import { AssetsLiabilitiesSkeleton } from '../../../components/ui/AssessmentSkel
 
 const Step3AssetsLiabilities = () => {
     const navigate = useNavigate();
-    const { incomes, expenses, assets, removeAsset, liabilities, removeLiability } = useAssessmentStore();
+    const { incomes, expenses, assets, addAsset, removeAsset, liabilities, addLiability, removeLiability } = useAssessmentStore();
 
     // API Integration
     const { data: balanceData, isLoading: isFetchingBalance } = useBalanceSheetQuery();
@@ -22,8 +22,8 @@ const Step3AssetsLiabilities = () => {
     // Hydrate store from API
     useEffect(() => {
         if (balanceData) {
-            if (balanceData.assets?.length) useAssessmentStore.setState({ assets: balanceData.assets });
-            if (balanceData.liabilities?.length) useAssessmentStore.setState({ liabilities: balanceData.liabilities });
+            if (balanceData.assets) useAssessmentStore.setState({ assets: balanceData.assets });
+            if (balanceData.liabilities) useAssessmentStore.setState({ liabilities: balanceData.liabilities });
         }
     }, [balanceData]);
 
@@ -140,18 +140,29 @@ const Step3AssetsLiabilities = () => {
             moratoriumMonths: activeTab === 'liabilities' && category === '🎓 Education Loan' ? (parseInt(moratoriumMonths, 10) || 0) : undefined,
         };
 
-        try {
-            if (activeTab === 'assets') {
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        const optimisticItem = { ...newItem, id: tempId };
+
+        if (activeTab === 'assets') {
+            addAsset(optimisticItem);
+            setIsModalOpen(false);
+            try {
                 await addAssetApi(newItem);
                 toast.success('Asset saved successfully');
-            } else {
+            } catch {
+                removeAsset(tempId);
+                toast.error('Failed to save asset. Please try again.');
+            }
+        } else {
+            addLiability(optimisticItem);
+            setIsModalOpen(false);
+            try {
                 await addLiabilityApi(newItem);
                 toast.success('Liability saved successfully');
+            } catch {
+                removeLiability(tempId);
+                toast.error('Failed to save liability. Please try again.');
             }
-            setIsModalOpen(false);
-        } catch (e) {
-            console.error('Save failed:', e.message);
-            toast.error(`Failed to save ${activeTab === 'assets' ? 'asset' : 'liability'}. Please try again.`);
         }
     };
 
@@ -577,7 +588,8 @@ const Step3AssetsLiabilities = () => {
                         </div>
                         <button
                             onClick={() => {
-                                if (totalAssets === 0 && totalLiabilities === 0) {
+                                const storeHasData = assets.length > 0 || liabilities.length > 0;
+                                if (totalAssets === 0 && totalLiabilities === 0 && !storeHasData) {
                                     toast.error('Add your assets or liabilities — savings, FDs, loans, etc.', { id: 'step3-guide' });
                                     return;
                                 }

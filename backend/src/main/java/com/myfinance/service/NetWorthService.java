@@ -63,6 +63,7 @@ public class NetWorthService {
                 .outstandingAmount(dto.getOutstandingAmount())
                 .monthlyEmi(dto.getMonthlyEmi())
                 .interestRate(dto.getInterestRate())
+                .monthsLeft(dto.getMonthsLeft())
                 .build();
         LiabilityDTO saved = toLiabilityDTO(liabilityRepo.save(liability));
         auditLogService.log(userId, "ADD_LIABILITY", "liability", saved.getId(), null);
@@ -108,6 +109,7 @@ public class NetWorthService {
                 .outstandingAmount(l.getOutstandingAmount())
                 .monthlyEmi(l.getMonthlyEmi())
                 .interestRate(l.getInterestRate())
+                .monthsLeft(l.getMonthsLeft())
                 .build();
     }
 }
