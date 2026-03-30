@@ -4,14 +4,13 @@ import com.myfinance.dto.GoalProjectionDTO;
 import com.myfinance.model.*;
 import com.myfinance.model.enums.EmploymentType;
 import com.myfinance.repository.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +30,7 @@ public class GoalProjectionService {
             "📊 Fixed Deposit (FD)",
             "💰 Recurring Deposit (RD)",
             "📄 Bonds/Debentures",
-            "🏢REITs/InvITs"
-    );
+            "🏢REITs/InvITs");
 
     private static final double ASSUMED_RETURN_RATE = 0.12;
     private static final double BUFFER_MULTIPLIER = 1.20;
@@ -72,12 +70,14 @@ public class GoalProjectionService {
 
         // ── 1. Monthly Surplus ──────────────────────────────────────────────
         double monthlyIncome = incomes.stream()
-                .mapToDouble(i -> toMonthly(i.getAmount(),
+                .mapToDouble(i -> toMonthly(
+                        i.getAmount(),
                         i.getFrequency() != null ? i.getFrequency().name() : null))
                 .sum();
 
         double monthlyExpenses = expenses.stream()
-                .mapToDouble(e -> toMonthly(e.getAmount(),
+                .mapToDouble(e -> toMonthly(
+                        e.getAmount(),
                         e.getFrequency() != null ? e.getFrequency().name() : null))
                 .sum();
 
@@ -103,8 +103,7 @@ public class GoalProjectionService {
             double savingsGrowth = savings * Math.pow(1 + ASSUMED_RETURN_RATE, horizon);
             double gapToFill = Math.max(0, bufferedCost - savingsGrowth);
             double requiredSip = calculateSIP(gapToFill, horizon, ASSUMED_RETURN_RATE);
-            double requiredLumpSum = horizon > 0
-                    ? gapToFill / Math.pow(1 + ASSUMED_RETURN_RATE, horizon) : gapToFill;
+            double requiredLumpSum = horizon > 0 ? gapToFill / Math.pow(1 + ASSUMED_RETURN_RATE, horizon) : gapToFill;
             double progressPercent = bufferedCost > 0 ? (savings / bufferedCost) * 100 : 0;
 
             totalAdjustedTarget += bufferedCost;
@@ -140,8 +139,10 @@ public class GoalProjectionService {
         Profile profile = profileRepo.findByUserId(userId).orElse(null);
         EmploymentType empType = profile != null ? profile.getEmploymentType() : null;
         int emergencyTargetMonths = (empType == EmploymentType.SELF_EMPLOYED
-                || empType == EmploymentType.BUSINESS
-                || empType == EmploymentType.UNEMPLOYED) ? 9 : 6;
+                        || empType == EmploymentType.BUSINESS
+                        || empType == EmploymentType.UNEMPLOYED)
+                ? 9
+                : 6;
 
         double emergencyFundTarget = monthlyExpenses * emergencyTargetMonths;
 
@@ -153,18 +154,20 @@ public class GoalProjectionService {
                 .sum();
 
         double emergencyFundGap = Math.max(0, emergencyFundTarget - liquidAssets);
-        double emergencyCoverageMonths = monthlyExpenses > 0
-                ? liquidAssets / monthlyExpenses : 0;
+        double emergencyCoverageMonths = monthlyExpenses > 0 ? liquidAssets / monthlyExpenses : 0;
 
         // Timeline: how many months to fill the gap from surplus
-        double aggressiveMonths = (monthlySurplus > 0 && emergencyFundGap > 0)
-                ? emergencyFundGap / monthlySurplus : 0;
-        double conservativeMonths = (monthlySurplus > 0 && emergencyFundGap > 0)
-                ? emergencyFundGap / (monthlySurplus * 0.5) : 0;
+        double aggressiveMonths = (monthlySurplus > 0 && emergencyFundGap > 0) ? emergencyFundGap / monthlySurplus : 0;
+        double conservativeMonths =
+                (monthlySurplus > 0 && emergencyFundGap > 0) ? emergencyFundGap / (monthlySurplus * 0.5) : 0;
 
-        log.info("goal.projection.calculate.success goals={} totalSip={} surplus={} achievable={} emergencyGap={}",
-                goals.size(), Math.round(totalSipRequired), Math.round(monthlySurplus),
-                isAchievable, Math.round(emergencyFundGap));
+        log.info(
+                "goal.projection.calculate.success goals={} totalSip={} surplus={} achievable={} emergencyGap={}",
+                goals.size(),
+                Math.round(totalSipRequired),
+                Math.round(monthlySurplus),
+                isAchievable,
+                Math.round(emergencyFundGap));
 
         return GoalProjectionDTO.builder()
                 .goals(goalDetails)

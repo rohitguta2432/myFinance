@@ -8,9 +8,9 @@ import com.myfinance.dto.TaxCalculationDTO.RegimeBreakdown;
 import com.myfinance.model.*;
 import com.myfinance.model.enums.Frequency;
 import com.myfinance.model.enums.InsuranceType;
+import com.myfinance.repository.*;
 import java.util.Collections;
 import java.util.List;
-import com.myfinance.repository.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,20 +43,38 @@ class TaxCalculationServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Income buildIncome(String source, Double amount, Frequency freq) {
-        return Income.builder().userId(USER_ID).sourceName(source).amount(amount).frequency(freq).build();
+        return Income.builder()
+                .userId(USER_ID)
+                .sourceName(source)
+                .amount(amount)
+                .frequency(freq)
+                .build();
     }
 
     private Expense buildExpense(String category, Double amount, Frequency freq) {
-        return Expense.builder().userId(USER_ID).category(category).amount(amount).frequency(freq).build();
+        return Expense.builder()
+                .userId(USER_ID)
+                .category(category)
+                .amount(amount)
+                .frequency(freq)
+                .build();
     }
 
     private Asset buildAsset(String type, Double value) {
-        return Asset.builder().userId(USER_ID).assetType(type).currentValue(value).build();
+        return Asset.builder()
+                .userId(USER_ID)
+                .assetType(type)
+                .currentValue(value)
+                .build();
     }
 
     private Insurance buildInsurance(InsuranceType type, Double premium, Double coverage) {
-        return Insurance.builder().userId(USER_ID).insuranceType(type)
-                .premiumAmount(premium).coverageAmount(coverage).build();
+        return Insurance.builder()
+                .userId(USER_ID)
+                .insuranceType(type)
+                .premiumAmount(premium)
+                .coverageAmount(coverage)
+                .build();
     }
 
     private void stubAllEmpty() {
@@ -75,8 +93,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should annualize monthly income by multiplying by 12")
         void monthlyIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -89,8 +107,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should annualize quarterly income by multiplying by 4")
         void quarterlyIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Dividends", 50000.0, Frequency.QUARTERLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Dividends", 50000.0, Frequency.QUARTERLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -103,8 +121,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should keep yearly income as-is")
         void yearlyIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Bonus", 500000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Bonus", 500000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -117,8 +135,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should treat ONE_TIME as yearly (amount as-is)")
         void oneTimeIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Gift", 100000.0, Frequency.ONE_TIME)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Gift", 100000.0, Frequency.ONE_TIME)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -131,7 +149,12 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should handle null frequency by treating amount as annual")
         void nullFrequencyIncome() {
-            Income income = Income.builder().userId(USER_ID).sourceName("Other").amount(50000.0).frequency(null).build();
+            Income income = Income.builder()
+                    .userId(USER_ID)
+                    .sourceName("Other")
+                    .amount(50000.0)
+                    .frequency(null)
+                    .build();
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(income));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -145,7 +168,12 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should handle null amount as zero")
         void nullAmountIncome() {
-            Income income = Income.builder().userId(USER_ID).sourceName("Salary").amount(null).frequency(Frequency.MONTHLY).build();
+            Income income = Income.builder()
+                    .userId(USER_ID)
+                    .sourceName("Salary")
+                    .amount(null)
+                    .frequency(Frequency.MONTHLY)
+                    .build();
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(income));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -159,7 +187,12 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should default source name to 'Other' when null")
         void nullSourceName() {
-            Income income = Income.builder().userId(USER_ID).sourceName(null).amount(100000.0).frequency(Frequency.YEARLY).build();
+            Income income = Income.builder()
+                    .userId(USER_ID)
+                    .sourceName(null)
+                    .amount(100000.0)
+                    .frequency(Frequency.YEARLY)
+                    .build();
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(income));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -173,9 +206,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should merge incomes with the same source name")
         void mergeIncomeSameSource() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 50000.0, Frequency.MONTHLY),
-                    buildIncome("Salary", 30000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildIncome("Salary", 50000.0, Frequency.MONTHLY),
+                            buildIncome("Salary", 30000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -197,8 +231,8 @@ class TaxCalculationServiceTest {
         void autoEpf() {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", 200000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", 200000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
@@ -211,9 +245,10 @@ class TaxCalculationServiceTest {
         void autoPpfNps() {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCC8 PPF (Public Provident Fund)", 100000.0),
-                    buildAsset("\uD83C\uDFAF NPS (National Pension System)", 50000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCC8 PPF (Public Provident Fund)", 100000.0),
+                            buildAsset("\uD83C\uDFAF NPS (National Pension System)", 50000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
@@ -227,9 +262,10 @@ class TaxCalculationServiceTest {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 25000.0, 5000000.0),
-                    buildInsurance(InsuranceType.HEALTH, 15000.0, 500000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildInsurance(InsuranceType.LIFE, 25000.0, 5000000.0),
+                            buildInsurance(InsuranceType.HEALTH, 15000.0, 500000.0)));
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
 
@@ -241,10 +277,18 @@ class TaxCalculationServiceTest {
         void nullValues() {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Asset.builder().userId(USER_ID).assetType("\uD83C\uDFE2 EPF (Provident Fund)").currentValue(null).build()));
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Insurance.builder().userId(USER_ID).insuranceType(InsuranceType.LIFE).premiumAmount(null).build()));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Asset.builder()
+                            .userId(USER_ID)
+                            .assetType("\uD83C\uDFE2 EPF (Provident Fund)")
+                            .currentValue(null)
+                            .build()));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Insurance.builder()
+                            .userId(USER_ID)
+                            .insuranceType(InsuranceType.LIFE)
+                            .premiumAmount(null)
+                            .build()));
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
 
@@ -262,10 +306,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should calculate HRA exemption when rent and salary exist")
         void basicHra() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Rent/Mortgage", 20000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Rent/Mortgage", 20000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -285,8 +329,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should return zero HRA when no rent paid")
         void noRent() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -299,10 +343,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should return zero HRA when no salary income")
         void noSalary() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Business", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Rent/Mortgage", 20000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Business", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Rent/Mortgage", 20000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -315,10 +359,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should convert yearly rent to monthly for HRA calculation")
         void yearlyRent() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Rent/Mortgage", 240000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Rent/Mortgage", 240000.0, Frequency.YEARLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -338,8 +382,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should apply 30% standard deduction on rental income")
         void rentalDeduction() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Rental Income", 30000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Rental Income", 30000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -355,8 +399,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should add rental deduction to user-provided otherDeductions")
         void rentalPlusOther() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Rental Income", 30000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Rental Income", 30000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -378,8 +422,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should calculate zero tax for income below 3 lakh (after std deduction)")
         void zeroTaxLowIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 200000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 200000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -396,8 +440,8 @@ class TaxCalculationServiceTest {
         void fivePercentSlab() {
             // Need netTaxable between 250k and 500k
             // income = 500000, stdDeduction = 50000, netTaxable = 450000
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 500000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 500000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -416,8 +460,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should calculate 20% slab for income between 5L and 10L")
         void twentyPercentSlab() {
             // netTaxable = 800000 => tax = 12500 + (800000-500000)*0.20 = 12500+60000 = 72500
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 850000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 850000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -434,8 +478,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should calculate 30% slab for income above 10L")
         void thirtyPercentSlab() {
             // netTaxable = 1500000 => tax = 112500 + (1500000-1000000)*0.30 = 112500+150000 = 262500
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -452,8 +496,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should apply all deductions before computing tax")
         void allDeductions() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -470,8 +514,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should not let net taxable go below zero")
         void netTaxableFloor() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -486,8 +530,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should compute effective rate as totalTax/income * 100")
         void effectiveRate() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1550000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -519,8 +563,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should apply 75000 standard deduction")
         void standardDeduction() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -535,8 +579,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should give rebate u/s 87A for netTaxable up to 7L (zero tax)")
         void rebate87A() {
             // income = 775000, stdDeduction = 75000, netTaxable = 700000 => rebate
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 775000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 775000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -555,8 +599,8 @@ class TaxCalculationServiceTest {
             // Wait, netTaxable = 1000000 > 700000, so no rebate
             // Actually the code: if netTaxable > 700000 => goes to "else if (netTaxable > 700000)"
             // tax = (1000000-700000)*0.10 + 30000 = 30000+30000 = 60000
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1075000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1075000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -572,8 +616,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should calculate 15% slab for netTaxable 10L-12L")
         void fifteenPercentSlab() {
             // netTaxable = 1100000 => tax = (1100000-1000000)*0.15 + 60000 = 15000+60000 = 75000
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1175000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1175000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -587,8 +631,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should calculate 20% slab for netTaxable 12L-15L")
         void twentyPercentSlab() {
             // netTaxable = 1400000 => tax = (1400000-1200000)*0.20 + 90000 = 40000+90000 = 130000
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 1475000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 1475000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -602,8 +646,8 @@ class TaxCalculationServiceTest {
         @DisplayName("should calculate 30% slab for netTaxable above 15L")
         void thirtyPercentSlab() {
             // netTaxable = 2000000 => tax = (2000000-1500000)*0.30 + 150000 = 150000+150000 = 300000
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 2075000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 2075000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -619,8 +663,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should not apply any 80C/80D/HRA deductions")
         void noDeductions() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -638,8 +682,8 @@ class TaxCalculationServiceTest {
         @DisplayName("new regime: netTaxable between 300000 and 700000 - tax at 5%")
         void fivePercentSlabBelowRebate() {
             // netTaxable = 500000 (below 700000 rebate threshold) => 0 tax (rebate applies)
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 575000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 575000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -661,10 +705,10 @@ class TaxCalculationServiceTest {
         @DisplayName("should recommend old regime when old tax is lower")
         void recommendOld() {
             // High income with lots of deductions => old regime wins
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 150000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Rent/Mortgage", 40000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 150000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Rent/Mortgage", 40000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -677,8 +721,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should recommend new regime when no deductions available")
         void recommendNew() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -692,15 +736,16 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("savings should be absolute difference between regime taxes")
         void savingsCalculation() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
 
-            double diff = Math.abs(result.getOldRegime().getTotalTax() - result.getNewRegime().getTotalTax());
+            double diff = Math.abs(
+                    result.getOldRegime().getTotalTax() - result.getNewRegime().getTotalTax());
             assertThat(result.getSavings()).isCloseTo(diff, within(0.01));
         }
 
@@ -738,10 +783,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should handle case-insensitive rent category matching")
         void caseInsensitiveRent() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("rent/mortgage", 20000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("rent/mortgage", 20000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -754,8 +799,8 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("should detect rental income in source name (case insensitive)")
         void rentalIncomeDetection() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("House Rent", 20000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("House Rent", 20000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -772,8 +817,12 @@ class TaxCalculationServiceTest {
         void nullAssetType() {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Asset.builder().userId(USER_ID).assetType(null).currentValue(100000.0).build()));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Asset.builder()
+                            .userId(USER_ID)
+                            .assetType(null)
+                            .currentValue(100000.0)
+                            .build()));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
@@ -785,10 +834,10 @@ class TaxCalculationServiceTest {
         @Test
         @DisplayName("quarterly rent expense should convert to monthly correctly")
         void quarterlyRentExpense() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Rent/Mortgage", 60000.0, Frequency.QUARTERLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Rent/Mortgage", 60000.0, Frequency.QUARTERLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 

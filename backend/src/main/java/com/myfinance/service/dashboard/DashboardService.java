@@ -68,8 +68,7 @@ public class DashboardService {
         TaxAnalysisDTO taxAnalysis = taxAnalysisCalc.calculate(data);
 
         // 12. Pillar Interpretations (migrated from frontend useHookText.js)
-        var pillarInterpretations = pillarInterpretationCalc.calculate(
-                healthScore.getSortedPillars(), rawData);
+        var pillarInterpretations = pillarInterpretationCalc.calculate(healthScore.getSortedPillars(), rawData);
 
         long elapsed = System.currentTimeMillis() - start;
         log.info("dashboard.summary.done userId={} elapsed={}ms", userId, elapsed);

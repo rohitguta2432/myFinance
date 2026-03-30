@@ -105,8 +105,8 @@ class AdminServiceTest {
             LocalDateTime noonToday =
                     LocalDateTime.now().withHour(12).withMinute(0).withSecond(0).withNano(0);
             User activeUser = createUser(1L, "active@test.com", "Active", noonToday);
-            User inactiveUser =
-                    createUser(2L, "inactive@test.com", "Inactive", LocalDateTime.now().minusDays(2));
+            User inactiveUser = createUser(
+                    2L, "inactive@test.com", "Inactive", LocalDateTime.now().minusDays(2));
             User nullLoginUser = createUser(3L, "null@test.com", "NoLogin", null);
 
             when(userRepo.findAll()).thenReturn(List.of(activeUser, inactiveUser, nullLoginUser));
@@ -133,7 +133,8 @@ class AdminServiceTest {
             when(incomeRepo.findByUserId(1L))
                     .thenReturn(List.of(Income.builder().id(1L).build()));
             when(assetRepo.findByUserId(1L))
-                    .thenReturn(List.of(Asset.builder().id(1L).currentValue(100000.0).build()));
+                    .thenReturn(List.of(
+                            Asset.builder().id(1L).currentValue(100000.0).build()));
             lenient().when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(1L))
                     .thenReturn(List.of(Goal.builder().id(1L).build()));
@@ -162,13 +163,15 @@ class AdminServiceTest {
             when(assetRepo.findByUserId(1L))
                     .thenReturn(List.of(Asset.builder().currentValue(500000.0).build()));
             when(liabilityRepo.findByUserId(1L))
-                    .thenReturn(List.of(Liability.builder().outstandingAmount(100000.0).build()));
+                    .thenReturn(List.of(
+                            Liability.builder().outstandingAmount(100000.0).build()));
 
             // User 2: assets=200k, liabilities=50k => net=150k
             when(assetRepo.findByUserId(2L))
                     .thenReturn(List.of(Asset.builder().currentValue(200000.0).build()));
             when(liabilityRepo.findByUserId(2L))
-                    .thenReturn(List.of(Liability.builder().outstandingAmount(50000.0).build()));
+                    .thenReturn(List.of(
+                            Liability.builder().outstandingAmount(50000.0).build()));
 
             AdminStatsDTO stats = adminService.getStats();
 
@@ -187,7 +190,8 @@ class AdminServiceTest {
                             Asset.builder().currentValue(null).build(),
                             Asset.builder().currentValue(100000.0).build()));
             when(liabilityRepo.findByUserId(1L))
-                    .thenReturn(List.of(Liability.builder().outstandingAmount(null).build()));
+                    .thenReturn(
+                            List.of(Liability.builder().outstandingAmount(null).build()));
 
             AdminStatsDTO stats = adminService.getStats();
 
@@ -324,10 +328,8 @@ class AdminServiceTest {
             stubEmptyData(1L);
 
             when(incomeRepo.findByUserId(1L))
-                    .thenReturn(List.of(Income.builder()
-                            .amount(120000.0)
-                            .frequency(null)
-                            .build()));
+                    .thenReturn(List.of(
+                            Income.builder().amount(120000.0).frequency(null).build()));
 
             List<AdminUserSummaryDTO> result = adminService.getAllUsers();
 

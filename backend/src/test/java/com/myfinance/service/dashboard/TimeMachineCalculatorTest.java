@@ -1,18 +1,17 @@
 package com.myfinance.service.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TimeMachineCalculator")
@@ -23,20 +22,35 @@ class TimeMachineCalculatorTest {
 
     private UserFinancialData.UserFinancialDataBuilder baseData() {
         return UserFinancialData.builder()
-                .age(30).city("Mumbai").riskTolerance("moderate")
-                .monthlyIncome(100000).annualIncome(1200000)
-                .monthlyExpenses(50000).monthlyEMI(10000).monthlySavings(40000)
-                .totalAssets(500000).totalLiabilities(100000).netWorth(400000)
-                .liquidAssets(200000).equityTotal(100000)
-                .savingsRate(40).equityPct(20)
-                .goals(List.of()).incomes(List.of()).expenses(List.of())
-                .assets(List.of()).liabilities(List.of()).insurances(List.of());
+                .age(30)
+                .city("Mumbai")
+                .riskTolerance("moderate")
+                .monthlyIncome(100000)
+                .annualIncome(1200000)
+                .monthlyExpenses(50000)
+                .monthlyEMI(10000)
+                .monthlySavings(40000)
+                .totalAssets(500000)
+                .totalLiabilities(100000)
+                .netWorth(400000)
+                .liquidAssets(200000)
+                .equityTotal(100000)
+                .savingsRate(40)
+                .equityPct(20)
+                .goals(List.of())
+                .incomes(List.of())
+                .expenses(List.of())
+                .assets(List.of())
+                .liabilities(List.of())
+                .insurances(List.of());
     }
 
     private RawDataDTO baseRaw() {
         return RawDataDTO.builder()
-                .annualSavings(480000.0).currentCorpus(400000.0)
-                .monthlyIncome(100000.0).annualIncome(1200000.0)
+                .annualSavings(480000.0)
+                .currentCorpus(400000.0)
+                .monthlyIncome(100000.0)
+                .annualIncome(1200000.0)
                 .build();
     }
 
@@ -84,8 +98,8 @@ class TimeMachineCalculatorTest {
         @Test
         @DisplayName("should be zero when monthly savings is zero")
         void zeroSavings() {
-            TimeMachineDTO result = calculator.calculate(
-                    baseData().age(35).monthlySavings(0).build(), baseRaw());
+            TimeMachineDTO result =
+                    calculator.calculate(baseData().age(35).monthlySavings(0).build(), baseRaw());
             assertThat(result.getMissedWealth()).isEqualTo(0.0);
         }
 
@@ -144,7 +158,8 @@ class TimeMachineCalculatorTest {
         @DisplayName("should not be negative")
         void neverNegative() {
             // Very high net worth, low delay
-            UserFinancialData data = baseData().age(23).netWorth(50000000).monthlySavings(10000).build();
+            UserFinancialData data =
+                    baseData().age(23).netWorth(50000000).monthlySavings(10000).build();
             TimeMachineDTO result = calculator.calculate(data, baseRaw());
             assertThat(result.getCostOfDelay()).isGreaterThanOrEqualTo(0);
         }

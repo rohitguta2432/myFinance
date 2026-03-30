@@ -43,13 +43,26 @@ class CashFlowServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Income buildIncome(Long id, String source, Double amount, Frequency freq) {
-        return Income.builder().id(id).userId(USER_ID).sourceName(source)
-                .amount(amount).frequency(freq).taxDeducted(false).tdsPercentage(0.0).build();
+        return Income.builder()
+                .id(id)
+                .userId(USER_ID)
+                .sourceName(source)
+                .amount(amount)
+                .frequency(freq)
+                .taxDeducted(false)
+                .tdsPercentage(0.0)
+                .build();
     }
 
     private Expense buildExpense(Long id, String category, Double amount, Frequency freq, Boolean essential) {
-        return Expense.builder().id(id).userId(USER_ID).category(category)
-                .amount(amount).frequency(freq).isEssential(essential).build();
+        return Expense.builder()
+                .id(id)
+                .userId(USER_ID)
+                .category(category)
+                .amount(amount)
+                .frequency(freq)
+                .isEssential(essential)
+                .build();
     }
 
     // ─── getCashFlow ────────────────────────────────────────────────────────────
@@ -61,10 +74,10 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should return incomes and expenses mapped to DTOs")
         void returnsData() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Groceries", 5000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense(1L, "Groceries", 5000.0, Frequency.MONTHLY, true)));
 
             FinancialsResponse result = service.getCashFlow(USER_ID);
 
@@ -97,10 +110,10 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should compute monthly totals from monthly frequency")
         void monthlyTotals() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Rent", 30000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense(1L, "Rent", 30000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -112,8 +125,8 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should convert quarterly income to monthly (divide by 3)")
         void quarterlyIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Dividend", 30000.0, Frequency.QUARTERLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Dividend", 30000.0, Frequency.QUARTERLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
@@ -124,8 +137,8 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should convert yearly income to monthly (divide by 12)")
         void yearlyIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Bonus", 120000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Bonus", 120000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
@@ -136,8 +149,8 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should convert ONE_TIME to monthly (divide by 12)")
         void oneTimeIncome() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Gift", 120000.0, Frequency.ONE_TIME)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Gift", 120000.0, Frequency.ONE_TIME)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
@@ -148,7 +161,12 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should handle null amount as zero")
         void nullAmount() {
-            Income income = Income.builder().id(1L).userId(USER_ID).amount(null).frequency(Frequency.MONTHLY).build();
+            Income income = Income.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .amount(null)
+                    .frequency(Frequency.MONTHLY)
+                    .build();
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(income));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -160,7 +178,12 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should treat null frequency as monthly (return amount as-is)")
         void nullFrequency() {
-            Income income = Income.builder().id(1L).userId(USER_ID).amount(50000.0).frequency(null).build();
+            Income income = Income.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .amount(50000.0)
+                    .frequency(null)
+                    .build();
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(income));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -172,10 +195,10 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should calculate savings rate as percentage of surplus over income")
         void savingsRate() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Rent", 70000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense(1L, "Rent", 70000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -187,8 +210,8 @@ class CashFlowServiceTest {
         @DisplayName("should return zero savings rate when no income")
         void zeroIncomeSavingsRate() {
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Rent", 30000.0, Frequency.MONTHLY, true)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense(1L, "Rent", 30000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -198,10 +221,10 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should calculate negative savings rate when expenses exceed income")
         void negativeSavingsRate() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 50000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Rent", 70000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense(1L, "Rent", 70000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -212,11 +235,12 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should filter EMI expenses correctly")
         void emiFiltering() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "EMIs (loan payments)", 20000.0, Frequency.MONTHLY, true),
-                    buildExpense(2L, "Groceries", 10000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildExpense(1L, "EMIs (loan payments)", 20000.0, Frequency.MONTHLY, true),
+                            buildExpense(2L, "Groceries", 10000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -226,12 +250,13 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should filter discretionary expenses (isEssential = false)")
         void discretionaryExpenses() {
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(1L, "Dining Out", 5000.0, Frequency.MONTHLY, false),
-                    buildExpense(2L, "Shopping", 10000.0, Frequency.MONTHLY, false),
-                    buildExpense(3L, "Rent", 30000.0, Frequency.MONTHLY, true)));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome(1L, "Salary", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildExpense(1L, "Dining Out", 5000.0, Frequency.MONTHLY, false),
+                            buildExpense(2L, "Shopping", 10000.0, Frequency.MONTHLY, false),
+                            buildExpense(3L, "Rent", 30000.0, Frequency.MONTHLY, true)));
 
             CashFlowSummaryDTO result = service.getSummary(USER_ID);
 
@@ -264,12 +289,22 @@ class CashFlowServiceTest {
         @DisplayName("should save income and return DTO")
         void addsIncome() {
             IncomeDTO dto = IncomeDTO.builder()
-                    .sourceName("Salary").amount(100000.0).frequency("MONTHLY")
-                    .taxDeducted(true).tdsPercentage(10.0).build();
+                    .sourceName("Salary")
+                    .amount(100000.0)
+                    .frequency("MONTHLY")
+                    .taxDeducted(true)
+                    .tdsPercentage(10.0)
+                    .build();
 
-            Income saved = Income.builder().id(1L).userId(USER_ID)
-                    .sourceName("Salary").amount(100000.0).frequency(Frequency.MONTHLY)
-                    .taxDeducted(true).tdsPercentage(10.0).build();
+            Income saved = Income.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .sourceName("Salary")
+                    .amount(100000.0)
+                    .frequency(Frequency.MONTHLY)
+                    .taxDeducted(true)
+                    .tdsPercentage(10.0)
+                    .build();
 
             when(incomeRepo.save(any(Income.class))).thenReturn(saved);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("ADD_INCOME"), eq("income"), eq(1L), any());
@@ -294,10 +329,20 @@ class CashFlowServiceTest {
         @DisplayName("should save expense and return DTO")
         void addsExpense() {
             ExpenseDTO dto = ExpenseDTO.builder()
-                    .category("Groceries").amount(5000.0).frequency("MONTHLY").isEssential(true).build();
+                    .category("Groceries")
+                    .amount(5000.0)
+                    .frequency("MONTHLY")
+                    .isEssential(true)
+                    .build();
 
-            Expense saved = Expense.builder().id(1L).userId(USER_ID)
-                    .category("Groceries").amount(5000.0).frequency(Frequency.MONTHLY).isEssential(true).build();
+            Expense saved = Expense.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .category("Groceries")
+                    .amount(5000.0)
+                    .frequency(Frequency.MONTHLY)
+                    .isEssential(true)
+                    .build();
 
             when(expenseRepo.save(any(Expense.class))).thenReturn(saved);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("ADD_EXPENSE"), eq("expense"), eq(1L), any());
@@ -319,14 +364,23 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should update existing income belonging to user")
         void updatesIncome() {
-            Income existing = Income.builder().id(1L).userId(USER_ID)
-                    .sourceName("Salary").amount(80000.0).frequency(Frequency.MONTHLY).build();
+            Income existing = Income.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .sourceName("Salary")
+                    .amount(80000.0)
+                    .frequency(Frequency.MONTHLY)
+                    .build();
 
             when(incomeRepo.findById(1L)).thenReturn(Optional.of(existing));
             when(incomeRepo.save(any(Income.class))).thenReturn(existing);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("UPDATE_INCOME"), eq("income"), eq(1L), any());
 
-            IncomeDTO dto = IncomeDTO.builder().sourceName("Salary Updated").amount(100000.0).frequency("MONTHLY").build();
+            IncomeDTO dto = IncomeDTO.builder()
+                    .sourceName("Salary Updated")
+                    .amount(100000.0)
+                    .frequency("MONTHLY")
+                    .build();
             IncomeDTO result = service.updateIncome(USER_ID, 1L, dto);
 
             assertThat(result).isNotNull();
@@ -338,7 +392,11 @@ class CashFlowServiceTest {
         void throwsWhenNotFound() {
             when(incomeRepo.findById(99L)).thenReturn(Optional.empty());
 
-            IncomeDTO dto = IncomeDTO.builder().sourceName("Test").amount(100.0).frequency("MONTHLY").build();
+            IncomeDTO dto = IncomeDTO.builder()
+                    .sourceName("Test")
+                    .amount(100.0)
+                    .frequency("MONTHLY")
+                    .build();
 
             assertThatThrownBy(() -> service.updateIncome(USER_ID, 99L, dto))
                     .isInstanceOf(RuntimeException.class)
@@ -348,10 +406,19 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should throw when income belongs to different user")
         void throwsWhenWrongUser() {
-            Income otherUser = Income.builder().id(1L).userId(999L).sourceName("Other").amount(1000.0).build();
+            Income otherUser = Income.builder()
+                    .id(1L)
+                    .userId(999L)
+                    .sourceName("Other")
+                    .amount(1000.0)
+                    .build();
             when(incomeRepo.findById(1L)).thenReturn(Optional.of(otherUser));
 
-            IncomeDTO dto = IncomeDTO.builder().sourceName("Test").amount(100.0).frequency("MONTHLY").build();
+            IncomeDTO dto = IncomeDTO.builder()
+                    .sourceName("Test")
+                    .amount(100.0)
+                    .frequency("MONTHLY")
+                    .build();
 
             assertThatThrownBy(() -> service.updateIncome(USER_ID, 1L, dto))
                     .isInstanceOf(RuntimeException.class)
@@ -368,14 +435,25 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should update existing expense belonging to user")
         void updatesExpense() {
-            Expense existing = Expense.builder().id(1L).userId(USER_ID)
-                    .category("Groceries").amount(5000.0).frequency(Frequency.MONTHLY).isEssential(true).build();
+            Expense existing = Expense.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .category("Groceries")
+                    .amount(5000.0)
+                    .frequency(Frequency.MONTHLY)
+                    .isEssential(true)
+                    .build();
 
             when(expenseRepo.findById(1L)).thenReturn(Optional.of(existing));
             when(expenseRepo.save(any(Expense.class))).thenReturn(existing);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("UPDATE_EXPENSE"), eq("expense"), eq(1L), any());
 
-            ExpenseDTO dto = ExpenseDTO.builder().category("Food").amount(6000.0).frequency("MONTHLY").isEssential(true).build();
+            ExpenseDTO dto = ExpenseDTO.builder()
+                    .category("Food")
+                    .amount(6000.0)
+                    .frequency("MONTHLY")
+                    .isEssential(true)
+                    .build();
             ExpenseDTO result = service.updateExpense(USER_ID, 1L, dto);
 
             assertThat(result).isNotNull();
@@ -387,7 +465,11 @@ class CashFlowServiceTest {
         void throwsWhenNotFound() {
             when(expenseRepo.findById(99L)).thenReturn(Optional.empty());
 
-            ExpenseDTO dto = ExpenseDTO.builder().category("Test").amount(100.0).frequency("MONTHLY").build();
+            ExpenseDTO dto = ExpenseDTO.builder()
+                    .category("Test")
+                    .amount(100.0)
+                    .frequency("MONTHLY")
+                    .build();
 
             assertThatThrownBy(() -> service.updateExpense(USER_ID, 99L, dto))
                     .isInstanceOf(RuntimeException.class)
@@ -397,10 +479,19 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should throw when expense belongs to different user")
         void throwsWhenWrongUser() {
-            Expense otherUser = Expense.builder().id(1L).userId(999L).category("Other").amount(1000.0).build();
+            Expense otherUser = Expense.builder()
+                    .id(1L)
+                    .userId(999L)
+                    .category("Other")
+                    .amount(1000.0)
+                    .build();
             when(expenseRepo.findById(1L)).thenReturn(Optional.of(otherUser));
 
-            ExpenseDTO dto = ExpenseDTO.builder().category("Test").amount(100.0).frequency("MONTHLY").build();
+            ExpenseDTO dto = ExpenseDTO.builder()
+                    .category("Test")
+                    .amount(100.0)
+                    .frequency("MONTHLY")
+                    .build();
 
             assertThatThrownBy(() -> service.updateExpense(USER_ID, 1L, dto))
                     .isInstanceOf(RuntimeException.class)
@@ -417,7 +508,8 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should delete income belonging to user")
         void deletesIncome() {
-            Income existing = Income.builder().id(1L).userId(USER_ID).sourceName("Salary").build();
+            Income existing =
+                    Income.builder().id(1L).userId(USER_ID).sourceName("Salary").build();
             when(incomeRepo.findById(1L)).thenReturn(Optional.of(existing));
             doNothing().when(incomeRepo).delete(existing);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("DELETE_INCOME"), eq("income"), eq(1L), any());
@@ -441,11 +533,11 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should throw when deleting income of different user")
         void throwsWhenWrongUser() {
-            Income otherUser = Income.builder().id(1L).userId(999L).sourceName("Other").build();
+            Income otherUser =
+                    Income.builder().id(1L).userId(999L).sourceName("Other").build();
             when(incomeRepo.findById(1L)).thenReturn(Optional.of(otherUser));
 
-            assertThatThrownBy(() -> service.deleteIncome(USER_ID, 1L))
-                    .isInstanceOf(RuntimeException.class);
+            assertThatThrownBy(() -> service.deleteIncome(USER_ID, 1L)).isInstanceOf(RuntimeException.class);
         }
     }
 
@@ -458,7 +550,8 @@ class CashFlowServiceTest {
         @Test
         @DisplayName("should delete expense belonging to user")
         void deletesExpense() {
-            Expense existing = Expense.builder().id(1L).userId(USER_ID).category("Rent").build();
+            Expense existing =
+                    Expense.builder().id(1L).userId(USER_ID).category("Rent").build();
             when(expenseRepo.findById(1L)).thenReturn(Optional.of(existing));
             doNothing().when(expenseRepo).delete(existing);
             doNothing().when(auditLogService).log(eq(USER_ID), eq("DELETE_EXPENSE"), eq("expense"), eq(1L), any());

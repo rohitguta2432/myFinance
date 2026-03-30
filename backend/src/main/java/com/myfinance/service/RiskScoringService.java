@@ -2,22 +2,21 @@ package com.myfinance.service;
 
 import com.myfinance.dto.RiskScoringDTO;
 import com.myfinance.model.Asset;
+import com.myfinance.model.Expense;
+import com.myfinance.model.Income;
 import com.myfinance.model.Liability;
 import com.myfinance.model.Profile;
-import com.myfinance.model.Income;
-import com.myfinance.model.Expense;
 import com.myfinance.model.enums.EmploymentType;
 import com.myfinance.repository.AssetRepository;
+import com.myfinance.repository.ExpenseRepository;
+import com.myfinance.repository.IncomeRepository;
 import com.myfinance.repository.LiabilityRepository;
 import com.myfinance.repository.ProfileRepository;
-import com.myfinance.repository.IncomeRepository;
-import com.myfinance.repository.ExpenseRepository;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -76,11 +75,7 @@ public class RiskScoringService {
 
     // ─── Liquid asset subcategories (Bank + FD + RD + Debt MF) ─
     private static final Set<String> LIQUID_TYPES = Set.of(
-            "🏦 Bank/Savings Account",
-            "📊 Fixed Deposit (FD)",
-            "💰 Recurring Deposit (RD)",
-            "📉 Mutual Funds — Debt"
-    );
+            "🏦 Bank/Savings Account", "📊 Fixed Deposit (FD)", "💰 Recurring Deposit (RD)", "📉 Mutual Funds — Debt");
 
     // ─── Financial asset subcategories (all Savings & Investments) ──
     private static final Set<String> FINANCIAL_TYPES = Set.of(
@@ -98,21 +93,19 @@ public class RiskScoringService {
             "🏢REITs/InvITs",
             "💎 Gold/ Silver (Digital/Sovereign Gold Bonds)",
             "🪙 Gold (Physical jewelry/bars)",
-            "₿ Cryptocurrency"
-    );
+            "₿ Cryptocurrency");
 
     // ─── Profile Band Definitions (0–10 scale) ──────────────
     // Reference: Profile Bands + Asset Allocations images
-    private record ProfileBand(double minScore, double maxScore, String label,
-                               int equity, int debt, int gold, int reits) {}
+    private record ProfileBand(
+            double minScore, double maxScore, String label, int equity, int debt, int gold, int reits) {}
 
     private static final List<ProfileBand> PROFILE_BANDS = List.of(
-            new ProfileBand(0.0,  2.5,  "Capital Preserver",        10, 70, 10, 10),
-            new ProfileBand(2.6,  4.5,  "Conservative Grower",      25, 55, 10, 10),
-            new ProfileBand(4.6,  6.0,  "Balanced Investor",        50, 30, 10, 10),
-            new ProfileBand(6.1,  7.5,  "Growth Seeker",            65, 20,  5, 10),
-            new ProfileBand(7.6, 10.0,  "Aggressive Wealth Builder", 80, 10,  5,  5)
-    );
+            new ProfileBand(0.0, 2.5, "Capital Preserver", 10, 70, 10, 10),
+            new ProfileBand(2.6, 4.5, "Conservative Grower", 25, 55, 10, 10),
+            new ProfileBand(4.6, 6.0, "Balanced Investor", 50, 30, 10, 10),
+            new ProfileBand(6.1, 7.5, "Growth Seeker", 65, 20, 5, 10),
+            new ProfileBand(7.6, 10.0, "Aggressive Wealth Builder", 80, 10, 5, 5));
 
     // ─── Clamp helper ────────────────────────────────────────
     private static double clamp(double value, double min, double max) {
@@ -140,14 +133,18 @@ public class RiskScoringService {
                     .capacityScore(0.0)
                     .compositeScore(0.0)
                     .profileLabel("Capital Preserver")
-                    .targetEquity(10).targetDebt(70).targetGold(10).targetRealEstate(10)
+                    .targetEquity(10)
+                    .targetDebt(70)
+                    .targetGold(10)
+                    .targetRealEstate(10)
                     .build();
         }
 
         // ─── TOLERANCE SCORE (0–10 scale) ────────────────────
         // Base Score = (Raw quiz total / 21) × 10
         Map<String, Integer> riskAnswers = parseRiskAnswers(profile.getRiskAnswers());
-        int rawQuizTotal = riskAnswers.values().stream().mapToInt(Integer::intValue).sum();
+        int rawQuizTotal =
+                riskAnswers.values().stream().mapToInt(Integer::intValue).sum();
         double baseScore = (rawQuizTotal / 21.0) * 10.0;
 
         int age = profile.getAge() != null ? profile.getAge() : 30;
@@ -159,10 +156,16 @@ public class RiskScoringService {
         // Clipped to [0.0, 10.0]
         double toleranceScore = round2(clamp(
                 baseScore - getAgeModifier(age) - getAdultDependentModifier(adultDeps) - getChildModifier(childDeps),
-                0.0, 10.0
-        ));
-        log.info("risk.scoring.tolerance rawQuiz={} base={} age={} adultDeps={} childDeps={} score={}",
-                rawQuizTotal, round2(baseScore), age, adultDeps, childDeps, toleranceScore);
+                0.0,
+                10.0));
+        log.info(
+                "risk.scoring.tolerance rawQuiz={} base={} age={} adultDeps={} childDeps={} score={}",
+                rawQuizTotal,
+                round2(baseScore),
+                age,
+                adultDeps,
+                childDeps,
+                toleranceScore);
 
         // ─── CAPACITY SCORE (0–10 scale) ─────────────────────
         List<Asset> assets = assetRepo.findByUserId(userId);
@@ -250,15 +253,18 @@ public class RiskScoringService {
         int rawCapacity = q1 + q2 + q3 + q4;
         // Capacity Score = (Raw Total / 12) × 10, clipped to [0.0, 10.0]
         double capacityScore = round2(clamp((rawCapacity / 12.0) * 10.0, 0.0, 10.0));
-        log.info("risk.scoring.capacity q1={} q2={} q3={} q4={} raw={} score={}",
-                q1, q2, q3, q4, rawCapacity, capacityScore);
+        log.info(
+                "risk.scoring.capacity q1={} q2={} q3={} q4={} raw={} score={}",
+                q1,
+                q2,
+                q3,
+                q4,
+                rawCapacity,
+                capacityScore);
 
         // ─── COMPOSITE SCORE (0–10 scale, 2 decimal places) ──
         // Composite = (Tolerance × 0.55) + (Capacity × 0.45)
-        double compositeScore = round2(clamp(
-                (0.55 * toleranceScore) + (0.45 * capacityScore),
-                0.0, 10.0
-        ));
+        double compositeScore = round2(clamp((0.55 * toleranceScore) + (0.45 * capacityScore), 0.0, 10.0));
 
         // ─── PROFILE BAND ────────────────────────────────────
         ProfileBand band = PROFILE_BANDS.stream()
@@ -266,8 +272,12 @@ public class RiskScoringService {
                 .findFirst()
                 .orElse(PROFILE_BANDS.get(2)); // Balanced Investor fallback
 
-        log.info("risk.scoring.calculate.success tolerance={} capacity={} composite={} profile={}",
-                toleranceScore, capacityScore, compositeScore, band.label);
+        log.info(
+                "risk.scoring.calculate.success tolerance={} capacity={} composite={} profile={}",
+                toleranceScore,
+                capacityScore,
+                compositeScore,
+                band.label);
 
         return RiskScoringDTO.builder()
                 .riskAnswers(riskAnswers)

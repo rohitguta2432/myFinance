@@ -29,17 +29,18 @@ public class WhatsAppMessageService {
      * (Will be upgraded to interactive list message later)
      */
     public void sendWelcomeMenu(String to) {
-        String menu = """
+        String menu =
+                """
                 🤖 Welcome to MyFinancial! 🎉
                 I'm your personal financial advisor.
-                
+
                 What would you like to do?
-                
+
                 1️⃣ Quick Financial Health Check
                 2️⃣ Upload Form 16 for Analysis
                 3️⃣ Tax Savings Calculator
                 4️⃣ File ITR
-                
+
                 Reply with a number (1-4) to get started!""";
 
         sendText(to, menu);

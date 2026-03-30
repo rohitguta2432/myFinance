@@ -1,19 +1,18 @@
 package com.myfinance.service.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.model.Goal;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import java.util.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HealthScoreCalculator")
@@ -24,16 +23,32 @@ class HealthScoreCalculatorTest {
 
     private UserFinancialData.UserFinancialDataBuilder baseData() {
         return UserFinancialData.builder()
-                .age(30).city("Mumbai").riskTolerance("moderate")
-                .dependents(1).childDependents(0)
-                .monthlyIncome(100000).annualIncome(1200000)
-                .monthlyExpenses(50000).monthlyEMI(10000).monthlySavings(40000)
-                .totalAssets(500000).totalLiabilities(100000).netWorth(400000)
-                .liquidAssets(300000).equityTotal(200000).equityPct(40)
-                .existingLifeCover(10000000).existingHealthCover(1000000)
-                .lifePremium(12000).savingsRate(40)
-                .goals(List.of()).incomes(List.of()).expenses(List.of())
-                .assets(List.of()).liabilities(List.of()).insurances(List.of());
+                .age(30)
+                .city("Mumbai")
+                .riskTolerance("moderate")
+                .dependents(1)
+                .childDependents(0)
+                .monthlyIncome(100000)
+                .annualIncome(1200000)
+                .monthlyExpenses(50000)
+                .monthlyEMI(10000)
+                .monthlySavings(40000)
+                .totalAssets(500000)
+                .totalLiabilities(100000)
+                .netWorth(400000)
+                .liquidAssets(300000)
+                .equityTotal(200000)
+                .equityPct(40)
+                .existingLifeCover(10000000)
+                .existingHealthCover(1000000)
+                .lifePremium(12000)
+                .savingsRate(40)
+                .goals(List.of())
+                .incomes(List.of())
+                .expenses(List.of())
+                .assets(List.of())
+                .liabilities(List.of())
+                .insurances(List.of());
     }
 
     @Nested
@@ -45,7 +60,9 @@ class HealthScoreCalculatorTest {
         void totalScoreIsSumOfPillars() {
             HealthScoreDTO result = calculator.calculate(baseData().build());
 
-            double sum = result.getPillars().stream().mapToDouble(PillarDTO::getScore).sum();
+            double sum = result.getPillars().stream()
+                    .mapToDouble(PillarDTO::getScore)
+                    .sum();
             assertThat(result.getTotalScore()).isCloseTo(sum, within(0.2));
         }
 
@@ -94,12 +111,21 @@ class HealthScoreCalculatorTest {
         void needsAttention() {
             // very low everything to get low score
             UserFinancialData data = baseData()
-                    .monthlyIncome(10000).annualIncome(120000)
-                    .monthlyExpenses(9000).monthlyEMI(5000).monthlySavings(-4000)
-                    .liquidAssets(0).equityTotal(0).equityPct(0)
-                    .totalAssets(0).totalLiabilities(50000).netWorth(-50000)
-                    .existingLifeCover(0).existingHealthCover(0)
-                    .savingsRate(-40).build();
+                    .monthlyIncome(10000)
+                    .annualIncome(120000)
+                    .monthlyExpenses(9000)
+                    .monthlyEMI(5000)
+                    .monthlySavings(-4000)
+                    .liquidAssets(0)
+                    .equityTotal(0)
+                    .equityPct(0)
+                    .totalAssets(0)
+                    .totalLiabilities(50000)
+                    .netWorth(-50000)
+                    .existingLifeCover(0)
+                    .existingHealthCover(0)
+                    .savingsRate(-40)
+                    .build();
             HealthScoreDTO result = calculator.calculate(data);
             // With zero everything, score should be very low
             if (result.getTotalScore() <= 40) {
@@ -113,12 +139,21 @@ class HealthScoreCalculatorTest {
         void excellent() {
             // max out everything
             UserFinancialData data = baseData()
-                    .monthlyIncome(200000).annualIncome(2400000)
-                    .monthlyExpenses(30000).monthlyEMI(0).monthlySavings(170000)
-                    .liquidAssets(500000).equityTotal(1000000).equityPct(60)
-                    .totalAssets(3000000).totalLiabilities(0).netWorth(3000000)
-                    .existingLifeCover(50000000).existingHealthCover(2000000)
-                    .savingsRate(85).build();
+                    .monthlyIncome(200000)
+                    .annualIncome(2400000)
+                    .monthlyExpenses(30000)
+                    .monthlyEMI(0)
+                    .monthlySavings(170000)
+                    .liquidAssets(500000)
+                    .equityTotal(1000000)
+                    .equityPct(60)
+                    .totalAssets(3000000)
+                    .totalLiabilities(0)
+                    .netWorth(3000000)
+                    .existingLifeCover(50000000)
+                    .existingHealthCover(2000000)
+                    .savingsRate(85)
+                    .build();
             HealthScoreDTO result = calculator.calculate(data);
             if (result.getTotalScore() > 80) {
                 assertThat(result.getScoreLabel()).isEqualTo("EXCELLENT");
@@ -135,7 +170,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should score high with 6+ months emergency fund")
         void highEmergencyFund() {
             UserFinancialData data = baseData()
-                    .liquidAssets(400000).monthlyExpenses(50000) // 8 months
+                    .liquidAssets(400000)
+                    .monthlyExpenses(50000) // 8 months
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
             PillarDTO survival = result.getPillars().get(0);
@@ -146,7 +182,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should score low with < 3 months emergency fund")
         void lowEmergencyFund() {
             UserFinancialData data = baseData()
-                    .liquidAssets(50000).monthlyExpenses(50000) // 1 month
+                    .liquidAssets(50000)
+                    .monthlyExpenses(50000) // 1 month
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
             PillarDTO survival = result.getPillars().get(0);
@@ -157,7 +194,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should cap emergency fund score at 15")
         void cappedEmergencyScore() {
             UserFinancialData data = baseData()
-                    .liquidAssets(1000000).monthlyExpenses(10000) // 100 months
+                    .liquidAssets(1000000)
+                    .monthlyExpenses(10000) // 100 months
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
             PillarDTO survival = result.getPillars().get(0);
@@ -168,7 +206,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should handle zero monthly expenses")
         void zeroExpenses() {
             UserFinancialData data = baseData()
-                    .liquidAssets(100000).monthlyExpenses(0)
+                    .liquidAssets(100000)
+                    .monthlyExpenses(0)
                     .liabilities(List.of())
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
@@ -195,9 +234,8 @@ class HealthScoreCalculatorTest {
         @Test
         @DisplayName("should score low with no insurance")
         void noInsurance() {
-            UserFinancialData data = baseData()
-                    .existingLifeCover(0).existingHealthCover(0)
-                    .build();
+            UserFinancialData data =
+                    baseData().existingLifeCover(0).existingHealthCover(0).build();
             HealthScoreDTO result = calculator.calculate(data);
             PillarDTO protection = result.getPillars().get(1);
             assertThat(protection.getScore()).isCloseTo(0.0, within(0.1));
@@ -212,7 +250,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should score max EMI points when no debt")
         void noDebt() {
             UserFinancialData data = baseData()
-                    .monthlyEMI(0).monthlyIncome(100000)
+                    .monthlyEMI(0)
+                    .monthlyIncome(100000)
                     .liabilities(List.of())
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
@@ -224,8 +263,10 @@ class HealthScoreCalculatorTest {
         @DisplayName("should penalize high EMI-to-income ratio")
         void highEMI() {
             UserFinancialData data = baseData()
-                    .monthlyEMI(60000).monthlyIncome(100000)
-                    .monthlyExpenses(30000).monthlySavings(10000)
+                    .monthlyEMI(60000)
+                    .monthlyIncome(100000)
+                    .monthlyExpenses(30000)
+                    .monthlySavings(10000)
                     .liabilities(List.of())
                     .build();
             HealthScoreDTO result = calculator.calculate(data);
@@ -250,9 +291,8 @@ class HealthScoreCalculatorTest {
         @Test
         @DisplayName("should score low with zero savings and zero equity")
         void zeroSavingsAndEquity() {
-            UserFinancialData data = baseData()
-                    .savingsRate(0).equityPct(0).equityTotal(0)
-                    .build();
+            UserFinancialData data =
+                    baseData().savingsRate(0).equityPct(0).equityTotal(0).build();
             HealthScoreDTO result = calculator.calculate(data);
             PillarDTO wealth = result.getPillars().get(3);
             assertThat(wealth.getScore()).isLessThan(10.0);
@@ -273,9 +313,7 @@ class HealthScoreCalculatorTest {
                     .timeHorizonYears(25)
                     .currentSavings(100000.0)
                     .build();
-            UserFinancialData data = baseData()
-                    .goals(List.of(retGoal))
-                    .build();
+            UserFinancialData data = baseData().goals(List.of(retGoal)).build();
             HealthScoreDTO result = calculator.calculate(data);
             // retirementContribution should be non-zero in rawData
             assertThat(result.getRawData().getRetirementContribution()).isGreaterThan(0);
@@ -301,7 +339,8 @@ class HealthScoreCalculatorTest {
 
             List<PillarDTO> sorted = result.getSortedPillars();
             for (int i = 0; i < sorted.size() - 1; i++) {
-                assertThat(sorted.get(i).getDeficit()).isGreaterThanOrEqualTo(sorted.get(i + 1).getDeficit());
+                assertThat(sorted.get(i).getDeficit())
+                        .isGreaterThanOrEqualTo(sorted.get(i + 1).getDeficit());
             }
         }
 
@@ -309,7 +348,8 @@ class HealthScoreCalculatorTest {
         @DisplayName("should set mostCritical as first sorted pillar")
         void mostCriticalIsFirst() {
             HealthScoreDTO result = calculator.calculate(baseData().build());
-            assertThat(result.getMostCritical()).isEqualTo(result.getSortedPillars().get(0));
+            assertThat(result.getMostCritical())
+                    .isEqualTo(result.getSortedPillars().get(0));
         }
     }
 
@@ -339,9 +379,8 @@ class HealthScoreCalculatorTest {
         @Test
         @DisplayName("should compute emergency fund months correctly")
         void emergencyFundMonths() {
-            UserFinancialData data = baseData()
-                    .liquidAssets(150000).monthlyExpenses(50000)
-                    .build();
+            UserFinancialData data =
+                    baseData().liquidAssets(150000).monthlyExpenses(50000).build();
             HealthScoreDTO result = calculator.calculate(data);
             assertThat(result.getRawData().getEmergencyFundMonths()).isCloseTo(3.0, within(0.01));
         }
@@ -359,7 +398,7 @@ class HealthScoreCalculatorTest {
                     Goal.builder().goalType("education").currentCost(2000000.0).build(),
                     Goal.builder().goalType("marriage").currentCost(1000000.0).build(),
                     Goal.builder().goalType("travel").currentCost(500000.0).build() // excluded
-            );
+                    );
             UserFinancialData data = baseData().goals(goals).build();
             HealthScoreDTO result = calculator.calculate(data);
 
@@ -370,9 +409,8 @@ class HealthScoreCalculatorTest {
         @Test
         @DisplayName("should handle goals with null currentCost")
         void nullGoalCost() {
-            List<Goal> goals = List.of(
-                    Goal.builder().goalType("home").currentCost(null).build()
-            );
+            List<Goal> goals =
+                    List.of(Goal.builder().goalType("home").currentCost(null).build());
             UserFinancialData data = baseData().goals(goals).build();
             HealthScoreDTO result = calculator.calculate(data);
             assertThat(result).isNotNull();
@@ -403,7 +441,9 @@ class HealthScoreCalculatorTest {
         @DisplayName("should handle zero annual income")
         void zeroAnnualIncome() {
             UserFinancialData data = baseData()
-                    .monthlyIncome(0).annualIncome(0).savingsRate(0)
+                    .monthlyIncome(0)
+                    .annualIncome(0)
+                    .savingsRate(0)
                     .monthlySavings(0)
                     .build();
             HealthScoreDTO result = calculator.calculate(data);

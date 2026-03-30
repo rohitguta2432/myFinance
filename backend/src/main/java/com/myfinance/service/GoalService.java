@@ -3,13 +3,12 @@ package com.myfinance.service;
 import com.myfinance.dto.GoalDTO;
 import com.myfinance.model.Goal;
 import com.myfinance.repository.GoalRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +28,12 @@ public class GoalService {
 
     @Transactional
     public GoalDTO addGoal(Long userId, GoalDTO dto) {
-        log.info("goals.add user={} type={} name={} target={}",
-                userId, dto.getGoalType(), dto.getName(), dto.getTargetAmount());
+        log.info(
+                "goals.add user={} type={} name={} target={}",
+                userId,
+                dto.getGoalType(),
+                dto.getName(),
+                dto.getTargetAmount());
         Goal goal = Goal.builder()
                 .userId(userId)
                 .goalType(dto.getGoalType())

@@ -1,12 +1,11 @@
 package com.myfinance.whatsapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * Outbound message DTO for sending messages via WhatsApp Cloud API.
@@ -41,6 +40,7 @@ public class WhatsAppOutboundMessage {
     public static class TextBody {
         @JsonProperty("preview_url")
         private boolean previewUrl;
+
         private String body;
     }
 

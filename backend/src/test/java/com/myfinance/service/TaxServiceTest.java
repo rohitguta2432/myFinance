@@ -246,10 +246,8 @@ class TaxServiceTest {
         @DisplayName("should handle null regime string")
         void handlesNullRegime() {
             Long userId = 1L;
-            TaxDTO dto = TaxDTO.builder()
-                    .selectedRegime(null)
-                    .ppfElssAmount(50000.0)
-                    .build();
+            TaxDTO dto =
+                    TaxDTO.builder().selectedRegime(null).ppfElssAmount(50000.0).build();
 
             when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
             when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {

@@ -1,12 +1,11 @@
 package com.myfinance.service.dashboard;
 
+import static com.myfinance.service.dashboard.DashboardDataLoader.fmt;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
-import org.springframework.stereotype.Component;
-
 import java.util.*;
-
-import static com.myfinance.service.dashboard.DashboardDataLoader.fmt;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectionCalculator {
@@ -56,21 +55,30 @@ public class ProjectionCalculator {
             for (int y = 0; y <= years; y++) {
                 YearPointDTO pt = points.get(y);
                 if (pt.getCurrent() >= targets[t]) {
-                    milestones.add(MilestoneDTO.builder().label(labels[t]).year(y).path("current").build());
+                    milestones.add(MilestoneDTO.builder()
+                            .label(labels[t])
+                            .year(y)
+                            .path("current")
+                            .build());
                     break;
                 }
             }
             for (int y = 0; y <= years; y++) {
                 YearPointDTO pt = points.get(y);
                 if (pt.getOptimized() >= targets[t]) {
-                    milestones.add(MilestoneDTO.builder().label(labels[t]).year(y).path("optimized").build());
+                    milestones.add(MilestoneDTO.builder()
+                            .label(labels[t])
+                            .year(y)
+                            .path("optimized")
+                            .build());
                     break;
                 }
             }
         }
 
         return ProjectionResultDTO.builder()
-                .currentPath(points).optimizedPath(points) // same list, different fields
+                .currentPath(points)
+                .optimizedPath(points) // same list, different fields
                 .currentEndValue((double) currentEnd)
                 .optimizedEndValue((double) optimizedEnd)
                 .extraGain(extraGain)

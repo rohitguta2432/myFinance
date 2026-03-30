@@ -1,20 +1,21 @@
 package com.myfinance.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.myfinance.dto.RiskScoringDTO;
+import com.myfinance.security.JwtService;
 import com.myfinance.service.RiskScoringService;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RiskScoringController.class)
 class RiskScoringControllerTest {
@@ -24,6 +25,15 @@ class RiskScoringControllerTest {
 
     @MockitoBean
     private RiskScoringService riskScoringService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/risk-scoring - returns risk score breakdown")
@@ -42,8 +52,7 @@ class RiskScoringControllerTest {
 
         when(riskScoringService.calculateRiskScore(1L)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/v1/risk-scoring")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/risk-scoring").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.toleranceScore").value(70.0))
                 .andExpect(jsonPath("$.capacityScore").value(65.0))
@@ -58,19 +67,9 @@ class RiskScoringControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/risk-scoring - missing header defaults to 0")
+    @DisplayName("GET /api/v1/risk-scoring - missing header returns 401")
     void calculateRiskScore_missingHeader() throws Exception {
-        RiskScoringDTO dto = RiskScoringDTO.builder()
-                .compositeScore(50.0)
-                .profileLabel("Moderate")
-                .build();
-        when(riskScoringService.calculateRiskScore(0L)).thenReturn(dto);
-
-        mockMvc.perform(get("/api/v1/risk-scoring"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.compositeScore").value(50.0));
-
-        verify(riskScoringService).calculateRiskScore(0L);
+        mockMvc.perform(get("/api/v1/risk-scoring")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -78,9 +77,9 @@ class RiskScoringControllerTest {
     void calculateRiskScore_serviceException() {
         when(riskScoringService.calculateRiskScore(1L)).thenThrow(new RuntimeException("Scoring error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/risk-scoring")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/risk-scoring").header("Authorization", "Bearer test-token")));
     }
 
     @Test
@@ -97,10 +96,9 @@ class RiskScoringControllerTest {
                 .targetRealEstate(5)
                 .build();
 
-        when(riskScoringService.calculateRiskScore(2L)).thenReturn(dto);
+        when(riskScoringService.calculateRiskScore(1L)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/v1/risk-scoring")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/risk-scoring").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.profileLabel").value("Conservative"))
                 .andExpect(jsonPath("$.targetEquity").value(20))

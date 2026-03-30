@@ -18,8 +18,7 @@ public class GoalProjectionController {
 
     @GetMapping
     @Operation(summary = "Get goal projections")
-    public ResponseEntity<GoalProjectionDTO> getProjection(
-            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+    public ResponseEntity<GoalProjectionDTO> getProjection(@RequestAttribute("userId") Long userId) {
         return ResponseEntity.ok(projectionService.project(userId));
     }
 }

@@ -1,22 +1,17 @@
 package com.myfinance.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
+import com.myfinance.dto.AuthResponse;
 import com.myfinance.dto.UserDTO;
 import com.myfinance.model.User;
 import com.myfinance.repository.UserRepository;
+import com.myfinance.security.GoogleTokenVerifierImpl;
+import com.myfinance.security.JwtService;
+import com.myfinance.security.VerifiedUser;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.time.LocalDateTime;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -25,68 +20,41 @@ public class AuthService {
 
     private final UserRepository userRepo;
     private final AuditLogService auditLogService;
+    private final JwtService jwtService;
+    private final GoogleTokenVerifierImpl googleTokenVerifier;
 
-    @Value("${google.oauth.client-id}")
-    private String googleClientId;
-
-    /**
-     * Validates a Google ID token and returns the authenticated user.
-     * Creates a new user on first login, updates lastLoginAt on subsequent logins.
-     */
     @Transactional
-    public UserDTO authenticateWithGoogle(String idTokenString) {
+    public AuthResponse authenticateWithGoogle(String idTokenString) {
         log.info("auth.google started");
 
-        GoogleIdToken.Payload payload = verifyGoogleToken(idTokenString);
+        VerifiedUser verified = googleTokenVerifier.verify(idTokenString);
 
-        String googleId = payload.getSubject();
-        String email = payload.getEmail();
-        String name = (String) payload.get("name");
-        String picture = (String) payload.get("picture");
-
-        User user = userRepo.findByGoogleId(googleId)
+        User user = userRepo.findByGoogleId(verified.getProviderId())
                 .map(existing -> {
-                    log.info("auth.google.returning user googleId={} email={}", googleId, email);
-                    existing.setName(name);
-                    existing.setPictureUrl(picture);
+                    log.info("auth.google.returning user googleId={}", verified.getProviderId());
+                    existing.setName(verified.getName());
+                    existing.setPictureUrl(verified.getPictureUrl());
                     existing.setLastLoginAt(LocalDateTime.now());
                     User saved = userRepo.save(existing);
                     auditLogService.log(saved.getId(), "LOGIN", "user", saved.getId(), "Returning user");
                     return saved;
                 })
                 .orElseGet(() -> {
-                    log.info("auth.google.newUser googleId={} email={}", googleId, email);
+                    log.info("auth.google.newUser googleId={}", verified.getProviderId());
                     User newUser = User.builder()
-                            .googleId(googleId)
-                            .email(email)
-                            .name(name)
-                            .pictureUrl(picture)
+                            .googleId(verified.getProviderId())
+                            .email(verified.getEmail())
+                            .name(verified.getName())
+                            .pictureUrl(verified.getPictureUrl())
                             .build();
                     User saved = userRepo.save(newUser);
                     auditLogService.log(saved.getId(), "LOGIN", "user", saved.getId(), "New user signup");
                     return saved;
                 });
 
-        log.info("auth.google.success userId={} email={}", user.getId(), user.getEmail());
-        return toDTO(user);
-    }
-
-    private GoogleIdToken.Payload verifyGoogleToken(String idTokenString) {
-        try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(googleClientId))
-                    .build();
-
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-            if (idToken == null) {
-                throw new IllegalArgumentException("Invalid Google ID token");
-            }
-            return idToken.getPayload();
-        } catch (GeneralSecurityException | IOException e) {
-            log.error("auth.google.failed error={}", e.getMessage());
-            throw new RuntimeException("Google token verification failed", e);
-        }
+        log.info("auth.google.success userId={}", user.getId());
+        String jwt = jwtService.generateToken(user.getId(), user.getEmail());
+        return AuthResponse.builder().token(jwt).user(toDTO(user)).build();
     }
 
     private UserDTO toDTO(User user) {

@@ -51,8 +51,12 @@ class InsuranceGapServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Profile buildProfile(int age, MaritalStatus marital, Integer childDependents) {
-        return Profile.builder().userId(USER_ID).age(age)
-                .maritalStatus(marital).childDependents(childDependents).build();
+        return Profile.builder()
+                .userId(USER_ID)
+                .age(age)
+                .maritalStatus(marital)
+                .childDependents(childDependents)
+                .build();
     }
 
     private Expense buildExpense(Double amount, Frequency freq) {
@@ -60,20 +64,36 @@ class InsuranceGapServiceTest {
     }
 
     private Goal buildGoal(Double cost, int horizon, Double inflation, Double savings) {
-        return Goal.builder().userId(USER_ID).currentCost(cost)
-                .timeHorizonYears(horizon).inflationRate(inflation).currentSavings(savings).build();
+        return Goal.builder()
+                .userId(USER_ID)
+                .currentCost(cost)
+                .timeHorizonYears(horizon)
+                .inflationRate(inflation)
+                .currentSavings(savings)
+                .build();
     }
 
     private Liability buildLiability(Double outstanding) {
-        return Liability.builder().userId(USER_ID).outstandingAmount(outstanding).build();
+        return Liability.builder()
+                .userId(USER_ID)
+                .outstandingAmount(outstanding)
+                .build();
     }
 
     private Asset buildAsset(String type, Double value) {
-        return Asset.builder().userId(USER_ID).assetType(type).currentValue(value).build();
+        return Asset.builder()
+                .userId(USER_ID)
+                .assetType(type)
+                .currentValue(value)
+                .build();
     }
 
     private Insurance buildInsurance(InsuranceType type, Double coverage) {
-        return Insurance.builder().userId(USER_ID).insuranceType(type).coverageAmount(coverage).build();
+        return Insurance.builder()
+                .userId(USER_ID)
+                .insuranceType(type)
+                .coverageAmount(coverage)
+                .build();
     }
 
     private void stubAllEmpty() {
@@ -118,8 +138,7 @@ class InsuranceGapServiceTest {
         @DisplayName("should compute PV of annuity for annual expenses over remaining years")
         void pvAnnuity() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -141,8 +160,7 @@ class InsuranceGapServiceTest {
         @DisplayName("should annualize YEARLY expense correctly")
         void yearlyExpense() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(600000.0, Frequency.YEARLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(600000.0, Frequency.YEARLY)));
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -158,8 +176,12 @@ class InsuranceGapServiceTest {
         @DisplayName("should handle null expense amount as zero")
         void nullExpenseAmount() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Expense.builder().userId(USER_ID).amount(null).frequency(Frequency.MONTHLY).build()));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Expense.builder()
+                            .userId(USER_ID)
+                            .amount(null)
+                            .frequency(Frequency.MONTHLY)
+                            .build()));
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -174,8 +196,7 @@ class InsuranceGapServiceTest {
         @DisplayName("should default age to 30 when no profile")
         void defaultAge() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -191,8 +212,7 @@ class InsuranceGapServiceTest {
         @DisplayName("should use at least 1 year remaining when age >= 90")
         void oldAge() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(95, MaritalStatus.SINGLE, 0)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -217,8 +237,7 @@ class InsuranceGapServiceTest {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             // Note: inflationRate in InsuranceGapService is divided by 100 (treated as percentage)
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1000000.0, 10, 6.0, 100000.0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1000000.0, 10, 6.0, 100000.0)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -243,8 +262,7 @@ class InsuranceGapServiceTest {
         void noGoalCover() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(100000.0, 10, 6.0, 5000000.0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(100000.0, 10, 6.0, 5000000.0)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -260,9 +278,14 @@ class InsuranceGapServiceTest {
         void nullGoalFields() {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Goal.builder().userId(USER_ID).currentCost(null).timeHorizonYears(null)
-                            .inflationRate(null).currentSavings(null).build()));
+            when(goalRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Goal.builder()
+                            .userId(USER_ID)
+                            .currentCost(null)
+                            .timeHorizonYears(null)
+                            .inflationRate(null)
+                            .currentSavings(null)
+                            .build()));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -287,9 +310,8 @@ class InsuranceGapServiceTest {
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(3000000.0),
-                    buildLiability(500000.0)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildLiability(3000000.0), buildLiability(500000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -304,8 +326,11 @@ class InsuranceGapServiceTest {
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Liability.builder().userId(USER_ID).outstandingAmount(null).build()));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Liability.builder()
+                            .userId(USER_ID)
+                            .outstandingAmount(null)
+                            .build()));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -327,10 +352,9 @@ class InsuranceGapServiceTest {
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             // Savings account is liquid
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -345,13 +369,13 @@ class InsuranceGapServiceTest {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0),
-                    buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 200000.0),
-                    buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", 150000.0),
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", 300000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(2000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0),
+                            buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 200000.0),
+                            buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", 150000.0),
+                            buildAsset("\uD83D\uDCC8 Stocks/Shares", 300000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(2000000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -367,10 +391,9 @@ class InsuranceGapServiceTest {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 5000000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 5000000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -385,10 +408,13 @@ class InsuranceGapServiceTest {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Asset.builder().userId(USER_ID).assetType(null).currentValue(500000.0).build()));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Asset.builder()
+                            .userId(USER_ID)
+                            .assetType(null)
+                            .currentValue(500000.0)
+                            .build()));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -403,10 +429,9 @@ class InsuranceGapServiceTest {
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(buildProfile(30, MaritalStatus.SINGLE, 0)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 10000000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 10000000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0)));
             when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
@@ -429,8 +454,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(5000000.0)));
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 2000000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.LIFE, 2000000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -447,8 +472,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0)));
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 5000000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.LIFE, 5000000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -463,8 +488,12 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Insurance.builder().userId(USER_ID).insuranceType(InsuranceType.LIFE).coverageAmount(null).build()));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Insurance.builder()
+                            .userId(USER_ID)
+                            .insuranceType(InsuranceType.LIFE)
+                            .coverageAmount(null)
+                            .build()));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -479,10 +508,11 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(10000000.0)));
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 3000000.0),
-                    buildInsurance(InsuranceType.LIFE, 2000000.0),
-                    buildInsurance(InsuranceType.HEALTH, 500000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildInsurance(InsuranceType.LIFE, 3000000.0),
+                            buildInsurance(InsuranceType.LIFE, 2000000.0),
+                            buildInsurance(InsuranceType.HEALTH, 500000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -580,8 +610,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.HEALTH, 500000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.HEALTH, 500000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -597,8 +627,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.HEALTH, 2000000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.HEALTH, 2000000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -608,9 +638,13 @@ class InsuranceGapServiceTest {
         @Test
         @DisplayName("should handle null childDependents as zero")
         void nullChildDependents() {
-            when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(
-                    Profile.builder().userId(USER_ID).age(30)
-                            .maritalStatus(MaritalStatus.MARRIED).childDependents(null).build()));
+            when(profileRepo.findByUserId(USER_ID))
+                    .thenReturn(Optional.of(Profile.builder()
+                            .userId(USER_ID)
+                            .age(30)
+                            .maritalStatus(MaritalStatus.MARRIED)
+                            .childDependents(null)
+                            .build()));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -638,8 +672,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(5000000.0)));
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 2000000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.LIFE, 2000000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 
@@ -655,8 +689,8 @@ class InsuranceGapServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildInsurance(InsuranceType.LIFE, 5000000.0)));
+            when(insuranceRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildInsurance(InsuranceType.LIFE, 5000000.0)));
 
             InsuranceGapDTO result = service.calculateGap(USER_ID);
 

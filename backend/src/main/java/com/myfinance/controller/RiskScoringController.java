@@ -18,8 +18,7 @@ public class RiskScoringController {
 
     @GetMapping
     @Operation(summary = "Calculate risk score")
-    public ResponseEntity<RiskScoringDTO> calculateRiskScore(
-            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+    public ResponseEntity<RiskScoringDTO> calculateRiskScore(@RequestAttribute("userId") Long userId) {
         return ResponseEntity.ok(riskScoringService.calculateRiskScore(userId));
     }
 }

@@ -6,14 +6,14 @@ const BASE_URL = '/api/v1';
  */
 async function request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
-    
-    let userId = null;
+
+    let token = null;
     try {
         const authStorage = localStorage.getItem('auth-storage');
         if (authStorage) {
             const state = JSON.parse(authStorage).state;
-            if (state && state.user && state.user.id) {
-                userId = state.user.id;
+            if (state && state.token) {
+                token = state.token;
             }
         }
     } catch (e) {
@@ -25,8 +25,8 @@ async function request(endpoint, options = {}) {
         ...options.headers,
     };
 
-    if (userId != null && !isNaN(userId)) {
-        headers['X-User-Id'] = String(userId);
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
 
     const config = {
@@ -35,6 +35,12 @@ async function request(endpoint, options = {}) {
     };
 
     const response = await fetch(url, config);
+
+    if (response.status === 401) {
+        localStorage.removeItem('auth-storage');
+        window.location.href = '/login';
+        return;
+    }
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({

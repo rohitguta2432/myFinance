@@ -22,16 +22,13 @@ public class ProfileService {
     @Transactional(readOnly = true)
     public ProfileDTO getProfile(Long userId) {
         log.info("profile.get started for user={}", userId);
-        return profileRepo.findByUserId(userId)
-                .map(this::toDTO)
-                .orElse(new ProfileDTO());
+        return profileRepo.findByUserId(userId).map(this::toDTO).orElse(new ProfileDTO());
     }
 
     @Transactional
     public ProfileDTO saveProfile(Long userId, ProfileDTO dto) {
         log.info("profile.save user={} age={} state={} city={}", userId, dto.getAge(), dto.getState(), dto.getCity());
-        Profile profile = profileRepo.findByUserId(userId)
-                .orElse(new Profile());
+        Profile profile = profileRepo.findByUserId(userId).orElse(new Profile());
 
         profile.setUserId(userId);
         profile.setAge(dto.getAge());

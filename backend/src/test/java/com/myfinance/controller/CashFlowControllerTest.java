@@ -1,24 +1,25 @@
 package com.myfinance.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myfinance.dto.*;
-import com.myfinance.service.CashFlowService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myfinance.dto.*;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.CashFlowService;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CashFlowController.class)
 class CashFlowControllerTest {
@@ -29,15 +30,34 @@ class CashFlowControllerTest {
     @MockitoBean
     private CashFlowService cashFlowService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     // ── GET /api/v1/cashflow ──
 
     @Test
     @DisplayName("GET /api/v1/cashflow - returns incomes and expenses")
     void getCashFlow_success() throws Exception {
-        IncomeDTO income = IncomeDTO.builder().id(1L).sourceName("Salary").amount(100000.0).frequency("Monthly").build();
-        ExpenseDTO expense = ExpenseDTO.builder().id(1L).category("Rent").amount(20000.0).frequency("Monthly").build();
+        IncomeDTO income = IncomeDTO.builder()
+                .id(1L)
+                .sourceName("Salary")
+                .amount(100000.0)
+                .frequency("Monthly")
+                .build();
+        ExpenseDTO expense = ExpenseDTO.builder()
+                .id(1L)
+                .category("Rent")
+                .amount(20000.0)
+                .frequency("Monthly")
+                .build();
         FinancialsResponse response = FinancialsResponse.builder()
                 .incomes(List.of(income))
                 .expenses(List.of(expense))
@@ -45,8 +65,7 @@ class CashFlowControllerTest {
 
         when(cashFlowService.getCashFlow(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/cashflow")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/cashflow").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.incomes[0].id").value(1))
                 .andExpect(jsonPath("$.incomes[0].sourceName").value("Salary"))
@@ -57,18 +76,9 @@ class CashFlowControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/cashflow - missing header defaults to 0")
-    void getCashFlow_missingHeader() throws Exception {
-        FinancialsResponse response = FinancialsResponse.builder()
-                .incomes(List.of())
-                .expenses(List.of())
-                .build();
-        when(cashFlowService.getCashFlow(0L)).thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/cashflow"))
-                .andExpect(status().isOk());
-
-        verify(cashFlowService).getCashFlow(0L);
+    @DisplayName("GET /api/v1/cashflow - missing Authorization header returns 401")
+    void getCashFlow_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/cashflow")).andExpect(status().isUnauthorized());
     }
 
     // ── GET /api/v1/cashflow/summary ──
@@ -87,8 +97,7 @@ class CashFlowControllerTest {
 
         when(cashFlowService.getSummary(1L)).thenReturn(summary);
 
-        mockMvc.perform(get("/api/v1/cashflow/summary")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/cashflow/summary").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalMonthlyIncome").value(150000.0))
                 .andExpect(jsonPath("$.surplus").value(70000.0))
@@ -121,7 +130,7 @@ class CashFlowControllerTest {
         when(cashFlowService.addIncome(eq(1L), any(IncomeDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/cashflow/income")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -155,7 +164,7 @@ class CashFlowControllerTest {
         when(cashFlowService.addExpense(eq(1L), any(ExpenseDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/cashflow/expense")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -186,7 +195,7 @@ class CashFlowControllerTest {
         when(cashFlowService.updateIncome(eq(1L), eq(1L), any(IncomeDTO.class))).thenReturn(updated);
 
         mockMvc.perform(put("/api/v1/cashflow/income/1")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -215,10 +224,11 @@ class CashFlowControllerTest {
                 .frequency("Monthly")
                 .build();
 
-        when(cashFlowService.updateExpense(eq(1L), eq(2L), any(ExpenseDTO.class))).thenReturn(updated);
+        when(cashFlowService.updateExpense(eq(1L), eq(2L), any(ExpenseDTO.class)))
+                .thenReturn(updated);
 
         mockMvc.perform(put("/api/v1/cashflow/expense/2")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -235,8 +245,7 @@ class CashFlowControllerTest {
     void deleteIncome_success() throws Exception {
         doNothing().when(cashFlowService).deleteIncome(1L, 5L);
 
-        mockMvc.perform(delete("/api/v1/cashflow/income/5")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(delete("/api/v1/cashflow/income/5").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk());
 
         verify(cashFlowService).deleteIncome(1L, 5L);
@@ -247,9 +256,10 @@ class CashFlowControllerTest {
     void deleteIncome_serviceException() {
         doThrow(new RuntimeException("Not found")).when(cashFlowService).deleteIncome(1L, 999L);
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(delete("/api/v1/cashflow/income/999")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(
+                        delete("/api/v1/cashflow/income/999").header("Authorization", "Bearer test-token")));
     }
 
     // ── DELETE /api/v1/cashflow/expense/{id} ──
@@ -259,21 +269,15 @@ class CashFlowControllerTest {
     void deleteExpense_success() throws Exception {
         doNothing().when(cashFlowService).deleteExpense(1L, 3L);
 
-        mockMvc.perform(delete("/api/v1/cashflow/expense/3")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(delete("/api/v1/cashflow/expense/3").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk());
 
         verify(cashFlowService).deleteExpense(1L, 3L);
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/cashflow/expense/{id} - missing header defaults userId to 0")
-    void deleteExpense_missingHeader() throws Exception {
-        doNothing().when(cashFlowService).deleteExpense(0L, 3L);
-
-        mockMvc.perform(delete("/api/v1/cashflow/expense/3"))
-                .andExpect(status().isOk());
-
-        verify(cashFlowService).deleteExpense(0L, 3L);
+    @DisplayName("DELETE /api/v1/cashflow/expense/{id} - missing Authorization header returns 401")
+    void deleteExpense_missingHeader_returns401() throws Exception {
+        mockMvc.perform(delete("/api/v1/cashflow/expense/3")).andExpect(status().isUnauthorized());
     }
 }

@@ -3,11 +3,10 @@ package com.myfinance.service.dashboard;
 import com.myfinance.model.*;
 import com.myfinance.model.enums.Frequency;
 import com.myfinance.repository.*;
+import java.util.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 /**
  * Loads all user financial data once and holds it for all calculators.
@@ -29,7 +28,9 @@ public class DashboardDataLoader {
     public UserFinancialData load(Long userId) {
         log.info("dashboard.data.load userId={}", userId);
 
-        Profile profile = profileRepo.findByUserId(userId).orElse(Profile.builder().age(30).build());
+        Profile profile = profileRepo
+                .findByUserId(userId)
+                .orElse(Profile.builder().age(30).build());
         List<Asset> assets = assetRepo.findByUserId(userId);
         List<Liability> liabilities = liabilityRepo.findByUserId(userId);
         List<Income> incomes = incomeRepo.findByUserId(userId);
@@ -39,53 +40,85 @@ public class DashboardDataLoader {
         Tax tax = taxRepo.findByUserId(userId).orElse(null);
 
         // Compute base financials
-        double monthlyIncome = incomes.stream().mapToDouble(i -> toMonthly(i.getAmount(), i.getFrequency())).sum();
-        double monthlyExpenses = expenses.stream().mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency())).sum();
-        double monthlyEMI = liabilities.stream().mapToDouble(l -> safe(l.getMonthlyEmi())).sum();
-        double totalAssets = assets.stream().mapToDouble(a -> safe(a.getCurrentValue())).sum();
-        double totalLiabilities = liabilities.stream().mapToDouble(l -> safe(l.getOutstandingAmount())).sum();
+        double monthlyIncome = incomes.stream()
+                .mapToDouble(i -> toMonthly(i.getAmount(), i.getFrequency()))
+                .sum();
+        double monthlyExpenses = expenses.stream()
+                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency()))
+                .sum();
+        double monthlyEMI =
+                liabilities.stream().mapToDouble(l -> safe(l.getMonthlyEmi())).sum();
+        double totalAssets =
+                assets.stream().mapToDouble(a -> safe(a.getCurrentValue())).sum();
+        double totalLiabilities = liabilities.stream()
+                .mapToDouble(l -> safe(l.getOutstandingAmount()))
+                .sum();
 
         // Insurance aggregation
         double lifeCover = insurances.stream()
-                .filter(i -> i.getInsuranceType() != null && i.getInsuranceType().name().equals("LIFE"))
-                .mapToDouble(i -> safe(i.getCoverageAmount())).sum();
+                .filter(i -> i.getInsuranceType() != null
+                        && i.getInsuranceType().name().equals("LIFE"))
+                .mapToDouble(i -> safe(i.getCoverageAmount()))
+                .sum();
         double healthCover = insurances.stream()
-                .filter(i -> i.getInsuranceType() != null && i.getInsuranceType().name().equals("HEALTH"))
-                .mapToDouble(i -> safe(i.getCoverageAmount())).sum();
+                .filter(i -> i.getInsuranceType() != null
+                        && i.getInsuranceType().name().equals("HEALTH"))
+                .mapToDouble(i -> safe(i.getCoverageAmount()))
+                .sum();
         double lifePremium = insurances.stream()
-                .filter(i -> i.getInsuranceType() != null && i.getInsuranceType().name().equals("LIFE"))
-                .mapToDouble(i -> safe(i.getPremiumAmount())).sum();
+                .filter(i -> i.getInsuranceType() != null
+                        && i.getInsuranceType().name().equals("LIFE"))
+                .mapToDouble(i -> safe(i.getPremiumAmount()))
+                .sum();
 
         // Asset class totals
         double liquidAssets = assets.stream()
                 .filter(a -> isLiquid(a.getAssetType()))
-                .mapToDouble(a -> safe(a.getCurrentValue())).sum();
+                .mapToDouble(a -> safe(a.getCurrentValue()))
+                .sum();
         double equityTotal = assets.stream()
                 .filter(a -> isEquity(a.getAssetType()))
-                .mapToDouble(a -> safe(a.getCurrentValue())).sum();
+                .mapToDouble(a -> safe(a.getCurrentValue()))
+                .sum();
 
         int age = profile.getAge() != null ? profile.getAge() : 30;
         String city = profile.getCity() != null ? profile.getCity() : "";
-        String riskTolerance = profile.getRiskTolerance() != null ? profile.getRiskTolerance().name().toLowerCase() : "moderate";
+        String riskTolerance = profile.getRiskTolerance() != null
+                ? profile.getRiskTolerance().name().toLowerCase()
+                : "moderate";
         int dependents = profile.getDependents() != null ? profile.getDependents() : 0;
         int childDependents = profile.getChildDependents() != null ? profile.getChildDependents() : 0;
 
         return UserFinancialData.builder()
-                .profile(profile).assets(assets).liabilities(liabilities)
-                .incomes(incomes).expenses(expenses).insurances(insurances)
-                .goals(goals).tax(tax)
-                .age(age).city(city).riskTolerance(riskTolerance)
-                .dependents(dependents).childDependents(childDependents)
-                .monthlyIncome(monthlyIncome).annualIncome(monthlyIncome * 12)
-                .monthlyExpenses(monthlyExpenses).monthlyEMI(monthlyEMI)
+                .profile(profile)
+                .assets(assets)
+                .liabilities(liabilities)
+                .incomes(incomes)
+                .expenses(expenses)
+                .insurances(insurances)
+                .goals(goals)
+                .tax(tax)
+                .age(age)
+                .city(city)
+                .riskTolerance(riskTolerance)
+                .dependents(dependents)
+                .childDependents(childDependents)
+                .monthlyIncome(monthlyIncome)
+                .annualIncome(monthlyIncome * 12)
+                .monthlyExpenses(monthlyExpenses)
+                .monthlyEMI(monthlyEMI)
                 .monthlySavings(monthlyIncome - monthlyExpenses - monthlyEMI)
-                .totalAssets(totalAssets).totalLiabilities(totalLiabilities)
+                .totalAssets(totalAssets)
+                .totalLiabilities(totalLiabilities)
                 .netWorth(totalAssets - totalLiabilities)
-                .liquidAssets(liquidAssets).equityTotal(equityTotal)
-                .existingLifeCover(lifeCover).existingHealthCover(healthCover)
+                .liquidAssets(liquidAssets)
+                .equityTotal(equityTotal)
+                .existingLifeCover(lifeCover)
+                .existingHealthCover(healthCover)
                 .lifePremium(lifePremium)
                 .equityPct(totalAssets > 0 ? (equityTotal / totalAssets) * 100 : 0)
-                .savingsRate(monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses - monthlyEMI) / monthlyIncome) * 100 : 0)
+                .savingsRate(
+                        monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses - monthlyEMI) / monthlyIncome) * 100 : 0)
                 .build();
     }
 
@@ -104,7 +137,9 @@ public class DashboardDataLoader {
         return toMonthly(amount, freq) * 12;
     }
 
-    public static double safe(Double v) { return v != null ? v : 0.0; }
+    public static double safe(Double v) {
+        return v != null ? v : 0.0;
+    }
 
     private boolean isLiquid(String type) {
         if (type == null) return false;
@@ -125,7 +160,8 @@ public class DashboardDataLoader {
     }
 
     // ── Data holder ──
-    @Data @Builder
+    @Data
+    @Builder
     public static class UserFinancialData {
         private Profile profile;
         private List<Asset> assets;

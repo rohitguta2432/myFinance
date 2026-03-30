@@ -1,11 +1,16 @@
 package com.myfinance.service.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.Mockito.*;
+
 import com.myfinance.model.*;
 import com.myfinance.model.enums.Frequency;
 import com.myfinance.model.enums.InsuranceType;
 import com.myfinance.model.enums.RiskTolerance;
 import com.myfinance.repository.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import java.util.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,24 +19,33 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("DashboardDataLoader")
 class DashboardDataLoaderTest {
 
-    @Mock private ProfileRepository profileRepo;
-    @Mock private AssetRepository assetRepo;
-    @Mock private LiabilityRepository liabilityRepo;
-    @Mock private IncomeRepository incomeRepo;
-    @Mock private ExpenseRepository expenseRepo;
-    @Mock private InsuranceRepository insuranceRepo;
-    @Mock private GoalRepository goalRepo;
-    @Mock private TaxRepository taxRepo;
+    @Mock
+    private ProfileRepository profileRepo;
+
+    @Mock
+    private AssetRepository assetRepo;
+
+    @Mock
+    private LiabilityRepository liabilityRepo;
+
+    @Mock
+    private IncomeRepository incomeRepo;
+
+    @Mock
+    private ExpenseRepository expenseRepo;
+
+    @Mock
+    private InsuranceRepository insuranceRepo;
+
+    @Mock
+    private GoalRepository goalRepo;
+
+    @Mock
+    private TaxRepository taxRepo;
 
     @InjectMocks
     private DashboardDataLoader dataLoader;
@@ -97,10 +111,18 @@ class DashboardDataLoaderTest {
             when(liabilityRepo.findByUserId(userId)).thenReturn(List.of());
 
             List<Income> incomes = List.of(
-                    Income.builder().amount(100000.0).frequency(Frequency.MONTHLY).build(),
-                    Income.builder().amount(120000.0).frequency(Frequency.YEARLY).build(),
-                    Income.builder().amount(30000.0).frequency(Frequency.QUARTERLY).build()
-            );
+                    Income.builder()
+                            .amount(100000.0)
+                            .frequency(Frequency.MONTHLY)
+                            .build(),
+                    Income.builder()
+                            .amount(120000.0)
+                            .frequency(Frequency.YEARLY)
+                            .build(),
+                    Income.builder()
+                            .amount(30000.0)
+                            .frequency(Frequency.QUARTERLY)
+                            .build());
             when(incomeRepo.findByUserId(userId)).thenReturn(incomes);
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
             when(insuranceRepo.findByUserId(userId)).thenReturn(List.of());
@@ -119,14 +141,26 @@ class DashboardDataLoaderTest {
         void shouldComputeAssetAndLiabilityTotals() {
             Long userId = 1L;
             when(profileRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(assetRepo.findByUserId(userId)).thenReturn(List.of(
-                    Asset.builder().currentValue(500000.0).assetType("equity mutual funds").build(),
-                    Asset.builder().currentValue(300000.0).assetType("bank savings").build()
-            ));
-            when(liabilityRepo.findByUserId(userId)).thenReturn(List.of(
-                    Liability.builder().outstandingAmount(200000.0).monthlyEmi(5000.0).build(),
-                    Liability.builder().outstandingAmount(100000.0).monthlyEmi(3000.0).build()
-            ));
+            when(assetRepo.findByUserId(userId))
+                    .thenReturn(List.of(
+                            Asset.builder()
+                                    .currentValue(500000.0)
+                                    .assetType("equity mutual funds")
+                                    .build(),
+                            Asset.builder()
+                                    .currentValue(300000.0)
+                                    .assetType("bank savings")
+                                    .build()));
+            when(liabilityRepo.findByUserId(userId))
+                    .thenReturn(List.of(
+                            Liability.builder()
+                                    .outstandingAmount(200000.0)
+                                    .monthlyEmi(5000.0)
+                                    .build(),
+                            Liability.builder()
+                                    .outstandingAmount(100000.0)
+                                    .monthlyEmi(3000.0)
+                                    .build()));
             when(incomeRepo.findByUserId(userId)).thenReturn(List.of());
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
             when(insuranceRepo.findByUserId(userId)).thenReturn(List.of());
@@ -150,11 +184,23 @@ class DashboardDataLoaderTest {
             when(liabilityRepo.findByUserId(userId)).thenReturn(List.of());
             when(incomeRepo.findByUserId(userId)).thenReturn(List.of());
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
-            when(insuranceRepo.findByUserId(userId)).thenReturn(List.of(
-                    Insurance.builder().insuranceType(InsuranceType.LIFE).coverageAmount(5000000.0).premiumAmount(10000.0).build(),
-                    Insurance.builder().insuranceType(InsuranceType.LIFE).coverageAmount(3000000.0).premiumAmount(8000.0).build(),
-                    Insurance.builder().insuranceType(InsuranceType.HEALTH).coverageAmount(500000.0).premiumAmount(12000.0).build()
-            ));
+            when(insuranceRepo.findByUserId(userId))
+                    .thenReturn(List.of(
+                            Insurance.builder()
+                                    .insuranceType(InsuranceType.LIFE)
+                                    .coverageAmount(5000000.0)
+                                    .premiumAmount(10000.0)
+                                    .build(),
+                            Insurance.builder()
+                                    .insuranceType(InsuranceType.LIFE)
+                                    .coverageAmount(3000000.0)
+                                    .premiumAmount(8000.0)
+                                    .build(),
+                            Insurance.builder()
+                                    .insuranceType(InsuranceType.HEALTH)
+                                    .coverageAmount(500000.0)
+                                    .premiumAmount(12000.0)
+                                    .build()));
             when(goalRepo.findByUserId(userId)).thenReturn(List.of());
             when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
 
@@ -170,12 +216,24 @@ class DashboardDataLoaderTest {
         void shouldClassifyAssets() {
             Long userId = 1L;
             when(profileRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(assetRepo.findByUserId(userId)).thenReturn(List.of(
-                    Asset.builder().currentValue(200000.0).assetType("bank savings").build(),
-                    Asset.builder().currentValue(300000.0).assetType("equity mutual funds").build(),
-                    Asset.builder().currentValue(100000.0).assetType("hybrid fund").build(),
-                    Asset.builder().currentValue(50000.0).assetType("real estate").build()
-            ));
+            when(assetRepo.findByUserId(userId))
+                    .thenReturn(List.of(
+                            Asset.builder()
+                                    .currentValue(200000.0)
+                                    .assetType("bank savings")
+                                    .build(),
+                            Asset.builder()
+                                    .currentValue(300000.0)
+                                    .assetType("equity mutual funds")
+                                    .build(),
+                            Asset.builder()
+                                    .currentValue(100000.0)
+                                    .assetType("hybrid fund")
+                                    .build(),
+                            Asset.builder()
+                                    .currentValue(50000.0)
+                                    .assetType("real estate")
+                                    .build()));
             when(liabilityRepo.findByUserId(userId)).thenReturn(List.of());
             when(incomeRepo.findByUserId(userId)).thenReturn(List.of());
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
@@ -199,15 +257,21 @@ class DashboardDataLoaderTest {
             Long userId = 1L;
             when(profileRepo.findByUserId(userId)).thenReturn(Optional.empty());
             when(assetRepo.findByUserId(userId)).thenReturn(List.of());
-            when(liabilityRepo.findByUserId(userId)).thenReturn(List.of(
-                    Liability.builder().outstandingAmount(100000.0).monthlyEmi(5000.0).build()
-            ));
-            when(incomeRepo.findByUserId(userId)).thenReturn(List.of(
-                    Income.builder().amount(100000.0).frequency(Frequency.MONTHLY).build()
-            ));
-            when(expenseRepo.findByUserId(userId)).thenReturn(List.of(
-                    Expense.builder().amount(50000.0).frequency(Frequency.MONTHLY).build()
-            ));
+            when(liabilityRepo.findByUserId(userId))
+                    .thenReturn(List.of(Liability.builder()
+                            .outstandingAmount(100000.0)
+                            .monthlyEmi(5000.0)
+                            .build()));
+            when(incomeRepo.findByUserId(userId))
+                    .thenReturn(List.of(Income.builder()
+                            .amount(100000.0)
+                            .frequency(Frequency.MONTHLY)
+                            .build()));
+            when(expenseRepo.findByUserId(userId))
+                    .thenReturn(List.of(Expense.builder()
+                            .amount(50000.0)
+                            .frequency(Frequency.MONTHLY)
+                            .build()));
             when(insuranceRepo.findByUserId(userId)).thenReturn(List.of());
             when(goalRepo.findByUserId(userId)).thenReturn(List.of());
             when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
@@ -244,8 +308,12 @@ class DashboardDataLoaderTest {
         void shouldUseProfileValues() {
             Long userId = 1L;
             Profile profile = Profile.builder()
-                    .age(45).city("Delhi").riskTolerance(RiskTolerance.AGGRESSIVE)
-                    .dependents(3).childDependents(2).build();
+                    .age(45)
+                    .city("Delhi")
+                    .riskTolerance(RiskTolerance.AGGRESSIVE)
+                    .dependents(3)
+                    .childDependents(2)
+                    .build();
             when(profileRepo.findByUserId(userId)).thenReturn(Optional.of(profile));
             when(assetRepo.findByUserId(userId)).thenReturn(List.of());
             when(liabilityRepo.findByUserId(userId)).thenReturn(List.of());
@@ -273,9 +341,12 @@ class DashboardDataLoaderTest {
             when(liabilityRepo.findByUserId(userId)).thenReturn(List.of());
             when(incomeRepo.findByUserId(userId)).thenReturn(List.of());
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
-            when(insuranceRepo.findByUserId(userId)).thenReturn(List.of(
-                    Insurance.builder().insuranceType(null).coverageAmount(500000.0).premiumAmount(5000.0).build()
-            ));
+            when(insuranceRepo.findByUserId(userId))
+                    .thenReturn(List.of(Insurance.builder()
+                            .insuranceType(null)
+                            .coverageAmount(500000.0)
+                            .premiumAmount(5000.0)
+                            .build()));
             when(goalRepo.findByUserId(userId)).thenReturn(List.of());
             when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
 
@@ -290,12 +361,16 @@ class DashboardDataLoaderTest {
         void shouldHandleNullAmounts() {
             Long userId = 1L;
             when(profileRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(assetRepo.findByUserId(userId)).thenReturn(List.of(
-                    Asset.builder().currentValue(null).assetType("equity").build()
-            ));
-            when(liabilityRepo.findByUserId(userId)).thenReturn(List.of(
-                    Liability.builder().outstandingAmount(null).monthlyEmi(null).build()
-            ));
+            when(assetRepo.findByUserId(userId))
+                    .thenReturn(List.of(Asset.builder()
+                            .currentValue(null)
+                            .assetType("equity")
+                            .build()));
+            when(liabilityRepo.findByUserId(userId))
+                    .thenReturn(List.of(Liability.builder()
+                            .outstandingAmount(null)
+                            .monthlyEmi(null)
+                            .build()));
             when(incomeRepo.findByUserId(userId)).thenReturn(List.of());
             when(expenseRepo.findByUserId(userId)).thenReturn(List.of());
             when(insuranceRepo.findByUserId(userId)).thenReturn(List.of());
@@ -317,25 +392,29 @@ class DashboardDataLoaderTest {
         @Test
         @DisplayName("should return amount for MONTHLY frequency")
         void monthly() {
-            assertThat(DashboardDataLoader.toMonthly(12000.0, Frequency.MONTHLY)).isCloseTo(12000.0, within(0.01));
+            assertThat(DashboardDataLoader.toMonthly(12000.0, Frequency.MONTHLY))
+                    .isCloseTo(12000.0, within(0.01));
         }
 
         @Test
         @DisplayName("should divide by 12 for YEARLY frequency")
         void yearly() {
-            assertThat(DashboardDataLoader.toMonthly(120000.0, Frequency.YEARLY)).isCloseTo(10000.0, within(0.01));
+            assertThat(DashboardDataLoader.toMonthly(120000.0, Frequency.YEARLY))
+                    .isCloseTo(10000.0, within(0.01));
         }
 
         @Test
         @DisplayName("should divide by 3 for QUARTERLY frequency")
         void quarterly() {
-            assertThat(DashboardDataLoader.toMonthly(30000.0, Frequency.QUARTERLY)).isCloseTo(10000.0, within(0.01));
+            assertThat(DashboardDataLoader.toMonthly(30000.0, Frequency.QUARTERLY))
+                    .isCloseTo(10000.0, within(0.01));
         }
 
         @Test
         @DisplayName("should divide by 12 for ONE_TIME frequency")
         void oneTime() {
-            assertThat(DashboardDataLoader.toMonthly(120000.0, Frequency.ONE_TIME)).isCloseTo(10000.0, within(0.01));
+            assertThat(DashboardDataLoader.toMonthly(120000.0, Frequency.ONE_TIME))
+                    .isCloseTo(10000.0, within(0.01));
         }
 
         @Test

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/dashboard")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 @Tag(name = "Dashboard", description = "Aggregated financial dashboard")
 public class DashboardController {
 
@@ -21,8 +20,7 @@ public class DashboardController {
 
     @GetMapping("/summary")
     @Operation(summary = "Get full dashboard summary")
-    public ResponseEntity<DashboardSummaryDTO> getSummary(
-            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+    public ResponseEntity<DashboardSummaryDTO> getSummary(@RequestAttribute("userId") Long userId) {
         log.info("dashboard.summary.request userId={}", userId);
         DashboardSummaryDTO summary = dashboardService.getSummary(userId);
         return ResponseEntity.ok(summary);

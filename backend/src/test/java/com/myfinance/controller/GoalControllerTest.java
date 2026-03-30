@@ -1,8 +1,18 @@
 package com.myfinance.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myfinance.dto.GoalDTO;
+import com.myfinance.security.JwtService;
 import com.myfinance.service.GoalService;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,15 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GoalController.class)
 class GoalControllerTest {
@@ -29,7 +30,16 @@ class GoalControllerTest {
     @MockitoBean
     private GoalService goalService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/goals - returns list of goals")
@@ -57,8 +67,7 @@ class GoalControllerTest {
 
         when(goalService.getGoals(1L)).thenReturn(List.of(goal1, goal2));
 
-        mockMvc.perform(get("/api/v1/goals")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/goals").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -77,21 +86,15 @@ class GoalControllerTest {
     void getGoals_empty() throws Exception {
         when(goalService.getGoals(1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/goals")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/goals").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
-    @DisplayName("GET /api/v1/goals - missing header defaults to 0")
-    void getGoals_missingHeader() throws Exception {
-        when(goalService.getGoals(0L)).thenReturn(List.of());
-
-        mockMvc.perform(get("/api/v1/goals"))
-                .andExpect(status().isOk());
-
-        verify(goalService).getGoals(0L);
+    @DisplayName("GET /api/v1/goals - missing Authorization header returns 401")
+    void getGoals_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/goals")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -123,7 +126,7 @@ class GoalControllerTest {
         when(goalService.addGoal(eq(1L), any(GoalDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/goals")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -143,9 +146,10 @@ class GoalControllerTest {
 
         GoalDTO input = GoalDTO.builder().goalType("Travel").name("Trip").build();
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/api/v1/goals")
-                        .header("X-User-Id", "1")
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(post("/api/v1/goals")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input))));
     }
@@ -155,8 +159,7 @@ class GoalControllerTest {
     void deleteGoal_success() throws Exception {
         doNothing().when(goalService).deleteGoal(1L, 3L);
 
-        mockMvc.perform(delete("/api/v1/goals/3")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(delete("/api/v1/goals/3").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk());
 
         verify(goalService).deleteGoal(1L, 3L);
@@ -167,19 +170,14 @@ class GoalControllerTest {
     void deleteGoal_serviceException() {
         doThrow(new RuntimeException("Goal not found")).when(goalService).deleteGoal(1L, 999L);
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(delete("/api/v1/goals/999")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(delete("/api/v1/goals/999").header("Authorization", "Bearer test-token")));
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/goals/{id} - missing header defaults to 0")
-    void deleteGoal_missingHeader() throws Exception {
-        doNothing().when(goalService).deleteGoal(0L, 5L);
-
-        mockMvc.perform(delete("/api/v1/goals/5"))
-                .andExpect(status().isOk());
-
-        verify(goalService).deleteGoal(0L, 5L);
+    @DisplayName("DELETE /api/v1/goals/{id} - missing Authorization header returns 401")
+    void deleteGoal_missingHeader_returns401() throws Exception {
+        mockMvc.perform(delete("/api/v1/goals/5")).andExpect(status().isUnauthorized());
     }
 }

@@ -1,20 +1,22 @@
 package com.myfinance.controller;
 
-import com.myfinance.dto.GoalProjectionDTO;
-import com.myfinance.service.GoalProjectionService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.myfinance.dto.GoalProjectionDTO;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.GoalProjectionService;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(GoalProjectionController.class)
 class GoalProjectionControllerTest {
@@ -24,6 +26,17 @@ class GoalProjectionControllerTest {
 
     @MockitoBean
     private GoalProjectionService projectionService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+        Mockito.when(jwtService.extractUserId("test-token-user2")).thenReturn(2L);
+        Mockito.when(jwtService.isTokenValid("test-token-user2")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/goal-projection - returns goal projections")
@@ -56,8 +69,7 @@ class GoalProjectionControllerTest {
 
         when(projectionService.project(1L)).thenReturn(projection);
 
-        mockMvc.perform(get("/api/v1/goal-projection")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/goal-projection").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalGoals").value(1))
                 .andExpect(jsonPath("$.totalSipRequired").value(25000.0))
@@ -71,19 +83,9 @@ class GoalProjectionControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/goal-projection - missing header defaults to 0")
-    void getProjection_missingHeader() throws Exception {
-        GoalProjectionDTO projection = GoalProjectionDTO.builder()
-                .goals(List.of())
-                .totalGoals(0)
-                .build();
-        when(projectionService.project(0L)).thenReturn(projection);
-
-        mockMvc.perform(get("/api/v1/goal-projection"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalGoals").value(0));
-
-        verify(projectionService).project(0L);
+    @DisplayName("GET /api/v1/goal-projection - missing Authorization header returns 401")
+    void getProjection_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/goal-projection")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -91,9 +93,9 @@ class GoalProjectionControllerTest {
     void getProjection_serviceException() {
         when(projectionService.project(1L)).thenThrow(new RuntimeException("Calculation error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/goal-projection")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/goal-projection").header("Authorization", "Bearer test-token")));
     }
 
     @Test
@@ -111,8 +113,7 @@ class GoalProjectionControllerTest {
 
         when(projectionService.project(2L)).thenReturn(projection);
 
-        mockMvc.perform(get("/api/v1/goal-projection")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/goal-projection").header("Authorization", "Bearer test-token-user2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isAchievable").value(false))
                 .andExpect(jsonPath("$.shortfall").value(50000.0))

@@ -114,8 +114,7 @@ class AuditLogServiceTest {
         @DisplayName("should delegate to full log with null entityId and details")
         void delegatesToFullLog() {
             Long userId = 1L;
-            User user =
-                    User.builder().id(userId).name("U").email("u@test.com").build();
+            User user = User.builder().id(userId).name("U").email("u@test.com").build();
             when(userRepo.findById(userId)).thenReturn(Optional.of(user));
 
             auditLogService.log(userId, "SAVE_TAX", "tax");
@@ -170,11 +169,7 @@ class AuditLogServiceTest {
         void returnsUserLogs() {
             Long userId = 5L;
             List<AuditLog> logs = List.of(
-                    AuditLog.builder()
-                            .id(1L)
-                            .userId(userId)
-                            .action("LOGIN")
-                            .build());
+                    AuditLog.builder().id(1L).userId(userId).action("LOGIN").build());
 
             when(auditLogRepo.findByUserIdOrderByCreatedAtDesc(userId)).thenReturn(logs);
 

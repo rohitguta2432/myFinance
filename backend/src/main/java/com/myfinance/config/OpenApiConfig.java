@@ -1,15 +1,15 @@
 package com.myfinance.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import org.springdoc.core.customizers.OperationCustomizer;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -19,36 +19,20 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("MyFinance API")
-                        .description("Personal finance assessment and advisory platform for Indian users. " +
-                                "6-step wizard (profile, cash flow, net worth, goals, insurance, tax) with AI-powered insights.")
+                        .description(
+                                "Personal finance assessment and advisory platform for Indian users. "
+                                        + "6-step wizard (profile, cash flow, net worth, goals, insurance, tax) with AI-powered insights.")
                         .version("1.0.0")
-                        .contact(new Contact()
-                                .name("MyFinancial")
-                                .url("https://app.myfinancial.in")))
-                .servers(List.of(
-                        new Server().url("/").description("Current")));
-    }
-
-    @Bean
-    public OperationCustomizer addUserIdHeader() {
-        return (operation, handlerMethod) -> {
-            // Auto-document X-User-Id header on endpoints that use it
-            var params = handlerMethod.getMethodParameters();
-            for (var param : params) {
-                var header = param.getParameterAnnotation(
-                        org.springframework.web.bind.annotation.RequestHeader.class);
-                if (header != null && "X-User-Id".equals(header.value())) {
-                    operation.addParametersItem(new Parameter()
-                            .in("header")
-                            .name("X-User-Id")
-                            .description("Authenticated user ID (from Google OAuth)")
-                            .required(false)
-                            .schema(new io.swagger.v3.oas.models.media.StringSchema()
-                                    .example("1")));
-                    break;
-                }
-            }
-            return operation;
-        };
+                        .contact(new Contact().name("MyFinancial").url("https://app.myfinancial.in")))
+                .servers(List.of(new Server().url("/").description("Current")))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes(
+                                "bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("JWT token from POST /api/v1/auth/google")));
     }
 }

@@ -1,20 +1,21 @@
 package com.myfinance.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.myfinance.dto.TaxCalculationDTO;
+import com.myfinance.security.JwtService;
 import com.myfinance.service.TaxCalculationService;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TaxCalculationController.class)
 class TaxCalculationControllerTest {
@@ -24,6 +25,15 @@ class TaxCalculationControllerTest {
 
     @MockitoBean
     private TaxCalculationService taxCalculationService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/tax-calculation - calculates tax with all params")
@@ -56,7 +66,7 @@ class TaxCalculationControllerTest {
         when(taxCalculationService.calculate(1L, 150000.0, 25000.0, 10000.0)).thenReturn(result);
 
         mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .param("deductions80C", "150000.0")
                         .param("deductions80D", "25000.0")
                         .param("otherDeductions", "10000.0"))
@@ -80,8 +90,7 @@ class TaxCalculationControllerTest {
 
         when(taxCalculationService.calculate(1L, 0.0, 0.0, 0.0)).thenReturn(result);
 
-        mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.grossTotalIncome").value(1000000.0))
                 .andExpect(jsonPath("$.recommendedRegime").value("new"));
@@ -90,28 +99,21 @@ class TaxCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/tax-calculation - missing header defaults userId to 0")
+    @DisplayName("GET /api/v1/tax-calculation - missing header returns 401")
     void calculate_missingHeader() throws Exception {
-        TaxCalculationDTO result = TaxCalculationDTO.builder().grossTotalIncome(0.0).build();
-        when(taxCalculationService.calculate(0L, 0.0, 0.0, 0.0)).thenReturn(result);
-
-        mockMvc.perform(get("/api/v1/tax-calculation"))
-                .andExpect(status().isOk());
-
-        verify(taxCalculationService).calculate(0L, 0.0, 0.0, 0.0);
+        mockMvc.perform(get("/api/v1/tax-calculation")).andExpect(status().isUnauthorized());
     }
 
     @Test
     @DisplayName("GET /api/v1/tax-calculation - partial params provided")
     void calculate_partialParams() throws Exception {
-        TaxCalculationDTO result = TaxCalculationDTO.builder()
-                .grossTotalIncome(1200000.0)
-                .build();
+        TaxCalculationDTO result =
+                TaxCalculationDTO.builder().grossTotalIncome(1200000.0).build();
 
         when(taxCalculationService.calculate(1L, 150000.0, 0.0, 0.0)).thenReturn(result);
 
         mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .param("deductions80C", "150000.0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.grossTotalIncome").value(1200000.0));
@@ -125,9 +127,9 @@ class TaxCalculationControllerTest {
         when(taxCalculationService.calculate(anyLong(), anyDouble(), anyDouble(), anyDouble()))
                 .thenThrow(new RuntimeException("Calculation error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token")));
     }
 
     @Test
@@ -146,8 +148,7 @@ class TaxCalculationControllerTest {
 
         when(taxCalculationService.calculate(1L, 0.0, 0.0, 0.0)).thenReturn(result);
 
-        mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.autoEpf").value(21600.0))
                 .andExpect(jsonPath("$.autoPpf").value(50000.0))

@@ -1,7 +1,7 @@
 package com.myfinance.controller;
 
+import com.myfinance.dto.AuthResponse;
 import com.myfinance.dto.GoogleTokenRequest;
-import com.myfinance.dto.UserDTO;
 import com.myfinance.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,10 +17,10 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Operation(summary = "Authenticate with Google ID token")
+    @Operation(summary = "Authenticate with Google ID token, returns JWT + user info")
     @PostMapping("/google")
-    public ResponseEntity<UserDTO> googleLogin(@RequestBody GoogleTokenRequest request) {
-        UserDTO user = authService.authenticateWithGoogle(request.getCredential());
-        return ResponseEntity.ok(user);
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody GoogleTokenRequest request) {
+        AuthResponse response = authService.authenticateWithGoogle(request.getCredential());
+        return ResponseEntity.ok(response);
     }
 }

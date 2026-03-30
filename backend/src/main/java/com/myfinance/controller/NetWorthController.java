@@ -20,32 +20,33 @@ public class NetWorthController {
 
     @Operation(summary = "Get balance sheet")
     @GetMapping
-    public ResponseEntity<BalanceSheetResponse> getBalanceSheet(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+    public ResponseEntity<BalanceSheetResponse> getBalanceSheet(@RequestAttribute("userId") Long userId) {
         return ResponseEntity.ok(netWorthService.getBalanceSheet(userId));
     }
 
     @Operation(summary = "Add asset")
     @PostMapping("/asset")
-    public ResponseEntity<AssetDTO> addAsset(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody AssetDTO dto) {
+    public ResponseEntity<AssetDTO> addAsset(@RequestAttribute("userId") Long userId, @RequestBody AssetDTO dto) {
         return ResponseEntity.ok(netWorthService.addAsset(userId, dto));
     }
 
     @Operation(summary = "Add liability")
     @PostMapping("/liability")
-    public ResponseEntity<LiabilityDTO> addLiability(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody LiabilityDTO dto) {
+    public ResponseEntity<LiabilityDTO> addLiability(
+            @RequestAttribute("userId") Long userId, @RequestBody LiabilityDTO dto) {
         return ResponseEntity.ok(netWorthService.addLiability(userId, dto));
     }
 
     @Operation(summary = "Delete asset")
     @DeleteMapping("/asset/{id}")
-    public ResponseEntity<Void> deleteAsset(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteAsset(@RequestAttribute("userId") Long userId, @PathVariable Long id) {
         netWorthService.deleteAsset(userId, id);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Delete liability")
     @DeleteMapping("/liability/{id}")
-    public ResponseEntity<Void> deleteLiability(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteLiability(@RequestAttribute("userId") Long userId, @PathVariable Long id) {
         netWorthService.deleteLiability(userId, id);
         return ResponseEntity.ok().build();
     }

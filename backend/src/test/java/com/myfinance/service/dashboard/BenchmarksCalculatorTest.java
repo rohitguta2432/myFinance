@@ -1,18 +1,16 @@
 package com.myfinance.service.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BenchmarksCalculator")
@@ -23,20 +21,36 @@ class BenchmarksCalculatorTest {
 
     private UserFinancialData.UserFinancialDataBuilder baseData() {
         return UserFinancialData.builder()
-                .age(30).city("Mumbai").riskTolerance("moderate")
-                .monthlyIncome(100000).annualIncome(1200000)
-                .monthlyExpenses(50000).monthlyEMI(10000).monthlySavings(40000)
-                .totalAssets(500000).totalLiabilities(100000).netWorth(400000)
-                .liquidAssets(300000).equityTotal(200000).equityPct(40)
-                .existingLifeCover(10000000).existingHealthCover(1000000)
-                .lifePremium(12000).savingsRate(40)
-                .goals(List.of()).incomes(List.of()).expenses(List.of())
-                .assets(List.of()).liabilities(List.of()).insurances(List.of());
+                .age(30)
+                .city("Mumbai")
+                .riskTolerance("moderate")
+                .monthlyIncome(100000)
+                .annualIncome(1200000)
+                .monthlyExpenses(50000)
+                .monthlyEMI(10000)
+                .monthlySavings(40000)
+                .totalAssets(500000)
+                .totalLiabilities(100000)
+                .netWorth(400000)
+                .liquidAssets(300000)
+                .equityTotal(200000)
+                .equityPct(40)
+                .existingLifeCover(10000000)
+                .existingHealthCover(1000000)
+                .lifePremium(12000)
+                .savingsRate(40)
+                .goals(List.of())
+                .incomes(List.of())
+                .expenses(List.of())
+                .assets(List.of())
+                .liabilities(List.of())
+                .insurances(List.of());
     }
 
     private RawDataDTO.RawDataDTOBuilder baseRaw() {
         return RawDataDTO.builder()
-                .emergencyFundMonths(6.0).emiToIncomeRatio(10.0)
+                .emergencyFundMonths(6.0)
+                .emiToIncomeRatio(10.0)
                 .targetEquityPct(50.0);
     }
 
@@ -47,14 +61,16 @@ class BenchmarksCalculatorTest {
         @Test
         @DisplayName("should always return 5 benchmarks")
         void fiveBenchmarks() {
-            BenchmarksDTO result = calculator.calculate(baseData().build(), baseRaw().build());
+            BenchmarksDTO result =
+                    calculator.calculate(baseData().build(), baseRaw().build());
             assertThat(result.getBenchmarks()).hasSize(5);
         }
 
         @Test
         @DisplayName("should have correct IDs in order")
         void correctIds() {
-            BenchmarksDTO result = calculator.calculate(baseData().build(), baseRaw().build());
+            BenchmarksDTO result =
+                    calculator.calculate(baseData().build(), baseRaw().build());
             assertThat(result.getBenchmarks().get(0).getId()).isEqualTo("emergency_fund");
             assertThat(result.getBenchmarks().get(1).getId()).isEqualTo("savings_rate");
             assertThat(result.getBenchmarks().get(2).getId()).isEqualTo("emi_ratio");
@@ -94,7 +110,8 @@ class BenchmarksCalculatorTest {
         @Test
         @DisplayName("should have benchmark value of 6")
         void benchmarkValue() {
-            BenchmarksDTO result = calculator.calculate(baseData().build(), baseRaw().build());
+            BenchmarksDTO result =
+                    calculator.calculate(baseData().build(), baseRaw().build());
             assertThat(result.getBenchmarks().get(0).getBenchmarkValue()).isEqualTo(6.0);
         }
     }
@@ -223,7 +240,8 @@ class BenchmarksCalculatorTest {
         @Test
         @DisplayName("should be green when health cover >= benchmark")
         void green() {
-            UserFinancialData data = baseData().city("Bhopal").existingHealthCover(1500000).build();
+            UserFinancialData data =
+                    baseData().city("Bhopal").existingHealthCover(1500000).build();
             BenchmarksDTO result = calculator.calculate(data, baseRaw().build());
             assertThat(result.getBenchmarks().get(4).getStatus()).isEqualTo("green");
         }
@@ -231,7 +249,8 @@ class BenchmarksCalculatorTest {
         @Test
         @DisplayName("should be red when health cover < 50% of benchmark")
         void red() {
-            UserFinancialData data = baseData().city("Mumbai").existingHealthCover(500000).build();
+            UserFinancialData data =
+                    baseData().city("Mumbai").existingHealthCover(500000).build();
             BenchmarksDTO result = calculator.calculate(data, baseRaw().build());
             assertThat(result.getBenchmarks().get(4).getStatus()).isEqualTo("red");
         }

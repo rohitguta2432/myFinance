@@ -9,13 +9,12 @@ import com.myfinance.repository.AssetRepository;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.IncomeRepository;
 import com.myfinance.repository.LiabilityRepository;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +28,8 @@ public class PortfolioAnalysisService {
 
     // ─── Asset Classification Maps ──────────────────────────────────────────
 
-    private static final Set<String> EQUITY_TYPES = Set.of(
-            "📊 Mutual Funds — Equity",
-            "📊 Mutual Funds — Hybrid",
-            "📈 Stocks/Shares"
-    );
+    private static final Set<String> EQUITY_TYPES =
+            Set.of("📊 Mutual Funds — Equity", "📊 Mutual Funds — Hybrid", "📈 Stocks/Shares");
 
     private static final Set<String> DEBT_TYPES = Set.of(
             "📉 Mutual Funds — Debt",
@@ -41,26 +37,20 @@ public class PortfolioAnalysisService {
             "📊 Fixed Deposit (FD)",
             "💰 Recurring Deposit (RD)",
             "📄 Bonds/Debentures",
-            "🏢REITs/InvITs"
-    );
+            "🏢REITs/InvITs");
 
-    private static final Set<String> REAL_ESTATE_TYPES = Set.of(
-            "🏠 Real Estate (Residential)",
-            "🏢 Real Estate (Commercial)"
-    );
+    private static final Set<String> REAL_ESTATE_TYPES =
+            Set.of("🏠 Real Estate (Residential)", "🏢 Real Estate (Commercial)");
 
-    private static final Set<String> GOLD_TYPES = Set.of(
-            "🪙 Gold (Physical jewelry/bars)",
-            "💎 Gold/ Silver (Digital/Sovereign Gold Bonds)",
-            "⚪ Silver"
-    );
+    private static final Set<String> GOLD_TYPES =
+            Set.of("🪙 Gold (Physical jewelry/bars)", "💎 Gold/ Silver (Digital/Sovereign Gold Bonds)", "⚪ Silver");
 
     // Everything else (Crypto, Business Equity, ESOPs, P2P, Startup, Vehicle,
     // EPF, PPF, NPS, Other) falls into "Other".
 
     private String classifyAsset(String assetType, String name) {
         // Check assetType first (new records), then name as fallback (legacy records)
-        for (String field : new String[]{assetType, name}) {
+        for (String field : new String[] {assetType, name}) {
             if (field == null) continue;
             if (EQUITY_TYPES.contains(field)) return "Equity";
             if (DEBT_TYPES.contains(field)) return "Debt";
@@ -133,20 +123,25 @@ public class PortfolioAnalysisService {
 
         // ── 3. Monthly Income & DTI ─────────────────────────────────────────
         double monthlyIncome = incomes.stream()
-                .mapToDouble(i -> toMonthly(i.getAmount(), i.getFrequency() != null ? i.getFrequency().name() : null))
+                .mapToDouble(i -> toMonthly(
+                        i.getAmount(),
+                        i.getFrequency() != null ? i.getFrequency().name() : null))
                 .sum();
         double dtiRatio = monthlyIncome > 0 ? (monthlyEmiTotal / monthlyIncome) * 100 : 0;
 
         // ── 4. EMI Mismatch (Cash Flow vs Liabilities) ──────────────────────
         double cashFlowEMI = expenses.stream()
                 .filter(e -> "EMIs (loan payments)".equals(e.getCategory())
-                        || (e.getCategory() != null && e.getCategory().toUpperCase().contains("EMI")))
-                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency() != null ? e.getFrequency().name() : null))
+                        || (e.getCategory() != null
+                                && e.getCategory().toUpperCase().contains("EMI")))
+                .mapToDouble(e -> toMonthly(
+                        e.getAmount(),
+                        e.getFrequency() != null ? e.getFrequency().name() : null))
                 .sum();
-        boolean emiMismatch = monthlyEmiTotal > 0 && cashFlowEMI > 0
-                && Math.abs(monthlyEmiTotal - cashFlowEMI) > 1;
+        boolean emiMismatch = monthlyEmiTotal > 0 && cashFlowEMI > 0 && Math.abs(monthlyEmiTotal - cashFlowEMI) > 1;
 
-        log.info("portfolio.analysis.calculate.success totalAssets={} totalLiabilities={} netWorth={} dti={}%",
+        log.info(
+                "portfolio.analysis.calculate.success totalAssets={} totalLiabilities={} netWorth={} dti={}%",
                 totalAssets, totalLiabilities, netWorth, String.format("%.1f", dtiRatio));
 
         return PortfolioAnalysisDTO.builder()

@@ -5,13 +5,12 @@ import com.myfinance.model.Insurance;
 import com.myfinance.model.enums.InsuranceType;
 import com.myfinance.repository.InsuranceRepository;
 import com.myfinance.util.EnumUtils;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +30,12 @@ public class InsuranceService {
 
     @Transactional
     public InsuranceDTO saveInsurance(Long userId, InsuranceDTO dto) {
-        log.info("insurance.save user={} type={} policy={} coverage={}",
-                userId, dto.getInsuranceType(), dto.getPolicyName(), dto.getCoverageAmount());
+        log.info(
+                "insurance.save user={} type={} policy={} coverage={}",
+                userId,
+                dto.getInsuranceType(),
+                dto.getPolicyName(),
+                dto.getCoverageAmount());
 
         InsuranceType type = EnumUtils.safeEnum(InsuranceType.class, dto.getInsuranceType());
 

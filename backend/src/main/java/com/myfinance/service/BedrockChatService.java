@@ -1,8 +1,16 @@
 package com.myfinance.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.myfinance.dto.ChatMessage;
 import com.myfinance.dto.ChatRequest;
 import com.myfinance.dto.ChatResponse;
+import jakarta.annotation.PostConstruct;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -11,17 +19,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -50,14 +47,12 @@ public class BedrockChatService {
             String systemPrompt = buildSystemPrompt(request.financialContext());
             String requestBody = buildRequestBody(systemPrompt, request.message(), request.history());
 
-            InvokeModelResponse response = bedrockClient.invokeModel(
-                    InvokeModelRequest.builder()
-                            .modelId(modelId)
-                            .contentType("application/json")
-                            .accept("application/json")
-                            .body(SdkBytes.fromUtf8String(requestBody))
-                            .build()
-            );
+            InvokeModelResponse response = bedrockClient.invokeModel(InvokeModelRequest.builder()
+                    .modelId(modelId)
+                    .contentType("application/json")
+                    .accept("application/json")
+                    .body(SdkBytes.fromUtf8String(requestBody))
+                    .build());
 
             String responseBody = response.body().asUtf8String();
             String reply = extractReply(responseBody);
@@ -68,14 +63,14 @@ public class BedrockChatService {
             log.error("❌ Bedrock invocation failed: {}", e.getMessage(), e);
             return new ChatResponse(
                     "Sorry, I'm unable to respond right now. Please try again in a moment. 🙏",
-                    Instant.now().toString()
-            );
+                    Instant.now().toString());
         }
     }
 
     private String buildSystemPrompt(Map<String, Object> financialContext) {
         StringBuilder sb = new StringBuilder();
-        sb.append("""
+        sb.append(
+                """
                 You are **Kira** — a friendly, expert personal financial advisor for Indian users.
 
                 ## Your Personality
@@ -101,7 +96,11 @@ public class BedrockChatService {
             sb.append("\n## User's Financial Profile (CONFIDENTIAL — use to personalize advice)\n");
             financialContext.forEach((key, value) -> {
                 String readableKey = key.replaceAll("([A-Z])", " $1").trim();
-                sb.append("- **").append(readableKey).append("**: ").append(value).append("\n");
+                sb.append("- **")
+                        .append(readableKey)
+                        .append("**: ")
+                        .append(value)
+                        .append("\n");
             });
         }
 
@@ -146,7 +145,8 @@ public class BedrockChatService {
 
             // Add conversation history (last 10 messages)
             if (history != null && !history.isEmpty()) {
-                List<ChatMessage> recent = history.size() > 10 ? history.subList(history.size() - 10, history.size()) : history;
+                List<ChatMessage> recent =
+                        history.size() > 10 ? history.subList(history.size() - 10, history.size()) : history;
                 // Skip leading assistant messages — Nova requires first message to be "user"
                 int startIdx = recent.size(); // default: skip all if no user message found
                 for (int i = 0; i < recent.size(); i++) {

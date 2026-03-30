@@ -1,18 +1,17 @@
 package com.myfinance.service.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ProjectionCalculator")
@@ -23,14 +22,27 @@ class ProjectionCalculatorTest {
 
     private UserFinancialData.UserFinancialDataBuilder baseData() {
         return UserFinancialData.builder()
-                .age(30).city("Mumbai").riskTolerance("moderate")
-                .monthlyIncome(100000).annualIncome(1200000)
-                .monthlyExpenses(50000).monthlyEMI(10000).monthlySavings(40000)
-                .totalAssets(500000).totalLiabilities(100000).netWorth(400000)
-                .liquidAssets(200000).equityTotal(100000)
-                .savingsRate(40).equityPct(20)
-                .goals(List.of()).incomes(List.of()).expenses(List.of())
-                .assets(List.of()).liabilities(List.of()).insurances(List.of());
+                .age(30)
+                .city("Mumbai")
+                .riskTolerance("moderate")
+                .monthlyIncome(100000)
+                .annualIncome(1200000)
+                .monthlyExpenses(50000)
+                .monthlyEMI(10000)
+                .monthlySavings(40000)
+                .totalAssets(500000)
+                .totalLiabilities(100000)
+                .netWorth(400000)
+                .liquidAssets(200000)
+                .equityTotal(100000)
+                .savingsRate(40)
+                .equityPct(20)
+                .goals(List.of())
+                .incomes(List.of())
+                .expenses(List.of())
+                .assets(List.of())
+                .liabilities(List.of())
+                .insurances(List.of());
     }
 
     @Nested
@@ -108,8 +120,8 @@ class ProjectionCalculatorTest {
         @DisplayName("should compute extra gain as optimized - current")
         void extraGain() {
             ProjectionResultDTO result = calculator.calculate(baseData().build());
-            assertThat(result.getExtraGain()).isCloseTo(
-                    result.getOptimizedEndValue() - result.getCurrentEndValue(), within(1.0));
+            assertThat(result.getExtraGain())
+                    .isCloseTo(result.getOptimizedEndValue() - result.getCurrentEndValue(), within(1.0));
         }
 
         @Test
@@ -134,7 +146,8 @@ class ProjectionCalculatorTest {
         @Test
         @DisplayName("should find milestones for both current and optimized paths")
         void milestonesBothPaths() {
-            UserFinancialData data = baseData().monthlySavings(50000).netWorth(100000).build();
+            UserFinancialData data =
+                    baseData().monthlySavings(50000).netWorth(100000).build();
             ProjectionResultDTO result = calculator.calculate(data);
             // Should have at least some milestones
             assertThat(result.getMilestones()).isNotEmpty();
@@ -158,7 +171,8 @@ class ProjectionCalculatorTest {
         @Test
         @DisplayName("should handle zero savings")
         void zeroSavings() {
-            UserFinancialData data = baseData().monthlySavings(0).savingsRate(0).netWorth(0).build();
+            UserFinancialData data =
+                    baseData().monthlySavings(0).savingsRate(0).netWorth(0).build();
             ProjectionResultDTO result = calculator.calculate(data);
             assertThat(result.getCurrentEndValue()).isEqualTo(0.0);
             assertThat(result.getOptimizedEndValue()).isEqualTo(0.0);
@@ -167,7 +181,8 @@ class ProjectionCalculatorTest {
         @Test
         @DisplayName("should handle negative net worth (uses 0 as corpus)")
         void negativeNetWorth() {
-            UserFinancialData data = baseData().netWorth(-100000).monthlySavings(10000).build();
+            UserFinancialData data =
+                    baseData().netWorth(-100000).monthlySavings(10000).build();
             ProjectionResultDTO result = calculator.calculate(data);
             // currentCorpus = max(0, -100000) = 0
             assertThat(result.getCurrentPath().get(0).getCurrent()).isEqualTo(0L);
@@ -176,7 +191,11 @@ class ProjectionCalculatorTest {
         @Test
         @DisplayName("should handle negative savings (spending more than earning)")
         void negativeSavings() {
-            UserFinancialData data = baseData().monthlySavings(-5000).savingsRate(-5).netWorth(500000).build();
+            UserFinancialData data = baseData()
+                    .monthlySavings(-5000)
+                    .savingsRate(-5)
+                    .netWorth(500000)
+                    .build();
             ProjectionResultDTO result = calculator.calculate(data);
             // Corpus decreases over time with negative savings
             assertThat(result).isNotNull();

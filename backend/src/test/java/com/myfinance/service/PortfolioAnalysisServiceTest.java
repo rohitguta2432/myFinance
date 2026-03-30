@@ -41,12 +41,21 @@ class PortfolioAnalysisServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Asset buildAsset(String assetType, String name, Double value) {
-        return Asset.builder().userId(USER_ID).assetType(assetType).name(name).currentValue(value).build();
+        return Asset.builder()
+                .userId(USER_ID)
+                .assetType(assetType)
+                .name(name)
+                .currentValue(value)
+                .build();
     }
 
     private Liability buildLiability(Double outstanding, Double emi, Double rate) {
-        return Liability.builder().userId(USER_ID).outstandingAmount(outstanding)
-                .monthlyEmi(emi).interestRate(rate).build();
+        return Liability.builder()
+                .userId(USER_ID)
+                .outstandingAmount(outstanding)
+                .monthlyEmi(emi)
+                .interestRate(rate)
+                .build();
     }
 
     private Income buildIncome(Double amount, Frequency freq) {
@@ -54,7 +63,12 @@ class PortfolioAnalysisServiceTest {
     }
 
     private Expense buildExpense(String category, Double amount, Frequency freq) {
-        return Expense.builder().userId(USER_ID).category(category).amount(amount).frequency(freq).build();
+        return Expense.builder()
+                .userId(USER_ID)
+                .category(category)
+                .amount(amount)
+                .frequency(freq)
+                .build();
     }
 
     private void stubAllEmpty() {
@@ -100,10 +114,11 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify equity MF, hybrid MF, and stocks as Equity")
         void equityClassification() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCCA Mutual Funds \u2014 Equity", null, 200000.0),
-                    buildAsset("\uD83D\uDCCA Mutual Funds \u2014 Hybrid", null, 100000.0),
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 300000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCCA Mutual Funds \u2014 Equity", null, 200000.0),
+                            buildAsset("\uD83D\uDCCA Mutual Funds \u2014 Hybrid", null, 100000.0),
+                            buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 300000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -116,13 +131,14 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify debt MF, bank, FD, RD, bonds, REITs as Debt")
         void debtClassification() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", null, 100000.0),
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 200000.0),
-                    buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", null, 150000.0),
-                    buildAsset("\uD83D\uDCB0 Recurring Deposit (RD)", null, 50000.0),
-                    buildAsset("\uD83D\uDCC4 Bonds/Debentures", null, 80000.0),
-                    buildAsset("\uD83C\uDFE2REITs/InvITs", null, 60000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", null, 100000.0),
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 200000.0),
+                            buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", null, 150000.0),
+                            buildAsset("\uD83D\uDCB0 Recurring Deposit (RD)", null, 50000.0),
+                            buildAsset("\uD83D\uDCC4 Bonds/Debentures", null, 80000.0),
+                            buildAsset("\uD83C\uDFE2REITs/InvITs", null, 60000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -135,9 +151,10 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify residential and commercial real estate as RealEstate")
         void realEstateClassification() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", null, 5000000.0),
-                    buildAsset("\uD83C\uDFE2 Real Estate (Commercial)", null, 3000000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE0 Real Estate (Residential)", null, 5000000.0),
+                            buildAsset("\uD83C\uDFE2 Real Estate (Commercial)", null, 3000000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -150,10 +167,11 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify physical gold, digital gold, and silver as Gold")
         void goldClassification() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", null, 200000.0),
-                    buildAsset("\uD83D\uDC8E Gold/ Silver (Digital/Sovereign Gold Bonds)", null, 300000.0),
-                    buildAsset("\u26AA Silver", null, 50000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", null, 200000.0),
+                            buildAsset("\uD83D\uDC8E Gold/ Silver (Digital/Sovereign Gold Bonds)", null, 300000.0),
+                            buildAsset("\u26AA Silver", null, 50000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -166,9 +184,10 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify EPF, PPF, NPS, Crypto, etc as Other")
         void otherClassification() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", null, 500000.0),
-                    buildAsset("\u20BF Cryptocurrency", null, 100000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", null, 500000.0),
+                            buildAsset("\u20BF Cryptocurrency", null, 100000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -181,8 +200,8 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should use name as fallback when assetType is null")
         void nameFallback() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset(null, "\uD83D\uDCC8 Stocks/Shares", 200000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset(null, "\uD83D\uDCC8 Stocks/Shares", 200000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -195,8 +214,7 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should classify as Other when both assetType and name are null")
         void bothNull() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset(null, null, 100000.0)));
+            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(buildAsset(null, null, 100000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -209,9 +227,12 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should handle null currentValue as zero")
         void nullCurrentValue() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Asset.builder().userId(USER_ID).assetType("\uD83D\uDCC8 Stocks/Shares")
-                            .currentValue(null).build()));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Asset.builder()
+                            .userId(USER_ID)
+                            .assetType("\uD83D\uDCC8 Stocks/Shares")
+                            .currentValue(null)
+                            .build()));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -232,11 +253,12 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should compute allocation percentages based on total assets")
         void percentages() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 400000.0),
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 300000.0),
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", null, 200000.0),
-                    buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", null, 100000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 400000.0),
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 300000.0),
+                            buildAsset("\uD83C\uDFE0 Real Estate (Residential)", null, 200000.0),
+                            buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", null, 100000.0)));
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -275,11 +297,11 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should compute net worth as total assets minus total liabilities")
         void netWorth() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 500000.0),
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 300000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(200000.0, 10000.0, 12.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 500000.0),
+                            buildAsset("\uD83D\uDCC8 Stocks/Shares", null, 300000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(200000.0, 10000.0, 12.0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -293,10 +315,9 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should allow negative net worth")
         void negativeNetWorth() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 100000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(500000.0, 20000.0, 10.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", null, 100000.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(500000.0, 20000.0, 10.0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -309,9 +330,13 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should handle null outstanding amounts and EMIs")
         void nullLiabilityValues() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Liability.builder().userId(USER_ID).outstandingAmount(null)
-                            .monthlyEmi(null).interestRate(null).build()));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Liability.builder()
+                            .userId(USER_ID)
+                            .outstandingAmount(null)
+                            .monthlyEmi(null)
+                            .interestRate(null)
+                            .build()));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -333,9 +358,9 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should compute total monthly EMI")
         void totalEmi() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(3000000.0, 25000.0, 8.5),
-                    buildLiability(500000.0, 10000.0, 12.0)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(
+                            List.of(buildLiability(3000000.0, 25000.0, 8.5), buildLiability(500000.0, 10000.0, 12.0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -348,9 +373,10 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should compute weighted average interest rate")
         void avgInterestRate() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(3000000.0, 25000.0, 8.0),   // weight: 24M
-                    buildLiability(1000000.0, 10000.0, 12.0))); // weight: 12M
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildLiability(3000000.0, 25000.0, 8.0), // weight: 24M
+                            buildLiability(1000000.0, 10000.0, 12.0))); // weight: 12M
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -381,10 +407,8 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should compute DTI as (EMI / monthly income) * 100")
         void dtiCalculation() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 30000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 30000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -398,8 +422,7 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should return zero DTI when no income")
         void zeroDtiNoIncome() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 30000.0, 10.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 30000.0, 10.0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -412,10 +435,8 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should convert quarterly income to monthly for DTI")
         void quarterlyIncomeDti() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 10000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(300000.0, Frequency.QUARTERLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 10000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(300000.0, Frequency.QUARTERLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -428,10 +449,8 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should convert yearly income to monthly for DTI")
         void yearlyIncomeDti() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 10000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(1200000.0, Frequency.YEARLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 10000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(1200000.0, Frequency.YEARLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -445,8 +464,12 @@ class PortfolioAnalysisServiceTest {
         void nullIncomeValues() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Income.builder().userId(USER_ID).amount(null).frequency(null).build()));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Income.builder()
+                            .userId(USER_ID)
+                            .amount(null)
+                            .frequency(null)
+                            .build()));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -465,12 +488,10 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should detect mismatch when cash flow EMI differs from liability EMI by > 1")
         void mismatchDetected() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 25000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("EMIs (loan payments)", 20000.0, Frequency.MONTHLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 25000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("EMIs (loan payments)", 20000.0, Frequency.MONTHLY)));
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
 
@@ -483,12 +504,10 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should detect no mismatch when EMIs match within tolerance")
         void noMismatch() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 25000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("EMIs (loan payments)", 25000.0, Frequency.MONTHLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 25000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("EMIs (loan payments)", 25000.0, Frequency.MONTHLY)));
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
 
@@ -510,8 +529,7 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should return false when only liability EMI exists (no cash flow EMI)")
         void onlyLiabilityEmi() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 25000.0, 10.0)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 25000.0, 10.0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
@@ -525,12 +543,10 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should match EMI category containing 'EMI' in uppercase")
         void emiCategoryContains() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 25000.0, 10.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("Home Loan EMI", 20000.0, Frequency.MONTHLY)));
+            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(buildLiability(1000000.0, 25000.0, 10.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildExpense("Home Loan EMI", 20000.0, Frequency.MONTHLY)));
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
 
@@ -543,14 +559,14 @@ class PortfolioAnalysisServiceTest {
         @DisplayName("should aggregate multiple EMI expenses for comparison")
         void multipleEmiExpenses() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1000000.0, 25000.0, 10.0),
-                    buildLiability(500000.0, 10000.0, 12.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("EMIs (loan payments)", 25000.0, Frequency.MONTHLY),
-                    buildExpense("Car EMI", 10000.0, Frequency.MONTHLY)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(
+                            List.of(buildLiability(1000000.0, 25000.0, 10.0), buildLiability(500000.0, 10000.0, 12.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildExpense("EMIs (loan payments)", 25000.0, Frequency.MONTHLY),
+                            buildExpense("Car EMI", 10000.0, Frequency.MONTHLY)));
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
 
@@ -571,8 +587,7 @@ class PortfolioAnalysisServiceTest {
         void oneTimeIncome() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(120000.0, Frequency.ONE_TIME)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(120000.0, Frequency.ONE_TIME)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -585,8 +600,12 @@ class PortfolioAnalysisServiceTest {
         void nullFrequencyIncome() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Income.builder().userId(USER_ID).amount(50000.0).frequency(null).build()));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Income.builder()
+                            .userId(USER_ID)
+                            .amount(50000.0)
+                            .frequency(null)
+                            .build()));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -599,8 +618,7 @@ class PortfolioAnalysisServiceTest {
         void zeroAmountIncome() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(liabilityRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(0.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(0.0, Frequency.MONTHLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
@@ -618,20 +636,21 @@ class PortfolioAnalysisServiceTest {
         @Test
         @DisplayName("should correctly compute all fields for a realistic portfolio")
         void realisticPortfolio() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", "HDFC", 500000.0),
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", "SBI", 300000.0),
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", "Flat", 5000000.0),
-                    buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", "Jewelry", 200000.0),
-                    buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", "EPF", 800000.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(3000000.0, 25000.0, 8.5),
-                    buildLiability(200000.0, 5000.0, 14.0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(150000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense("EMIs (loan payments)", 30000.0, Frequency.MONTHLY),
-                    buildExpense("Groceries", 10000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCC8 Stocks/Shares", "HDFC", 500000.0),
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", "SBI", 300000.0),
+                            buildAsset("\uD83C\uDFE0 Real Estate (Residential)", "Flat", 5000000.0),
+                            buildAsset("\uD83E\uDE99 Gold (Physical jewelry/bars)", "Jewelry", 200000.0),
+                            buildAsset("\uD83C\uDFE2 EPF (Provident Fund)", "EPF", 800000.0)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(
+                            List.of(buildLiability(3000000.0, 25000.0, 8.5), buildLiability(200000.0, 5000.0, 14.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(150000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildExpense("EMIs (loan payments)", 30000.0, Frequency.MONTHLY),
+                            buildExpense("Groceries", 10000.0, Frequency.MONTHLY)));
 
             PortfolioAnalysisDTO result = service.analyse(USER_ID);
 

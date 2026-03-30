@@ -46,9 +46,17 @@ class GoalProjectionServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Goal buildGoal(Long id, String name, Double cost, int horizon, double inflation, double savings) {
-        return Goal.builder().id(id).userId(USER_ID).goalType("Retirement").name(name)
-                .currentCost(cost).timeHorizonYears(horizon).inflationRate(inflation)
-                .currentSavings(savings).importance("High").build();
+        return Goal.builder()
+                .id(id)
+                .userId(USER_ID)
+                .goalType("Retirement")
+                .name(name)
+                .currentCost(cost)
+                .timeHorizonYears(horizon)
+                .inflationRate(inflation)
+                .currentSavings(savings)
+                .importance("High")
+                .build();
     }
 
     private Income buildIncome(Double amount, Frequency freq) {
@@ -60,7 +68,11 @@ class GoalProjectionServiceTest {
     }
 
     private Asset buildAsset(String type, Double value) {
-        return Asset.builder().userId(USER_ID).assetType(type).currentValue(value).build();
+        return Asset.builder()
+                .userId(USER_ID)
+                .assetType(type)
+                .currentValue(value)
+                .build();
     }
 
     private void stubEmpty() {
@@ -104,10 +116,8 @@ class GoalProjectionServiceTest {
         @DisplayName("should compute surplus as income minus expenses")
         void basicSurplus() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(60000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(60000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -120,10 +130,8 @@ class GoalProjectionServiceTest {
         @DisplayName("should clamp surplus to zero when expenses exceed income")
         void surplusFloor() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(30000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(30000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -136,8 +144,7 @@ class GoalProjectionServiceTest {
         @DisplayName("should convert quarterly income to monthly")
         void quarterlyIncome() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(300000.0, Frequency.QUARTERLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(300000.0, Frequency.QUARTERLY)));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
@@ -151,10 +158,8 @@ class GoalProjectionServiceTest {
         @DisplayName("should convert yearly expense to monthly")
         void yearlyExpense() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(120000.0, Frequency.YEARLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(120000.0, Frequency.YEARLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -168,10 +173,18 @@ class GoalProjectionServiceTest {
         @DisplayName("should handle null amounts in income and expense")
         void nullAmounts() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Income.builder().userId(USER_ID).amount(null).frequency(Frequency.MONTHLY).build()));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Expense.builder().userId(USER_ID).amount(null).frequency(Frequency.MONTHLY).build()));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Income.builder()
+                            .userId(USER_ID)
+                            .amount(null)
+                            .frequency(Frequency.MONTHLY)
+                            .build()));
+            when(expenseRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Expense.builder()
+                            .userId(USER_ID)
+                            .amount(null)
+                            .frequency(Frequency.MONTHLY)
+                            .build()));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -184,8 +197,12 @@ class GoalProjectionServiceTest {
         @DisplayName("should handle null frequency in income")
         void nullFrequency() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    Income.builder().userId(USER_ID).amount(50000.0).frequency(null).build()));
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(Income.builder()
+                            .userId(USER_ID)
+                            .amount(50000.0)
+                            .frequency(null)
+                            .build()));
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
@@ -206,8 +223,7 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should compute futureCost with inflation")
         void futureCost() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "House", 5000000.0, 10, 0.06, 0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "House", 5000000.0, 10, 0.06, 0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -223,8 +239,7 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should apply 20% buffer to future cost")
         void bufferedCost() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "House", 1000000.0, 5, 0.06, 0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "House", 1000000.0, 5, 0.06, 0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -240,8 +255,8 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should grow current savings at 12% assumed return rate")
         void savingsGrowth() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Education", 1000000.0, 10, 0.06, 500000)));
+            when(goalRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildGoal(1L, "Education", 1000000.0, 10, 0.06, 500000)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -257,8 +272,7 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should compute gap as bufferedCost minus savingsGrowth, floored at 0")
         void gapToFill() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Car", 500000.0, 3, 0.06, 0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "Car", 500000.0, 3, 0.06, 0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -276,8 +290,8 @@ class GoalProjectionServiceTest {
         @DisplayName("should return zero gap when savings growth exceeds buffered cost")
         void zeroGap() {
             // Large savings, small goal
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Vacation", 100000.0, 10, 0.06, 5000000)));
+            when(goalRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildGoal(1L, "Vacation", 100000.0, 10, 0.06, 5000000)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -293,8 +307,7 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should compute SIP using annuity formula")
         void sipCalculation() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "House", 5000000.0, 10, 0.06, 0)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "House", 5000000.0, 10, 0.06, 0)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -315,9 +328,15 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should handle zero horizon by returning gap as lump sum and zero SIP")
         void zeroHorizon() {
-            Goal goal = Goal.builder().id(1L).userId(USER_ID).name("Emergency")
-                    .currentCost(100000.0).timeHorizonYears(0).inflationRate(0.06)
-                    .currentSavings(0.0).build();
+            Goal goal = Goal.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .name("Emergency")
+                    .currentCost(100000.0)
+                    .timeHorizonYears(0)
+                    .inflationRate(0.06)
+                    .currentSavings(0.0)
+                    .build();
 
             when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(goal));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -337,8 +356,7 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should compute progress percent as savings/bufferedCost * 100")
         void progressPercent() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Car", 1000000.0, 5, 0.06, 200000)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "Car", 1000000.0, 5, 0.06, 200000)));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -356,9 +374,15 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should handle null goal fields with defaults")
         void nullGoalFields() {
-            Goal goal = Goal.builder().id(1L).userId(USER_ID).name("Test")
-                    .currentCost(null).timeHorizonYears(null).inflationRate(null)
-                    .currentSavings(null).build();
+            Goal goal = Goal.builder()
+                    .id(1L)
+                    .userId(USER_ID)
+                    .name("Test")
+                    .currentCost(null)
+                    .timeHorizonYears(null)
+                    .inflationRate(null)
+                    .currentSavings(null)
+                    .build();
 
             when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(goal));
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
@@ -385,12 +409,9 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should mark achievable when SIP fits within surplus")
         void achievable() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Car", 500000.0, 5, 0.06, 0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(200000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "Car", 500000.0, 5, 0.06, 0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(200000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -404,12 +425,9 @@ class GoalProjectionServiceTest {
         @DisplayName("should mark not achievable when SIP exceeds surplus")
         void notAchievable() {
             // Large goal, small surplus
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "Mansion", 100000000.0, 5, 0.10, 0)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(50000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(40000.0, Frequency.MONTHLY)));
+            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(buildGoal(1L, "Mansion", 100000000.0, 5, 0.10, 0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(40000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -429,11 +447,13 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should use 6 months target for salaried employees")
         void salariedTarget() {
-            Profile profile = Profile.builder().userId(USER_ID).employmentType(EmploymentType.SALARIED).build();
+            Profile profile = Profile.builder()
+                    .userId(USER_ID)
+                    .employmentType(EmploymentType.SALARIED)
+                    .build();
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
 
@@ -446,11 +466,13 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should use 6 months target for retired employees")
         void retiredTarget() {
-            Profile profile = Profile.builder().userId(USER_ID).employmentType(EmploymentType.RETIRED).build();
+            Profile profile = Profile.builder()
+                    .userId(USER_ID)
+                    .employmentType(EmploymentType.RETIRED)
+                    .build();
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(40000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(40000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
 
@@ -462,11 +484,13 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should use 9 months target for self-employed")
         void selfEmployedTarget() {
-            Profile profile = Profile.builder().userId(USER_ID).employmentType(EmploymentType.SELF_EMPLOYED).build();
+            Profile profile = Profile.builder()
+                    .userId(USER_ID)
+                    .employmentType(EmploymentType.SELF_EMPLOYED)
+                    .build();
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
 
@@ -479,11 +503,13 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should use 9 months target for business owners")
         void businessTarget() {
-            Profile profile = Profile.builder().userId(USER_ID).employmentType(EmploymentType.BUSINESS).build();
+            Profile profile = Profile.builder()
+                    .userId(USER_ID)
+                    .employmentType(EmploymentType.BUSINESS)
+                    .build();
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
 
@@ -495,11 +521,13 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should use 9 months target for unemployed")
         void unemployedTarget() {
-            Profile profile = Profile.builder().userId(USER_ID).employmentType(EmploymentType.UNEMPLOYED).build();
+            Profile profile = Profile.builder()
+                    .userId(USER_ID)
+                    .employmentType(EmploymentType.UNEMPLOYED)
+                    .build();
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profile));
 
@@ -513,8 +541,7 @@ class GoalProjectionServiceTest {
         void noProfileDefault() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -529,12 +556,14 @@ class GoalProjectionServiceTest {
         void liquidAssetSum() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0),
-                    buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 200000.0),
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", 500000.0))); // Not liquid per this service's classification
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0),
+                            buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 200000.0),
+                            buildAsset(
+                                    "\uD83D\uDCC8 Stocks/Shares",
+                                    500000.0))); // Not liquid per this service's classification
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -548,10 +577,9 @@ class GoalProjectionServiceTest {
         void emergencyGap() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -565,10 +593,9 @@ class GoalProjectionServiceTest {
         void noGap() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(10000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(10000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -582,10 +609,9 @@ class GoalProjectionServiceTest {
         void coverageMonths() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -599,8 +625,8 @@ class GoalProjectionServiceTest {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -612,12 +638,10 @@ class GoalProjectionServiceTest {
         @DisplayName("should compute aggressive and conservative fill timelines")
         void fillTimelines() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -633,10 +657,8 @@ class GoalProjectionServiceTest {
         @DisplayName("should return zero timelines when no surplus")
         void zeroTimelinesNoSurplus() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(50000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(50000.0, Frequency.MONTHLY)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(50000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(50000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
@@ -651,12 +673,10 @@ class GoalProjectionServiceTest {
         @DisplayName("should return zero timelines when no emergency gap")
         void zeroTimelinesNoGap() {
             when(goalRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(100000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(10000.0, Frequency.MONTHLY)));
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 1000000.0)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(10000.0, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 1000000.0)));
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
             GoalProjectionDTO result = service.project(USER_ID);
@@ -676,13 +696,12 @@ class GoalProjectionServiceTest {
         @Test
         @DisplayName("should sum totals across multiple goals")
         void aggregation() {
-            when(goalRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildGoal(1L, "House", 5000000.0, 10, 0.06, 100000),
-                    buildGoal(2L, "Car", 1000000.0, 3, 0.06, 50000)));
-            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildIncome(200000.0, Frequency.MONTHLY)));
-            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildExpense(80000.0, Frequency.MONTHLY)));
+            when(goalRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildGoal(1L, "House", 5000000.0, 10, 0.06, 100000),
+                            buildGoal(2L, "Car", 1000000.0, 3, 0.06, 50000)));
+            when(incomeRepo.findByUserId(USER_ID)).thenReturn(List.of(buildIncome(200000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(buildExpense(80000.0, Frequency.MONTHLY)));
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
             when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.empty());
 

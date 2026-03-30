@@ -2,9 +2,8 @@ package com.myfinance.whatsapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * Maps Meta's webhook POST payload structure.
@@ -53,6 +52,7 @@ public class WebhookPayload {
     public static class Value {
         @JsonProperty("messaging_product")
         private String messagingProduct;
+
         private Metadata metadata;
         private List<Contact> contacts;
         private List<Message> messages;
@@ -64,6 +64,7 @@ public class WebhookPayload {
     public static class Metadata {
         @JsonProperty("display_phone_number")
         private String displayPhoneNumber;
+
         @JsonProperty("phone_number_id")
         private String phoneNumberId;
     }
@@ -72,6 +73,7 @@ public class WebhookPayload {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Contact {
         private Profile profile;
+
         @JsonProperty("wa_id")
         private String waId;
     }
@@ -105,8 +107,10 @@ public class WebhookPayload {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Document {
         private String id;
+
         @JsonProperty("mime_type")
         private String mimeType;
+
         private String filename;
         private String caption;
     }
@@ -115,8 +119,10 @@ public class WebhookPayload {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Image {
         private String id;
+
         @JsonProperty("mime_type")
         private String mimeType;
+
         private String caption;
     }
 
@@ -124,8 +130,10 @@ public class WebhookPayload {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Interactive {
         private String type;
+
         @JsonProperty("button_reply")
         private ButtonReply buttonReply;
+
         @JsonProperty("list_reply")
         private ListReply listReply;
     }
@@ -151,6 +159,7 @@ public class WebhookPayload {
         private String id;
         private String status;
         private String timestamp;
+
         @JsonProperty("recipient_id")
         private String recipientId;
     }

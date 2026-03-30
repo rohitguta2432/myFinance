@@ -20,8 +20,7 @@ public class ChatController {
     @PostMapping
     @Operation(summary = "Send message to AI advisor")
     public ResponseEntity<ChatResponse> chat(
-            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
-            @RequestBody ChatRequest request) {
+            @RequestAttribute("userId") Long userId, @RequestBody ChatRequest request) {
         ChatResponse response = chatService.chat(userId, request);
         return ResponseEntity.ok(response);
     }

@@ -8,8 +8,7 @@ public final class EnumUtils {
     private EnumUtils() {}
 
     public static <E extends Enum<E>> E safeEnum(Class<E> clazz, String value) {
-        if (value == null || value.isBlank())
-            return null;
+        if (value == null || value.isBlank()) return null;
         try {
             return Enum.valueOf(clazz, value.toUpperCase().replace(" ", "_").replace("-", "_"));
         } catch (IllegalArgumentException e) {

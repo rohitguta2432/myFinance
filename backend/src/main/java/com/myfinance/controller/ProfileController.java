@@ -18,13 +18,14 @@ public class ProfileController {
 
     @Operation(summary = "Get user profile")
     @GetMapping
-    public ResponseEntity<ProfileDTO> getProfile(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId) {
+    public ResponseEntity<ProfileDTO> getProfile(@RequestAttribute("userId") Long userId) {
         return ResponseEntity.ok(profileService.getProfile(userId));
     }
 
     @Operation(summary = "Save user profile")
     @PostMapping
-    public ResponseEntity<ProfileDTO> saveProfile(@RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId, @RequestBody ProfileDTO dto) {
+    public ResponseEntity<ProfileDTO> saveProfile(
+            @RequestAttribute("userId") Long userId, @RequestBody ProfileDTO dto) {
         return ResponseEntity.ok(profileService.saveProfile(userId, dto));
     }
 }

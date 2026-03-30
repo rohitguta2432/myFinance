@@ -43,8 +43,8 @@ class RiskScoringServiceTest {
 
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
-    private Profile buildProfile(int age, int dependents, int childDependents,
-                                 EmploymentType empType, String riskAnswers) {
+    private Profile buildProfile(
+            int age, int dependents, int childDependents, EmploymentType empType, String riskAnswers) {
         return Profile.builder()
                 .userId(1L)
                 .age(age)
@@ -56,15 +56,27 @@ class RiskScoringServiceTest {
     }
 
     private Asset buildAsset(String assetType, Double value) {
-        return Asset.builder().userId(1L).assetType(assetType).currentValue(value).build();
+        return Asset.builder()
+                .userId(1L)
+                .assetType(assetType)
+                .currentValue(value)
+                .build();
     }
 
     private Liability buildLiability(Double outstanding, Double emi) {
-        return Liability.builder().userId(1L).outstandingAmount(outstanding).monthlyEmi(emi).build();
+        return Liability.builder()
+                .userId(1L)
+                .outstandingAmount(outstanding)
+                .monthlyEmi(emi)
+                .build();
     }
 
     private Income buildIncome(Double amount) {
-        return Income.builder().userId(1L).amount(amount).frequency(Frequency.MONTHLY).build();
+        return Income.builder()
+                .userId(1L)
+                .amount(amount)
+                .frequency(Frequency.MONTHLY)
+                .build();
     }
 
     private Expense buildEssentialExpense(Double amount) {
@@ -113,8 +125,8 @@ class RiskScoringServiceTest {
         void baseScoreFromQuiz() {
             // Quiz answers sum = 21 => base = (21/21)*10 = 10
             // Age 25 => modifier 0.0, no dependents
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -127,8 +139,8 @@ class RiskScoringServiceTest {
         @DisplayName("should subtract age modifier for 36-44 bracket (0.50)")
         void ageModifier36to44() {
             // Quiz = 21 => base 10, age 40 => modifier 0.50
-            Profile profile = buildProfile(40, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    40, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -140,8 +152,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract age modifier for 45-54 bracket (1.00)")
         void ageModifier45to54() {
-            Profile profile = buildProfile(50, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    50, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -153,8 +165,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract age modifier for 55-64 bracket (1.50)")
         void ageModifier55to64() {
-            Profile profile = buildProfile(60, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    60, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -166,8 +178,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract age modifier for 65+ bracket (2.00)")
         void ageModifier65Plus() {
-            Profile profile = buildProfile(70, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    70, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -180,8 +192,8 @@ class RiskScoringServiceTest {
         @DisplayName("should subtract adult dependent modifier: 1 adult => 0.25")
         void adultDep1() {
             // dependents=1, childDeps=0 => adultDeps=1 => 0.25
-            Profile profile = buildProfile(25, 1, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 1, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -193,8 +205,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract adult dependent modifier: 2 adults => 0.50")
         void adultDep2() {
-            Profile profile = buildProfile(25, 2, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 2, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -206,8 +218,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should cap adult dependent modifier at 0.75 for 3+")
         void adultDep3PlusCapped() {
-            Profile profile = buildProfile(25, 5, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 5, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -219,8 +231,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract child modifier: 1 child => 0.30")
         void childDep1() {
-            Profile profile = buildProfile(25, 1, 1, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 1, 1, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -233,8 +245,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract child modifier: 2 children => 0.60")
         void childDep2() {
-            Profile profile = buildProfile(25, 2, 2, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 2, 2, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -246,8 +258,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should subtract child modifier: 3 children => 0.90")
         void childDep3() {
-            Profile profile = buildProfile(25, 3, 3, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 3, 3, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -259,8 +271,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should cap child modifier at 1.20 for 4+ children")
         void childDep4PlusCapped() {
-            Profile profile = buildProfile(25, 5, 5, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 5, 5, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -273,8 +285,8 @@ class RiskScoringServiceTest {
         @DisplayName("should clamp tolerance to 0 when modifiers exceed base")
         void toleranceClampedToZero() {
             // Quiz = 0 => base 0, then subtract modifiers => should clamp to 0
-            Profile profile = buildProfile(70, 5, 5, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    70, 5, 5, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -323,7 +335,10 @@ class RiskScoringServiceTest {
         @DisplayName("should default age to 30 when null")
         void nullAge() {
             Profile profile = Profile.builder()
-                    .userId(1L).age(null).dependents(0).childDependents(0)
+                    .userId(1L)
+                    .age(null)
+                    .dependents(0)
+                    .childDependents(0)
                     .employmentType(EmploymentType.SALARIED)
                     .riskAnswers("{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}")
                     .build();
@@ -340,7 +355,10 @@ class RiskScoringServiceTest {
         @DisplayName("should default dependents and childDependents to 0 when null")
         void nullDependents() {
             Profile profile = Profile.builder()
-                    .userId(1L).age(25).dependents(null).childDependents(null)
+                    .userId(1L)
+                    .age(25)
+                    .dependents(null)
+                    .childDependents(null)
                     .employmentType(EmploymentType.SALARIED)
                     .riskAnswers("{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}")
                     .build();
@@ -362,20 +380,21 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q1: emergency fund > 6 months => 3 points")
         void q1MoreThan6Months() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // Liquid assets 70000, essential expenses 10000/mo => 7 months => 3 pts
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 70000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 70000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
 
             RiskScoringDTO result = service.calculateRiskScore(1L);
 
-            // q1=3, q2: EMI=0, salary=100k => 0% < 30% => 3, q3: SALARIED => 3, q4: financial 70k / netWorth 70k => 100% > 50% => 3
+            // q1=3, q2: EMI=0, salary=100k => 0% < 30% => 3, q3: SALARIED => 3, q4: financial 70k / netWorth 70k =>
+            // 100% > 50% => 3
             // raw = 12, capacity = (12/12)*10 = 10.0
             assertThat(result.getCapacityScore()).isEqualTo(10.0);
         }
@@ -383,13 +402,13 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q1: emergency fund 3-6 months => 2 points")
         void q1ThreeToSixMonths() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.UNEMPLOYED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.UNEMPLOYED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // Liquid 40000, essential 10000 => 4 months => 2 pts
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 40000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 40000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -404,13 +423,13 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q1: emergency fund < 3 months => 1 point")
         void q1LessThan3Months() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // Liquid 10000, essential 10000 => 1 month => 1 pt
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 10000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 10000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -425,12 +444,12 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q1: no essential expenses but has liquid assets => 3 points")
         void q1NoExpensesWithLiquid() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 50000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 50000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -444,8 +463,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q1: no essential expenses and no liquid assets => 1 point")
         void q1NoExpensesNoLiquid() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -463,8 +482,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q2: EMI burden > 50% => 1 point")
         void q2EmiBurdenHigh() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -482,8 +501,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q2: EMI burden 30-50% => 2 points")
         void q2EmiBurdenMedium() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -501,8 +520,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q2: no income with EMI => 1 point")
         void q2NoIncomeWithEmi() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.UNEMPLOYED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.UNEMPLOYED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -520,8 +539,8 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q2: no income and no EMI => 3 points")
         void q2NoIncomeNoEmi() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.UNEMPLOYED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.UNEMPLOYED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -540,17 +559,17 @@ class RiskScoringServiceTest {
         @DisplayName("Q3: income stability for all employment types")
         void q3IncomeStability() {
             for (var entry : List.of(
-                    new Object[]{EmploymentType.SALARIED, 3},
-                    new Object[]{EmploymentType.RETIRED, 3},
-                    new Object[]{EmploymentType.BUSINESS, 2},
-                    new Object[]{EmploymentType.SELF_EMPLOYED, 1},
-                    new Object[]{EmploymentType.UNEMPLOYED, 0})) {
+                    new Object[] {EmploymentType.SALARIED, 3},
+                    new Object[] {EmploymentType.RETIRED, 3},
+                    new Object[] {EmploymentType.BUSINESS, 2},
+                    new Object[] {EmploymentType.SELF_EMPLOYED, 1},
+                    new Object[] {EmploymentType.UNEMPLOYED, 0})) {
 
                 EmploymentType empType = (EmploymentType) entry[0];
                 int expectedQ3 = (int) entry[1];
 
-                Profile profile = buildProfile(25, 0, 0, empType,
-                        "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+                Profile profile =
+                        buildProfile(25, 0, 0, empType, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
                 when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
                 stubReposEmpty();
 
@@ -566,8 +585,7 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q3: null employment type => 0 points")
         void q3NullEmploymentType() {
-            Profile profile = buildProfile(25, 0, 0, null,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(25, 0, 0, null, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
             stubReposEmpty();
 
@@ -580,15 +598,16 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q4: financial asset ratio > 50% => 3 points")
         void q4HighFinancialRatio() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // financial asset = 600k, total assets = 1M, liabilities = 0 => netWorth = 1M
             // ratio = 600k/1M = 60% > 50% => 3
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 600000.0),
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 400000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", 600000.0),
+                            buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 400000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -603,14 +622,15 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q4: financial asset ratio 20-50% => 2 points")
         void q4MediumFinancialRatio() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // financial 200k, real estate 800k, total=1M, liabilities=0 => ratio = 200k/1M = 20% => 2
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0),
-                    buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 800000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83C\uDFE6 Bank/Savings Account", 200000.0),
+                            buildAsset("\uD83C\uDFE0 Real Estate (Residential)", 800000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -625,12 +645,12 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("Q4: negative net worth => 1 point")
         void q4NegativeNetWorth() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 100000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(List.of(buildLiability(500000.0, 5000.0)));
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -647,16 +667,23 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should handle null amounts in assets, liabilities, incomes, expenses")
         void nullAmounts() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            Asset assetNullValue = Asset.builder().userId(1L)
-                    .assetType("\uD83C\uDFE6 Bank/Savings Account").currentValue(null).build();
-            Liability liabNullValues = Liability.builder().userId(1L)
-                    .outstandingAmount(null).monthlyEmi(null).build();
+            Asset assetNullValue = Asset.builder()
+                    .userId(1L)
+                    .assetType("\uD83C\uDFE6 Bank/Savings Account")
+                    .currentValue(null)
+                    .build();
+            Liability liabNullValues = Liability.builder()
+                    .userId(1L)
+                    .outstandingAmount(null)
+                    .monthlyEmi(null)
+                    .build();
             Income incomeNull = Income.builder().userId(1L).amount(null).build();
-            Expense expenseNull = Expense.builder().userId(1L).amount(null).isEssential(true).build();
+            Expense expenseNull =
+                    Expense.builder().userId(1L).amount(null).isEssential(true).build();
 
             when(assetRepo.findByUserId(1L)).thenReturn(List.of(assetNullValue));
             when(liabilityRepo.findByUserId(1L)).thenReturn(List.of(liabNullValues));
@@ -680,12 +707,12 @@ class RiskScoringServiceTest {
         @DisplayName("should compute composite as 0.55 * tolerance + 0.45 * capacity")
         void compositeFormula() {
             // Young salaried, max quiz, good financials => high scores
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 700000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 700000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -706,8 +733,8 @@ class RiskScoringServiceTest {
         @DisplayName("should assign Capital Preserver for composite 0-2.5")
         void capitalPreserverBand() {
             // zero quiz, old age, worst capacity
-            Profile profile = buildProfile(70, 5, 4, EmploymentType.UNEMPLOYED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    70, 5, 4, EmploymentType.UNEMPLOYED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             when(assetRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
@@ -729,12 +756,12 @@ class RiskScoringServiceTest {
             // Quiz 14/21 => base = 6.67, age 25 => mod 0.0, no deps
             // tolerance = 6.67
             // capacity: setup for mid-range
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":2,\"2\":2,\"3\":2,\"4\":2,\"5\":2,\"6\":2,\"7\":2}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":2,\"2\":2,\"3\":2,\"4\":2,\"5\":2,\"6\":2,\"7\":2}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(20000.0)));
@@ -756,12 +783,12 @@ class RiskScoringServiceTest {
             // composite = 2.55 (between 2.5 and 2.6) should fallback to Balanced Investor
             // This is tricky to engineer exactly, but the fallback exists in code
             // Just verify the bands cover expected ranges
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":3,\"2\":3,\"3\":3,\"4\":3,\"5\":3,\"6\":3,\"7\":3}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(buildAsset("\uD83C\uDFE6 Bank/Savings Account", 500000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(100000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -769,9 +796,13 @@ class RiskScoringServiceTest {
             RiskScoringDTO result = service.calculateRiskScore(1L);
 
             // Should match one of the defined profile bands
-            assertThat(result.getProfileLabel()).isIn(
-                    "Capital Preserver", "Conservative Grower", "Balanced Investor",
-                    "Growth Seeker", "Aggressive Wealth Builder");
+            assertThat(result.getProfileLabel())
+                    .isIn(
+                            "Capital Preserver",
+                            "Conservative Grower",
+                            "Balanced Investor",
+                            "Growth Seeker",
+                            "Aggressive Wealth Builder");
         }
     }
 
@@ -784,14 +815,15 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should classify FD, RD, and Debt MF as liquid")
         void allLiquidTypes() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 100000.0),
-                    buildAsset("\uD83D\uDCB0 Recurring Deposit (RD)", 50000.0),
-                    buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", 80000.0)));
+            when(assetRepo.findByUserId(1L))
+                    .thenReturn(List.of(
+                            buildAsset("\uD83D\uDCCA Fixed Deposit (FD)", 100000.0),
+                            buildAsset("\uD83D\uDCB0 Recurring Deposit (RD)", 50000.0),
+                            buildAsset("\uD83D\uDCC9 Mutual Funds \u2014 Debt", 80000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(50000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(10000.0)));
@@ -805,13 +837,12 @@ class RiskScoringServiceTest {
         @Test
         @DisplayName("should NOT classify equity MF or stocks as liquid")
         void equityNotLiquid() {
-            Profile profile = buildProfile(25, 0, 0, EmploymentType.SALARIED,
-                    "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
+            Profile profile = buildProfile(
+                    25, 0, 0, EmploymentType.SALARIED, "{\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":0}");
             when(profileRepo.findByUserId(1L)).thenReturn(Optional.of(profile));
 
             // Only equity assets, not liquid
-            when(assetRepo.findByUserId(1L)).thenReturn(List.of(
-                    buildAsset("\uD83D\uDCC8 Stocks/Shares", 500000.0)));
+            when(assetRepo.findByUserId(1L)).thenReturn(List.of(buildAsset("\uD83D\uDCC8 Stocks/Shares", 500000.0)));
             when(liabilityRepo.findByUserId(1L)).thenReturn(Collections.emptyList());
             when(incomeRepo.findByUserId(1L)).thenReturn(List.of(buildIncome(50000.0)));
             when(expenseRepo.findByUserId(1L)).thenReturn(List.of(buildEssentialExpense(50000.0)));

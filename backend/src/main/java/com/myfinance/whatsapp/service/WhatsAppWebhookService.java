@@ -2,11 +2,10 @@ package com.myfinance.whatsapp.service;
 
 import com.myfinance.whatsapp.config.WhatsAppConfig;
 import com.myfinance.whatsapp.dto.WebhookPayload;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Processes incoming WhatsApp webhook events.
@@ -33,7 +32,9 @@ public class WhatsAppWebhookService {
             return challenge;
         }
 
-        log.warn("whatsapp.webhook.verify.failed token_match={}", config.getVerifyToken().equals(token));
+        log.warn(
+                "whatsapp.webhook.verify.failed token_match={}",
+                config.getVerifyToken().equals(token));
         return null;
     }
 
@@ -64,8 +65,11 @@ public class WhatsAppWebhookService {
                 List<WebhookPayload.Status> statuses = change.getValue().getStatuses();
                 if (statuses != null && !statuses.isEmpty()) {
                     for (WebhookPayload.Status status : statuses) {
-                        log.info("whatsapp.webhook.status messageId={} status={} recipient={}",
-                                status.getId(), status.getStatus(), status.getRecipientId());
+                        log.info(
+                                "whatsapp.webhook.status messageId={} status={} recipient={}",
+                                status.getId(),
+                                status.getStatus(),
+                                status.getRecipientId());
                     }
                 }
             }
@@ -77,13 +81,13 @@ public class WhatsAppWebhookService {
      * Phase 1: Echo mode — replies with confirmation.
      * Phase 2 (future): Route to session state machine.
      */
-    private void processIncomingMessage(WebhookPayload.Message message,
-                                         List<WebhookPayload.Contact> contacts) {
+    private void processIncomingMessage(WebhookPayload.Message message, List<WebhookPayload.Contact> contacts) {
         String from = message.getFrom();
         String type = message.getType();
-        String contactName = (contacts != null && !contacts.isEmpty() && contacts.get(0).getProfile() != null)
-                ? contacts.get(0).getProfile().getName()
-                : "Unknown";
+        String contactName =
+                (contacts != null && !contacts.isEmpty() && contacts.get(0).getProfile() != null)
+                        ? contacts.get(0).getProfile().getName()
+                        : "Unknown";
 
         log.info("whatsapp.webhook.message.receive from={} type={} name={}", from, type, contactName);
 
@@ -94,16 +98,20 @@ public class WhatsAppWebhookService {
 
                 // Phase 1: Echo mode for testing
                 // Phase 2: Route to conversation state machine
-                if (body.equalsIgnoreCase("hi") || body.equalsIgnoreCase("hello")
-                        || body.equalsIgnoreCase("hey") || body.equalsIgnoreCase("menu")) {
+                if (body.equalsIgnoreCase("hi")
+                        || body.equalsIgnoreCase("hello")
+                        || body.equalsIgnoreCase("hey")
+                        || body.equalsIgnoreCase("menu")) {
                     messageService.sendWelcomeMenu(from);
                 } else {
                     messageService.sendEcho(from, body);
                 }
             }
             case "document" -> {
-                log.info("whatsapp.webhook.message.document from={} filename={}",
-                        from, message.getDocument() != null ? message.getDocument().getFilename() : "unknown");
+                log.info(
+                        "whatsapp.webhook.message.document from={} filename={}",
+                        from,
+                        message.getDocument() != null ? message.getDocument().getFilename() : "unknown");
                 messageService.sendText(from, "📄 Document received! Form 16 parsing coming soon.");
             }
             case "image" -> {

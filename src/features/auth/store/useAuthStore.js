@@ -7,15 +7,20 @@ export const useAuthStore = create(
     persist(
         (set, get) => ({
             user: null, // { id, email, name, pictureUrl }
+            token: null, // JWT from backend
             loginAt: null,
 
-            login: (user) => set({ user, loginAt: Date.now() }),
+            login: (authResponse) => set({
+                user: authResponse.user,
+                token: authResponse.token,
+                loginAt: Date.now(),
+            }),
 
-            logout: () => set({ user: null, loginAt: null }),
+            logout: () => set({ user: null, token: null, loginAt: null }),
 
             isSessionValid: () => {
-                const { user, loginAt } = get();
-                if (!user || !loginAt) return false;
+                const { user, token, loginAt } = get();
+                if (!user || !token || !loginAt) return false;
                 return Date.now() - loginAt < SESSION_DURATION_MS;
             },
         }),

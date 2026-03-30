@@ -18,7 +18,7 @@ public class TaxCalculationController {
     @GetMapping
     @Operation(summary = "Calculate tax for given deductions")
     public TaxCalculationDTO calculate(
-            @RequestHeader(value = "X-User-Id", required = false, defaultValue = "0") Long userId,
+            @RequestAttribute("userId") Long userId,
             @RequestParam(defaultValue = "0") double deductions80C,
             @RequestParam(defaultValue = "0") double deductions80D,
             @RequestParam(defaultValue = "0") double otherDeductions) {

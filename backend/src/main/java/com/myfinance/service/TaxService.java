@@ -31,9 +31,7 @@ public class TaxService {
     public TaxDTO saveTax(Long userId, TaxDTO dto) {
         log.info("tax.save user={} regime={}", userId, dto.getSelectedRegime());
 
-        Tax tax = taxRepo.findByUserId(userId).stream()
-                .findFirst()
-                .orElse(new Tax());
+        Tax tax = taxRepo.findByUserId(userId).stream().findFirst().orElse(new Tax());
 
         tax.setUserId(userId);
         tax.setSelectedRegime(EnumUtils.safeEnum(TaxRegime.class, dto.getSelectedRegime()));

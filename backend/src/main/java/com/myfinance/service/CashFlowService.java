@@ -7,13 +7,12 @@ import com.myfinance.model.enums.Frequency;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.IncomeRepository;
 import com.myfinance.util.EnumUtils;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +26,13 @@ public class CashFlowService {
     @Transactional(readOnly = true)
     public FinancialsResponse getCashFlow(Long userId) {
         log.info("cashflow.get started user={}", userId);
-        var incomes = incomeRepo.findByUserId(userId).stream().map(this::toIncomeDTO).collect(Collectors.toList());
-        var expenses = expenseRepo.findByUserId(userId).stream().map(this::toExpenseDTO).collect(Collectors.toList());
+        var incomes =
+                incomeRepo.findByUserId(userId).stream().map(this::toIncomeDTO).collect(Collectors.toList());
+        var expenses = expenseRepo.findByUserId(userId).stream()
+                .map(this::toExpenseDTO)
+                .collect(Collectors.toList());
         log.info("cashflow.get.success incomes={} expenses={}", incomes.size(), expenses.size());
-        return FinancialsResponse.builder()
-                .incomes(incomes)
-                .expenses(expenses)
-                .build();
+        return FinancialsResponse.builder().incomes(incomes).expenses(expenses).build();
     }
 
     @Transactional(readOnly = true)
@@ -61,11 +60,10 @@ public class CashFlowService {
                 .sum();
 
         double surplus = totalMonthlyIncome - totalMonthlyExpenses;
-        int savingsRate = totalMonthlyIncome > 0
-                ? (int) Math.round((surplus / totalMonthlyIncome) * 100)
-                : 0;
+        int savingsRate = totalMonthlyIncome > 0 ? (int) Math.round((surplus / totalMonthlyIncome) * 100) : 0;
 
-        log.info("cashflow.summary.get.success user={} income={} expenses={} surplus={} savingsRate={}%",
+        log.info(
+                "cashflow.summary.get.success user={} income={} expenses={} surplus={} savingsRate={}%",
                 userId, totalMonthlyIncome, totalMonthlyExpenses, surplus, savingsRate);
 
         return CashFlowSummaryDTO.builder()
@@ -91,8 +89,12 @@ public class CashFlowService {
 
     @Transactional
     public IncomeDTO addIncome(Long userId, IncomeDTO dto) {
-        log.info("cashflow.income.add user={} source={} amount={} frequency={}",
-                userId, dto.getSourceName(), dto.getAmount(), dto.getFrequency());
+        log.info(
+                "cashflow.income.add user={} source={} amount={} frequency={}",
+                userId,
+                dto.getSourceName(),
+                dto.getAmount(),
+                dto.getFrequency());
         Income income = Income.builder()
                 .userId(userId)
                 .sourceName(dto.getSourceName())
@@ -109,8 +111,12 @@ public class CashFlowService {
 
     @Transactional
     public ExpenseDTO addExpense(Long userId, ExpenseDTO dto) {
-        log.info("cashflow.expense.add user={} category={} amount={} frequency={}",
-                userId, dto.getCategory(), dto.getAmount(), dto.getFrequency());
+        log.info(
+                "cashflow.expense.add user={} category={} amount={} frequency={}",
+                userId,
+                dto.getCategory(),
+                dto.getAmount(),
+                dto.getFrequency());
         Expense expense = Expense.builder()
                 .userId(userId)
                 .category(dto.getCategory())
@@ -126,8 +132,14 @@ public class CashFlowService {
 
     @Transactional
     public IncomeDTO updateIncome(Long userId, Long id, IncomeDTO dto) {
-        log.info("cashflow.income.update user={} id={} source={} amount={}", userId, id, dto.getSourceName(), dto.getAmount());
-        Income income = incomeRepo.findById(id)
+        log.info(
+                "cashflow.income.update user={} id={} source={} amount={}",
+                userId,
+                id,
+                dto.getSourceName(),
+                dto.getAmount());
+        Income income = incomeRepo
+                .findById(id)
                 .filter(i -> i.getUserId() != null && i.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Income not found or unauthorized: " + id));
         income.setSourceName(dto.getSourceName());
@@ -143,8 +155,14 @@ public class CashFlowService {
 
     @Transactional
     public ExpenseDTO updateExpense(Long userId, Long id, ExpenseDTO dto) {
-        log.info("cashflow.expense.update user={} id={} category={} amount={}", userId, id, dto.getCategory(), dto.getAmount());
-        Expense expense = expenseRepo.findById(id)
+        log.info(
+                "cashflow.expense.update user={} id={} category={} amount={}",
+                userId,
+                id,
+                dto.getCategory(),
+                dto.getAmount());
+        Expense expense = expenseRepo
+                .findById(id)
                 .filter(e -> e.getUserId() != null && e.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Expense not found or unauthorized: " + id));
         expense.setCategory(dto.getCategory());
@@ -160,7 +178,8 @@ public class CashFlowService {
     @Transactional
     public void deleteIncome(Long userId, Long id) {
         log.info("cashflow.income.delete user={} id={}", userId, id);
-        Income income = incomeRepo.findById(id)
+        Income income = incomeRepo
+                .findById(id)
                 .filter(i -> i.getUserId() != null && i.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Income not found or unauthorized: " + id));
         incomeRepo.delete(income);
@@ -170,7 +189,8 @@ public class CashFlowService {
     @Transactional
     public void deleteExpense(Long userId, Long id) {
         log.info("cashflow.expense.delete user={} id={}", userId, id);
-        Expense expense = expenseRepo.findById(id)
+        Expense expense = expenseRepo
+                .findById(id)
                 .filter(e -> e.getUserId() != null && e.getUserId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Expense not found or unauthorized: " + id));
         expenseRepo.delete(expense);

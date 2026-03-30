@@ -1,8 +1,8 @@
 package com.myfinance.dto;
 
 import com.myfinance.model.enums.*;
-import lombok.*;
 import java.util.Map;
+import lombok.*;
 
 @Data
 @NoArgsConstructor

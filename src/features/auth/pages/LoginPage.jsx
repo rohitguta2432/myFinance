@@ -32,26 +32,16 @@ export default function LoginPage() {
     const login = useAuthStore((s) => s.login);
 
     const handleGoogleSuccess = async (credentialResponse) => {
-        // Decode the JWT to get user info directly (no backend needed for basic login)
-        const token = credentialResponse.credential;
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const userData = {
-            id: payload.sub,
-            email: payload.email,
-            name: payload.name,
-            pictureUrl: payload.picture,
-        };
+        const credential = credentialResponse.credential;
 
-        // Try backend call for DB storage (but don't block login on it)
         try {
-            const res = await api.post('/auth/google', { credential: token });
-            login(res); // use backend response if available
+            const res = await api.post('/auth/google', { credential });
+            // res = { token: "jwt...", user: { id, email, name, pictureUrl } }
+            login(res);
+            navigate('/', { replace: true });
         } catch (err) {
-            console.warn('Backend auth call failed, using token data:', err);
-            login(userData); // fallback to decoded token data
+            console.error('Authentication failed:', err);
         }
-
-        navigate('/', { replace: true });
     };
 
     return (

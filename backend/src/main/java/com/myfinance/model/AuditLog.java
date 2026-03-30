@@ -1,10 +1,9 @@
 package com.myfinance.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "audit_logs")
@@ -24,11 +23,11 @@ public class AuditLog {
     private String userName;
     private String userEmail;
 
-    private String action;      // LOGIN, SAVE_PROFILE, ADD_INCOME, DELETE_GOAL, etc.
-    private String entity;      // profile, income, expense, asset, liability, goal, insurance, tax
+    private String action; // LOGIN, SAVE_PROFILE, ADD_INCOME, DELETE_GOAL, etc.
+    private String entity; // profile, income, expense, asset, liability, goal, insurance, tax
     private Long entityId;
 
-    private String details;     // Optional extra info
+    private String details; // Optional extra info
 
     @CreationTimestamp
     private LocalDateTime createdAt;

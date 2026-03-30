@@ -1,18 +1,20 @@
 package com.myfinance.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.myfinance.dto.PortfolioAnalysisDTO;
+import com.myfinance.security.JwtService;
 import com.myfinance.service.PortfolioAnalysisService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PortfolioAnalysisController.class)
 class PortfolioAnalysisControllerTest {
@@ -22,6 +24,15 @@ class PortfolioAnalysisControllerTest {
 
     @MockitoBean
     private PortfolioAnalysisService portfolioAnalysisService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/portfolio-analysis - returns full portfolio analysis")
@@ -50,8 +61,7 @@ class PortfolioAnalysisControllerTest {
 
         when(portfolioAnalysisService.analyse(1L)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/v1/portfolio-analysis")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/portfolio-analysis").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalAssets").value(5000000.0))
                 .andExpect(jsonPath("$.totalLiabilities").value(2000000.0))
@@ -66,18 +76,9 @@ class PortfolioAnalysisControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/portfolio-analysis - missing header defaults to 0")
+    @DisplayName("GET /api/v1/portfolio-analysis - missing header returns 401")
     void analyse_missingHeader() throws Exception {
-        PortfolioAnalysisDTO dto = PortfolioAnalysisDTO.builder()
-                .totalAssets(0.0)
-                .netWorth(0.0)
-                .build();
-        when(portfolioAnalysisService.analyse(0L)).thenReturn(dto);
-
-        mockMvc.perform(get("/api/v1/portfolio-analysis"))
-                .andExpect(status().isOk());
-
-        verify(portfolioAnalysisService).analyse(0L);
+        mockMvc.perform(get("/api/v1/portfolio-analysis")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -85,9 +86,9 @@ class PortfolioAnalysisControllerTest {
     void analyse_serviceException() {
         when(portfolioAnalysisService.analyse(1L)).thenThrow(new RuntimeException("Analysis error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/portfolio-analysis")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/portfolio-analysis").header("Authorization", "Bearer test-token")));
     }
 
     @Test
@@ -99,10 +100,9 @@ class PortfolioAnalysisControllerTest {
                 .emiMismatch(true)
                 .build();
 
-        when(portfolioAnalysisService.analyse(2L)).thenReturn(dto);
+        when(portfolioAnalysisService.analyse(1L)).thenReturn(dto);
 
-        mockMvc.perform(get("/api/v1/portfolio-analysis")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/portfolio-analysis").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.emiMismatch").value(true))
                 .andExpect(jsonPath("$.monthlyEmiTotal").value(30000.0))

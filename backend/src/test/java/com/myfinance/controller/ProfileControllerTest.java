@@ -1,18 +1,5 @@
 package com.myfinance.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myfinance.dto.ProfileDTO;
-import com.myfinance.service.ProfileService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,6 +7,20 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myfinance.dto.ProfileDTO;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.ProfileService;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ProfileController.class)
 class ProfileControllerTest {
@@ -30,7 +31,18 @@ class ProfileControllerTest {
     @MockitoBean
     private ProfileService profileService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token-user5")).thenReturn(5L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token-user5")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/profile - returns profile for given user")
@@ -49,8 +61,7 @@ class ProfileControllerTest {
 
         when(profileService.getProfile(1L)).thenReturn(profile);
 
-        mockMvc.perform(get("/api/v1/profile")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/profile").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.age").value(30))
@@ -65,15 +76,9 @@ class ProfileControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/profile - missing X-User-Id header defaults to 0")
-    void getProfile_missingHeader_defaultsToZero() throws Exception {
-        ProfileDTO profile = ProfileDTO.builder().id(0L).build();
-        when(profileService.getProfile(0L)).thenReturn(profile);
-
-        mockMvc.perform(get("/api/v1/profile"))
-                .andExpect(status().isOk());
-
-        verify(profileService).getProfile(0L);
+    @DisplayName("GET /api/v1/profile - missing Authorization header returns 401")
+    void getProfile_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/profile")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -111,7 +116,7 @@ class ProfileControllerTest {
         when(profileService.saveProfile(eq(5L), any(ProfileDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/profile")
-                        .header("X-User-Id", "5")
+                        .header("Authorization", "Bearer test-token-user5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -125,18 +130,14 @@ class ProfileControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/profile - missing X-User-Id defaults to 0")
-    void saveProfile_missingHeader_defaultsToZero() throws Exception {
+    @DisplayName("POST /api/v1/profile - missing Authorization header returns 401")
+    void saveProfile_missingHeader_returns401() throws Exception {
         ProfileDTO input = ProfileDTO.builder().age(25).build();
-        ProfileDTO saved = ProfileDTO.builder().id(1L).age(25).build();
-        when(profileService.saveProfile(eq(0L), any(ProfileDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/profile")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isOk());
-
-        verify(profileService).saveProfile(eq(0L), any(ProfileDTO.class));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -146,9 +147,10 @@ class ProfileControllerTest {
 
         ProfileDTO input = ProfileDTO.builder().age(25).build();
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/api/v1/profile")
-                        .header("X-User-Id", "1")
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(post("/api/v1/profile")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input))));
     }

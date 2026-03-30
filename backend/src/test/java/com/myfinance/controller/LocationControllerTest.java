@@ -1,19 +1,19 @@
 package com.myfinance.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.myfinance.security.JwtService;
 import com.myfinance.service.LocationService;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LocationController.class)
 class LocationControllerTest {
@@ -23,6 +23,9 @@ class LocationControllerTest {
 
     @MockitoBean
     private LocationService locationService;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     // ── GET /api/v1/location/states ──
 
@@ -57,8 +60,7 @@ class LocationControllerTest {
     void getStates_serviceException() {
         when(locationService.getStates()).thenThrow(new RuntimeException("File not found"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/location/states")));
+        assertThrows(Exception.class, () -> mockMvc.perform(get("/api/v1/location/states")));
     }
 
     // ── GET /api/v1/location/cities ──
@@ -69,8 +71,7 @@ class LocationControllerTest {
         List<String> cities = List.of("Bangalore", "Mysore", "Mangalore", "Hubli");
         when(locationService.getCities("Karnataka")).thenReturn(cities);
 
-        mockMvc.perform(get("/api/v1/location/cities")
-                        .param("state", "Karnataka"))
+        mockMvc.perform(get("/api/v1/location/cities").param("state", "Karnataka"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(4))
                 .andExpect(jsonPath("$[0]").value("Bangalore"))
@@ -84,8 +85,7 @@ class LocationControllerTest {
     void getCities_unknownState() throws Exception {
         when(locationService.getCities("UnknownState")).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/location/cities")
-                        .param("state", "UnknownState"))
+        mockMvc.perform(get("/api/v1/location/cities").param("state", "UnknownState"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -93,8 +93,7 @@ class LocationControllerTest {
     @Test
     @DisplayName("GET /api/v1/location/cities - missing state param returns 400")
     void getCities_missingParam() throws Exception {
-        mockMvc.perform(get("/api/v1/location/cities"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/v1/location/cities")).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -102,8 +101,8 @@ class LocationControllerTest {
     void getCities_serviceException() {
         when(locationService.getCities("Karnataka")).thenThrow(new RuntimeException("Data error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/location/cities")
-                        .param("state", "Karnataka")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/location/cities").param("state", "Karnataka")));
     }
 }

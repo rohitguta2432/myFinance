@@ -104,8 +104,7 @@ class EnumUtilsTest {
         @Test
         @DisplayName("works with RiskTolerance enum")
         void riskToleranceEnum() {
-            assertThat(EnumUtils.safeEnum(RiskTolerance.class, "conservative"))
-                    .isEqualTo(RiskTolerance.CONSERVATIVE);
+            assertThat(EnumUtils.safeEnum(RiskTolerance.class, "conservative")).isEqualTo(RiskTolerance.CONSERVATIVE);
         }
 
         @Test

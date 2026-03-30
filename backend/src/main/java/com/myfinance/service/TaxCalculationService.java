@@ -12,14 +12,13 @@ import com.myfinance.repository.AssetRepository;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.IncomeRepository;
 import com.myfinance.repository.InsuranceRepository;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +33,14 @@ public class TaxCalculationService {
     // ─── Public entry point ─────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public TaxCalculationDTO calculate(Long userId, double deductions80C, double deductions80D,
-                                        double otherDeductions) {
-        log.info("tax-calculation.start user={} 80C={} 80D={} other={}", userId, deductions80C, deductions80D, otherDeductions);
+    public TaxCalculationDTO calculate(
+            Long userId, double deductions80C, double deductions80D, double otherDeductions) {
+        log.info(
+                "tax-calculation.start user={} 80C={} 80D={} other={}",
+                userId,
+                deductions80C,
+                deductions80D,
+                otherDeductions);
 
         // 1) Income annualization
         List<Income> incomes = incomeRepo.findByUserId(userId);
@@ -45,7 +49,9 @@ public class TaxCalculationService {
             String source = inc.getSourceName() != null ? inc.getSourceName() : "Other";
             incomeCategories.merge(source, toAnnual(inc.getAmount(), inc.getFrequency()), Double::sum);
         }
-        double grossTotalIncome = incomeCategories.values().stream().mapToDouble(Double::doubleValue).sum();
+        double grossTotalIncome = incomeCategories.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
 
         // 2) Auto-populated deductions from stored data
         List<Asset> assets = assetRepo.findByUserId(userId);
@@ -92,7 +98,8 @@ public class TaxCalculationService {
         double totalOtherDeductions = otherDeductions + rentalStdDeduction;
 
         // 5) Tax calculation — both regimes
-        RegimeBreakdown oldRegime = calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, totalOtherDeductions);
+        RegimeBreakdown oldRegime =
+                calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, totalOtherDeductions);
         RegimeBreakdown newRegime = calculateNewRegime(grossTotalIncome);
 
         // 6) Recommendation
@@ -120,8 +127,7 @@ public class TaxCalculationService {
 
     // ─── Old Regime ─────────────────────────────────────────────────────────────
 
-    private RegimeBreakdown calculateOldRegime(double income, double ded80C, double ded80D,
-                                                double hra, double other) {
+    private RegimeBreakdown calculateOldRegime(double income, double ded80C, double ded80D, double hra, double other) {
         double stdDeduction = 50000;
         double netTaxable = Math.max(0, income - stdDeduction - ded80C - ded80D - hra - other);
 

@@ -1,10 +1,10 @@
 package com.myfinance.service.dashboard;
 
+import static com.myfinance.service.dashboard.DashboardDataLoader.fmt;
+
 import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
 import org.springframework.stereotype.Component;
-
-import static com.myfinance.service.dashboard.DashboardDataLoader.fmt;
 
 @Component
 public class TimeMachineCalculator {
@@ -28,7 +28,8 @@ public class TimeMachineCalculator {
         // FV of SIP for missed months
         double missedWealth = 0;
         if (missedMonths > 0 && monthlySavings > 0) {
-            missedWealth = monthlySavings * ((Math.pow(1 + monthlyRate, missedMonths) - 1) / monthlyRate) * (1 + monthlyRate);
+            missedWealth =
+                    monthlySavings * ((Math.pow(1 + monthlyRate, missedMonths) - 1) / monthlyRate) * (1 + monthlyRate);
         }
 
         // Daily cost of inaction = missed wealth / (delay years * 365)

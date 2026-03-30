@@ -1,20 +1,5 @@
 package com.myfinance.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myfinance.dto.InsuranceDTO;
-import com.myfinance.dto.InsuranceGapDTO;
-import com.myfinance.service.InsuranceGapService;
-import com.myfinance.service.InsuranceService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,6 +7,22 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myfinance.dto.InsuranceDTO;
+import com.myfinance.dto.InsuranceGapDTO;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.InsuranceGapService;
+import com.myfinance.service.InsuranceService;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(InsuranceController.class)
 class InsuranceControllerTest {
@@ -35,7 +36,16 @@ class InsuranceControllerTest {
     @MockitoBean
     private InsuranceGapService insuranceGapService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     // ── GET /api/v1/insurance ──
 
@@ -62,8 +72,7 @@ class InsuranceControllerTest {
 
         when(insuranceService.getInsurance(1L)).thenReturn(List.of(policy1, policy2));
 
-        mockMvc.perform(get("/api/v1/insurance")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/insurance").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -80,21 +89,15 @@ class InsuranceControllerTest {
     void getInsurance_empty() throws Exception {
         when(insuranceService.getInsurance(1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/insurance")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/insurance").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
-    @DisplayName("GET /api/v1/insurance - missing header defaults to 0")
-    void getInsurance_missingHeader() throws Exception {
-        when(insuranceService.getInsurance(0L)).thenReturn(List.of());
-
-        mockMvc.perform(get("/api/v1/insurance"))
-                .andExpect(status().isOk());
-
-        verify(insuranceService).getInsurance(0L);
+    @DisplayName("GET /api/v1/insurance - missing Authorization header returns 401")
+    void getInsurance_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/insurance")).andExpect(status().isUnauthorized());
     }
 
     // ── POST /api/v1/insurance ──
@@ -122,7 +125,7 @@ class InsuranceControllerTest {
         when(insuranceService.saveInsurance(eq(1L), any(InsuranceDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/insurance")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -140,9 +143,10 @@ class InsuranceControllerTest {
 
         InsuranceDTO input = InsuranceDTO.builder().insuranceType("Health").build();
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/api/v1/insurance")
-                        .header("X-User-Id", "1")
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(post("/api/v1/insurance")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input))));
     }
@@ -164,8 +168,7 @@ class InsuranceControllerTest {
 
         when(insuranceGapService.calculateGap(1L)).thenReturn(gap);
 
-        mockMvc.perform(get("/api/v1/insurance/gap")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/insurance/gap").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recommendedLifeCover").value(15000000.0))
                 .andExpect(jsonPath("$.actualLifeCover").value(10000000.0))
@@ -178,15 +181,9 @@ class InsuranceControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/insurance/gap - missing header defaults to 0")
-    void getInsuranceGap_missingHeader() throws Exception {
-        InsuranceGapDTO gap = InsuranceGapDTO.builder().lifeGap(0.0).healthGap(0.0).build();
-        when(insuranceGapService.calculateGap(0L)).thenReturn(gap);
-
-        mockMvc.perform(get("/api/v1/insurance/gap"))
-                .andExpect(status().isOk());
-
-        verify(insuranceGapService).calculateGap(0L);
+    @DisplayName("GET /api/v1/insurance/gap - missing Authorization header returns 401")
+    void getInsuranceGap_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/insurance/gap")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -194,8 +191,8 @@ class InsuranceControllerTest {
     void getInsuranceGap_serviceException() {
         when(insuranceGapService.calculateGap(1L)).thenThrow(new RuntimeException("Calculation error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/insurance/gap")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/insurance/gap").header("Authorization", "Bearer test-token")));
     }
 }

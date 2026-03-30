@@ -1,16 +1,5 @@
 package com.myfinance.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myfinance.dto.TaxDTO;
-import com.myfinance.service.TaxService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -18,6 +7,19 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myfinance.dto.TaxDTO;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.TaxService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TaxController.class)
 class TaxControllerTest {
@@ -28,7 +30,16 @@ class TaxControllerTest {
     @MockitoBean
     private TaxService taxService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/tax - returns tax details")
@@ -49,8 +60,7 @@ class TaxControllerTest {
 
         when(taxService.getTax(1L)).thenReturn(tax);
 
-        mockMvc.perform(get("/api/v1/tax")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/tax").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.selectedRegime").value("old"))
@@ -63,15 +73,9 @@ class TaxControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/tax - missing header defaults to 0")
+    @DisplayName("GET /api/v1/tax - missing header returns 401")
     void getTax_missingHeader() throws Exception {
-        TaxDTO tax = TaxDTO.builder().id(0L).build();
-        when(taxService.getTax(0L)).thenReturn(tax);
-
-        mockMvc.perform(get("/api/v1/tax"))
-                .andExpect(status().isOk());
-
-        verify(taxService).getTax(0L);
+        mockMvc.perform(get("/api/v1/tax")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -97,7 +101,7 @@ class TaxControllerTest {
         when(taxService.saveTax(eq(1L), any(TaxDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/tax")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isOk())
@@ -116,25 +120,22 @@ class TaxControllerTest {
 
         TaxDTO input = TaxDTO.builder().selectedRegime("old").build();
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/api/v1/tax")
-                        .header("X-User-Id", "1")
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(post("/api/v1/tax")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input))));
     }
 
     @Test
-    @DisplayName("POST /api/v1/tax - missing header defaults to 0")
+    @DisplayName("POST /api/v1/tax - missing header returns 401")
     void saveTax_missingHeader() throws Exception {
         TaxDTO input = TaxDTO.builder().selectedRegime("new").build();
-        TaxDTO saved = TaxDTO.builder().id(1L).selectedRegime("new").build();
-        when(taxService.saveTax(eq(0L), any(TaxDTO.class))).thenReturn(saved);
 
         mockMvc.perform(post("/api/v1/tax")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isOk());
-
-        verify(taxService).saveTax(eq(0L), any(TaxDTO.class));
+                .andExpect(status().isUnauthorized());
     }
 }

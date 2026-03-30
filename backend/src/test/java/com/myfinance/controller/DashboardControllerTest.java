@@ -1,18 +1,21 @@
 package com.myfinance.controller;
 
-import com.myfinance.dto.DashboardSummaryDTO;
-import com.myfinance.service.dashboard.DashboardService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.myfinance.dto.DashboardSummaryDTO;
+import com.myfinance.security.JwtService;
+import com.myfinance.service.dashboard.DashboardService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(DashboardController.class)
 class DashboardControllerTest {
@@ -22,6 +25,17 @@ class DashboardControllerTest {
 
     @MockitoBean
     private DashboardService dashboardService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+        Mockito.when(jwtService.extractUserId("test-token-user2")).thenReturn(2L);
+        Mockito.when(jwtService.isTokenValid("test-token-user2")).thenReturn(true);
+    }
 
     @Test
     @DisplayName("GET /api/v1/dashboard/summary - returns dashboard summary for user")
@@ -35,8 +49,7 @@ class DashboardControllerTest {
 
         when(dashboardService.getSummary(1L)).thenReturn(summary);
 
-        mockMvc.perform(get("/api/v1/dashboard/summary")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/dashboard/summary").header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.healthScore.totalScore").value(72.5))
                 .andExpect(jsonPath("$.healthScore.scoreLabel").value("Good"));
@@ -45,15 +58,9 @@ class DashboardControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/dashboard/summary - missing header defaults userId to 0")
-    void getSummary_missingHeader() throws Exception {
-        DashboardSummaryDTO summary = DashboardSummaryDTO.builder().build();
-        when(dashboardService.getSummary(0L)).thenReturn(summary);
-
-        mockMvc.perform(get("/api/v1/dashboard/summary"))
-                .andExpect(status().isOk());
-
-        verify(dashboardService).getSummary(0L);
+    @DisplayName("GET /api/v1/dashboard/summary - missing Authorization header returns 401")
+    void getSummary_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/dashboard/summary")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -61,9 +68,9 @@ class DashboardControllerTest {
     void getSummary_serviceException() {
         when(dashboardService.getSummary(1L)).thenThrow(new RuntimeException("Calculation error"));
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/dashboard/summary")
-                        .header("X-User-Id", "1")));
+        assertThrows(
+                Exception.class,
+                () -> mockMvc.perform(get("/api/v1/dashboard/summary").header("Authorization", "Bearer test-token")));
     }
 
     @Test
@@ -83,8 +90,7 @@ class DashboardControllerTest {
 
         when(dashboardService.getSummary(2L)).thenReturn(summary);
 
-        mockMvc.perform(get("/api/v1/dashboard/summary")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/dashboard/summary").header("Authorization", "Bearer test-token-user2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.healthScore.totalScore").value(85.0))
                 .andExpect(jsonPath("$.healthScore.scoreLabelColor").value("green"))

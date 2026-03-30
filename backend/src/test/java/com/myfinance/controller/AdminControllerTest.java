@@ -1,25 +1,27 @@
 package com.myfinance.controller;
 
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.myfinance.dto.AdminStatsDTO;
 import com.myfinance.dto.AdminUserDetailDTO;
 import com.myfinance.dto.AdminUserSummaryDTO;
 import com.myfinance.model.AuditLog;
+import com.myfinance.security.JwtService;
 import com.myfinance.service.AdminService;
 import com.myfinance.service.AuditLogService;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
 class AdminControllerTest {
@@ -32,6 +34,17 @@ class AdminControllerTest {
 
     @MockitoBean
     private AuditLogService auditLogService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.when(jwtService.extractUserId("admin-token")).thenReturn(1L);
+        Mockito.when(jwtService.isTokenValid("admin-token")).thenReturn(true);
+        Mockito.when(jwtService.extractUserId("user-token")).thenReturn(999L);
+        Mockito.when(jwtService.isTokenValid("user-token")).thenReturn(true);
+    }
 
     // ── GET /api/v1/admin/stats ──
 
@@ -47,8 +60,7 @@ class AdminControllerTest {
 
         when(adminService.getStats()).thenReturn(stats);
 
-        mockMvc.perform(get("/api/v1/admin/stats")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/stats").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalUsers").value(100))
                 .andExpect(jsonPath("$.activeToday").value(15))
@@ -61,20 +73,16 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/stats - non-admin user gets 403")
     void getStats_nonAdminUser_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/stats")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/admin/stats").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(adminService, never()).getStats();
     }
 
     @Test
-    @DisplayName("GET /api/v1/admin/stats - missing header (default 0) gets 403")
-    void getStats_missingHeader_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/stats"))
-                .andExpect(status().isForbidden());
-
-        verify(adminService, never()).getStats();
+    @DisplayName("GET /api/v1/admin/stats - missing Authorization header returns 401")
+    void getStats_missingHeader_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/stats")).andExpect(status().isUnauthorized());
     }
 
     // ── GET /api/v1/admin/users ──
@@ -96,8 +104,7 @@ class AdminControllerTest {
 
         when(adminService.getAllUsers()).thenReturn(List.of(user));
 
-        mockMvc.perform(get("/api/v1/admin/users")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(2))
@@ -111,8 +118,7 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/users - non-admin gets 403")
     void getAllUsers_nonAdmin_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/users")
-                        .header("X-User-Id", "5"))
+        mockMvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(adminService, never()).getAllUsers();
@@ -144,8 +150,7 @@ class AdminControllerTest {
 
         when(adminService.getUserDetail(2L)).thenReturn(detail);
 
-        mockMvc.perform(get("/api/v1/admin/users/2")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/users/2").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.summary.id").value(2))
                 .andExpect(jsonPath("$.hasProfile").value(true))
@@ -161,8 +166,7 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/users/{id} - non-admin gets 403")
     void getUserDetail_nonAdmin_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/users/2")
-                        .header("X-User-Id", "3"))
+        mockMvc.perform(get("/api/v1/admin/users/2").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(adminService, never()).getUserDetail(anyLong());
@@ -173,14 +177,12 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/activity - admin gets daily activity")
     void getActivity_adminUser_success() throws Exception {
-        List<Map<String, Object>> activity = List.of(
-                Map.of("date", "2026-03-27", "count", 15),
-                Map.of("date", "2026-03-28", "count", 20));
+        List<Map<String, Object>> activity =
+                List.of(Map.of("date", "2026-03-27", "count", 15), Map.of("date", "2026-03-28", "count", 20));
 
         when(auditLogService.getDailyActivity(7)).thenReturn(activity);
 
-        mockMvc.perform(get("/api/v1/admin/activity")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/activity").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].date").value("2026-03-27"))
@@ -195,7 +197,7 @@ class AdminControllerTest {
         when(auditLogService.getDailyActivity(30)).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/admin/activity")
-                        .header("X-User-Id", "1")
+                        .header("Authorization", "Bearer admin-token")
                         .param("days", "30"))
                 .andExpect(status().isOk());
 
@@ -205,8 +207,7 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/activity - non-admin gets 403")
     void getActivity_nonAdmin_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/activity")
-                        .header("X-User-Id", "10"))
+        mockMvc.perform(get("/api/v1/admin/activity").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(auditLogService, never()).getDailyActivity(anyInt());
@@ -229,8 +230,7 @@ class AdminControllerTest {
 
         when(auditLogService.getRecentLogs()).thenReturn(List.of(log));
 
-        mockMvc.perform(get("/api/v1/admin/audit-logs")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/audit-logs").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -244,8 +244,7 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/audit-logs - non-admin gets 403")
     void getAuditLogs_nonAdmin_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/audit-logs")
-                        .header("X-User-Id", "2"))
+        mockMvc.perform(get("/api/v1/admin/audit-logs").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(auditLogService, never()).getRecentLogs();
@@ -266,8 +265,7 @@ class AdminControllerTest {
 
         when(auditLogService.getLogsByUser(3L)).thenReturn(List.of(log));
 
-        mockMvc.perform(get("/api/v1/admin/audit-logs/user/3")
-                        .header("X-User-Id", "1"))
+        mockMvc.perform(get("/api/v1/admin/audit-logs/user/3").header("Authorization", "Bearer admin-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(5))
@@ -281,8 +279,7 @@ class AdminControllerTest {
     @Test
     @DisplayName("GET /api/v1/admin/audit-logs/user/{auditUserId} - non-admin gets 403")
     void getAuditLogsByUser_nonAdmin_forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/audit-logs/user/3")
-                        .header("X-User-Id", "7"))
+        mockMvc.perform(get("/api/v1/admin/audit-logs/user/3").header("Authorization", "Bearer user-token"))
                 .andExpect(status().isForbidden());
 
         verify(auditLogService, never()).getLogsByUser(anyLong());

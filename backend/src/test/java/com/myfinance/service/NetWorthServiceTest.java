@@ -44,20 +44,32 @@ class NetWorthServiceTest {
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
     private Asset buildAsset(Long id, String type, String name, Double value, Double allocation) {
-        return Asset.builder().id(id).userId(USER_ID)
-                .assetType(type).name(name).currentValue(value).allocationPercentage(allocation).build();
+        return Asset.builder()
+                .id(id)
+                .userId(USER_ID)
+                .assetType(type)
+                .name(name)
+                .currentValue(value)
+                .allocationPercentage(allocation)
+                .build();
     }
 
-    private Liability buildLiability(Long id, String type, String name, Double outstanding,
-                                     Double emi, Double rate) {
+    private Liability buildLiability(Long id, String type, String name, Double outstanding, Double emi, Double rate) {
         return buildLiability(id, type, name, outstanding, emi, rate, null);
     }
 
-    private Liability buildLiability(Long id, String type, String name, Double outstanding,
-                                     Double emi, Double rate, Integer monthsLeft) {
-        return Liability.builder().id(id).userId(USER_ID)
-                .liabilityType(type).name(name).outstandingAmount(outstanding)
-                .monthlyEmi(emi).interestRate(rate).monthsLeft(monthsLeft).build();
+    private Liability buildLiability(
+            Long id, String type, String name, Double outstanding, Double emi, Double rate, Integer monthsLeft) {
+        return Liability.builder()
+                .id(id)
+                .userId(USER_ID)
+                .liabilityType(type)
+                .name(name)
+                .outstandingAmount(outstanding)
+                .monthlyEmi(emi)
+                .interestRate(rate)
+                .monthsLeft(monthsLeft)
+                .build();
     }
 
     // ─── getBalanceSheet ────────────────────────────────────────────────────────
@@ -69,10 +81,10 @@ class NetWorthServiceTest {
         @Test
         @DisplayName("should return assets and liabilities mapped to DTOs")
         void returnsData() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset(1L, "Bank/Savings", "SBI Savings", 500000.0, 50.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1L, "Home Loan", "HDFC", 3000000.0, 25000.0, 8.5)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildAsset(1L, "Bank/Savings", "SBI Savings", 500000.0, 50.0)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildLiability(1L, "Home Loan", "HDFC", 3000000.0, 25000.0, 8.5)));
 
             BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
 
@@ -104,8 +116,8 @@ class NetWorthServiceTest {
         @DisplayName("should return monthsLeft in liability DTO")
         void returnsMonthsLeft() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1L, "Home Loan", "HDFC", 3000000.0, 25000.0, 8.5, 240)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildLiability(1L, "Home Loan", "HDFC", 3000000.0, 25000.0, 8.5, 240)));
 
             BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
 
@@ -117,8 +129,9 @@ class NetWorthServiceTest {
         @DisplayName("should handle null monthsLeft gracefully")
         void nullMonthsLeft() {
             when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1L, "Personal Loan", "Quick Loan", 50000.0, 5000.0, 12.0, null)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(
+                            List.of(buildLiability(1L, "Personal Loan", "Quick Loan", 50000.0, 5000.0, 12.0, null)));
 
             BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
 
@@ -128,12 +141,14 @@ class NetWorthServiceTest {
         @Test
         @DisplayName("should map all DTO fields correctly for multiple items")
         void multipleItems() {
-            when(assetRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildAsset(1L, "FD", "FD 1", 100000.0, 20.0),
-                    buildAsset(2L, "Equity", "Stocks", 200000.0, 40.0)));
-            when(liabilityRepo.findByUserId(USER_ID)).thenReturn(List.of(
-                    buildLiability(1L, "Personal Loan", "Loan 1", 50000.0, 5000.0, 12.0),
-                    buildLiability(2L, "Car Loan", "Loan 2", 300000.0, 15000.0, 9.0)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildAsset(1L, "FD", "FD 1", 100000.0, 20.0),
+                            buildAsset(2L, "Equity", "Stocks", 200000.0, 40.0)));
+            when(liabilityRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            buildLiability(1L, "Personal Loan", "Loan 1", 50000.0, 5000.0, 12.0),
+                            buildLiability(2L, "Car Loan", "Loan 2", 300000.0, 15000.0, 9.0)));
 
             BalanceSheetResponse result = service.getBalanceSheet(USER_ID);
 
@@ -152,7 +167,10 @@ class NetWorthServiceTest {
         @DisplayName("should save asset and return DTO with all fields")
         void addsAsset() {
             AssetDTO dto = AssetDTO.builder()
-                    .assetType("Bank/Savings").name("SBI Savings").currentValue(500000.0).allocationPercentage(100.0)
+                    .assetType("Bank/Savings")
+                    .name("SBI Savings")
+                    .currentValue(500000.0)
+                    .allocationPercentage(100.0)
                     .build();
 
             Asset saved = buildAsset(1L, "Bank/Savings", "SBI Savings", 500000.0, 100.0);
@@ -180,8 +198,11 @@ class NetWorthServiceTest {
         @DisplayName("should save liability and return DTO with all fields")
         void addsLiability() {
             LiabilityDTO dto = LiabilityDTO.builder()
-                    .liabilityType("Home Loan").name("HDFC Home Loan")
-                    .outstandingAmount(3000000.0).monthlyEmi(25000.0).interestRate(8.5)
+                    .liabilityType("Home Loan")
+                    .name("HDFC Home Loan")
+                    .outstandingAmount(3000000.0)
+                    .monthlyEmi(25000.0)
+                    .interestRate(8.5)
                     .build();
 
             Liability saved = buildLiability(1L, "Home Loan", "HDFC Home Loan", 3000000.0, 25000.0, 8.5);
@@ -202,8 +223,11 @@ class NetWorthServiceTest {
         @DisplayName("should persist and return monthsLeft when provided")
         void addsLiabilityWithMonthsLeft() {
             LiabilityDTO dto = LiabilityDTO.builder()
-                    .liabilityType("Education Loan").name("SBI Edu Loan")
-                    .outstandingAmount(800000.0).monthlyEmi(12000.0).interestRate(7.5)
+                    .liabilityType("Education Loan")
+                    .name("SBI Edu Loan")
+                    .outstandingAmount(800000.0)
+                    .monthlyEmi(12000.0)
+                    .interestRate(7.5)
                     .monthsLeft(60)
                     .build();
 
@@ -221,8 +245,11 @@ class NetWorthServiceTest {
         @DisplayName("should handle null monthsLeft in add")
         void addsLiabilityWithNullMonthsLeft() {
             LiabilityDTO dto = LiabilityDTO.builder()
-                    .liabilityType("Credit Card Debt").name("HDFC CC")
-                    .outstandingAmount(50000.0).monthlyEmi(5000.0).interestRate(36.0)
+                    .liabilityType("Credit Card Debt")
+                    .name("HDFC CC")
+                    .outstandingAmount(50000.0)
+                    .monthlyEmi(5000.0)
+                    .interestRate(36.0)
                     .monthsLeft(null)
                     .build();
 
@@ -322,7 +349,8 @@ class NetWorthServiceTest {
         @Test
         @DisplayName("should throw when liability belongs to different user")
         void throwsWhenWrongUser() {
-            Liability otherUser = Liability.builder().id(1L).userId(999L).name("Other").build();
+            Liability otherUser =
+                    Liability.builder().id(1L).userId(999L).name("Other").build();
             when(liabilityRepo.findById(1L)).thenReturn(Optional.of(otherUser));
 
             assertThatThrownBy(() -> service.deleteLiability(USER_ID, 1L))
@@ -333,7 +361,8 @@ class NetWorthServiceTest {
         @Test
         @DisplayName("should throw when liability has null userId")
         void throwsWhenNullUserId() {
-            Liability nullUser = Liability.builder().id(1L).userId(null).name("Orphan").build();
+            Liability nullUser =
+                    Liability.builder().id(1L).userId(null).name("Orphan").build();
             when(liabilityRepo.findById(1L)).thenReturn(Optional.of(nullUser));
 
             assertThatThrownBy(() -> service.deleteLiability(USER_ID, 1L))

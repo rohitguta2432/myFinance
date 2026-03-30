@@ -1,9 +1,7 @@
 package com.myfinance.dto;
 
-import lombok.*;
-
-import java.util.List;
 import java.util.Map;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -29,7 +27,7 @@ public class TaxCalculationDTO {
     private RegimeBreakdown newRegime;
 
     // ─── Recommendation ────────────────────────────────
-    private String recommendedRegime;   // "old" or "new"
+    private String recommendedRegime; // "old" or "new"
     private Double savings;
 
     @Data

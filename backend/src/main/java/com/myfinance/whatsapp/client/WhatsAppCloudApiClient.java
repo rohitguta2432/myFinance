@@ -2,12 +2,11 @@ package com.myfinance.whatsapp.client;
 
 import com.myfinance.whatsapp.config.WhatsAppConfig;
 import com.myfinance.whatsapp.dto.WhatsAppOutboundMessage;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.util.Map;
 
 /**
  * REST client for the Meta WhatsApp Cloud API (Graph API v22.0).
@@ -38,7 +37,8 @@ public class WhatsAppCloudApiClient {
 
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restClient.post()
+            Map<String, Object> response = restClient
+                    .post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(message)

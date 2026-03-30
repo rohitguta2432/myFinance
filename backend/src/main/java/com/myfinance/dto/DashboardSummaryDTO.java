@@ -1,9 +1,8 @@
 package com.myfinance.dto;
 
-import lombok.*;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.*;
 
 /**
  * Top-level response for GET /api/v1/dashboard/summary/{userId}.
@@ -31,7 +30,10 @@ public class DashboardSummaryDTO {
     // 1. Health Score (5 pillars, rawData)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class HealthScoreDTO {
         private Double totalScore;
         private String scoreLabel;
@@ -42,7 +44,10 @@ public class DashboardSummaryDTO {
         private RawDataDTO rawData;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class PillarDTO {
         private String id;
         private String name;
@@ -55,7 +60,10 @@ public class DashboardSummaryDTO {
         private String longInsight;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RawDataDTO {
         private Double liquidAssets;
         private Double monthlyExpenses;
@@ -96,7 +104,10 @@ public class DashboardSummaryDTO {
     // 2. Projection (SIP FV, optimization cap)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ProjectionResultDTO {
         private List<YearPointDTO> currentPath;
         private List<YearPointDTO> optimizedPath;
@@ -108,14 +119,20 @@ public class DashboardSummaryDTO {
         private List<MilestoneDTO> milestones;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class YearPointDTO {
         private Integer year;
         private Long current;
         private Long optimized;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class MilestoneDTO {
         private String label;
         private Integer year;
@@ -126,7 +143,10 @@ public class DashboardSummaryDTO {
     // 3. Time Machine (delay cost, missed wealth)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class TimeMachineDTO {
         private Double missedWealth;
         private String missedWealthFormatted;
@@ -143,12 +163,18 @@ public class DashboardSummaryDTO {
     // 4. Priority Actions (rule engine, top 3)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class PriorityActionsDTO {
         private List<PriorityActionItemDTO> actions;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class PriorityActionItemDTO {
         private String id;
         private String icon;
@@ -168,37 +194,49 @@ public class DashboardSummaryDTO {
     // 5. Red Flags (15 flags engine)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RedFlagsDTO {
         private List<RedFlagItemDTO> flags;
         private Integer totalCount;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RedFlagItemDTO {
         private String id;
         private String icon;
         private String title;
         private String description;
         private String explanation; // frontend reads flag.explanation
-        private String action;     // frontend reads flag.action
-        private String severity;   // "critical", "warning", "info"
+        private String action; // frontend reads flag.action
+        private String severity; // "critical", "warning", "info"
         private String category;
         private Double impact;
-        private Double urgency;    // frontend reads flag.urgency
+        private Double urgency; // frontend reads flag.urgency
     }
 
     // ══════════════════════════════════════════════════════════════
     // 6. Locked Insights (14 insights, priority scoring)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class LockedInsightsDTO {
         private List<InsightCardDTO> cards;
         private Integer totalAvailable;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class InsightCardDTO {
         private String id;
         private String icon;
@@ -212,12 +250,18 @@ public class DashboardSummaryDTO {
     // 7. Benchmarks (5 comparisons)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class BenchmarksDTO {
         private List<BenchmarkItemDTO> benchmarks;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class BenchmarkItemDTO {
         private String id;
         private String label;
@@ -234,12 +278,18 @@ public class DashboardSummaryDTO {
     // 8. Action Plan (7 actions A1–A7)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ActionPlanDTO {
         private List<ActionItemDTO> actions;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ActionItemDTO {
         private String id;
         private String icon;
@@ -258,7 +308,10 @@ public class DashboardSummaryDTO {
     // 9. Insurance Analysis (term life, health, additional)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class InsuranceAnalysisDTO {
         private TermLifeDTO termLife;
         private HealthInsuranceDTO healthInsurance;
@@ -271,7 +324,10 @@ public class DashboardSummaryDTO {
         private String totalEMIFormatted;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class TermLifeDTO {
         private Double hlv;
         private Double needsAnalysis;
@@ -292,7 +348,10 @@ public class DashboardSummaryDTO {
         private String existingCoverFormatted;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class HealthInsuranceDTO {
         private String cityTier;
         private Double cityBenchmark;
@@ -311,14 +370,20 @@ public class DashboardSummaryDTO {
         private Section80DDTO section80D;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Section80DDTO {
         private Integer self;
         private Integer parentBelow60;
         private Integer parentSenior;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class AdditionalCoverageDTO {
         private String id;
         private String title;
@@ -332,7 +397,10 @@ public class DashboardSummaryDTO {
     // 10. Tax Analysis (regime comparison, TDS, deductions)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class TaxAnalysisDTO {
         private Double grossTotalIncome;
         private String grossTotalIncomeFormatted;
@@ -344,7 +412,10 @@ public class DashboardSummaryDTO {
         private EmployerNpsDTO employerNps;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RegimeComparisonDTO {
         private RegimeDetailDTO old;
         private RegimeDetailDTO newRegime;
@@ -354,7 +425,10 @@ public class DashboardSummaryDTO {
         private String savingsFormatted;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RegimeDetailDTO {
         private Double grossIncome;
         private Double stdDeduction;
@@ -369,7 +443,10 @@ public class DashboardSummaryDTO {
         private Boolean rebateApplied;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class TdsDTO {
         private Double totalTDS;
         private String totalTDSFormatted;
@@ -380,7 +457,10 @@ public class DashboardSummaryDTO {
         private String status; // "refund", "due", "matched"
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class RentalDTO {
         private Boolean hasRentalIncome;
         private Double grossRentalIncome;
@@ -391,7 +471,10 @@ public class DashboardSummaryDTO {
         private String netFormatted;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class DeductionsDTO {
         private Boolean isOldRegime;
         private List<DeductionItemDTO> items;
@@ -399,7 +482,10 @@ public class DashboardSummaryDTO {
         private Double newRegimeDeduction;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class DeductionItemDTO {
         private String label;
         private String sublabel;
@@ -410,7 +496,10 @@ public class DashboardSummaryDTO {
         private Double potentialSaving;
     }
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class EmployerNpsDTO {
         private Boolean show;
         private Boolean hasEmployerNps;
@@ -425,12 +514,15 @@ public class DashboardSummaryDTO {
     // 11. Pillar Interpretations (hook text per pillar)
     // ══════════════════════════════════════════════════════════════
 
-    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class PillarInterpretationDTO {
-        private String tier;          // "critical", "warn", "ok"
-        private String status;        // "CRITICAL", "WARNING", "OK"
-        private String text;          // Hook interpretation text
-        private String action;        // Recommended action
+        private String tier; // "critical", "warn", "ok"
+        private String status; // "CRITICAL", "WARNING", "OK"
+        private String text; // Hook interpretation text
+        private String action; // Recommended action
         private Boolean dscrOverride; // DSCR < 1 override flag
         private Boolean equityOverride; // Equity = 0 override flag
     }
