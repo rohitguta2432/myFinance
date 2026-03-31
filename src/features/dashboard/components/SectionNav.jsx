@@ -25,7 +25,12 @@ const SectionNav = ({ sections }) => {
     }, [sections]);
 
     const scrollTo = (id) => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const el = document.getElementById(id);
+        if (!el) return;
+        const header = document.querySelector('header');
+        const offset = header ? header.getBoundingClientRect().height + 16 : 80;
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
     };
 
     return (
