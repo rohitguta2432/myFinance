@@ -10,6 +10,17 @@ import BenchmarkComparison from '../components/BenchmarkComparison';
 import LockedPremiumInsights from '../components/LockedPremiumInsights';
 import FinancialTimeMachine from '../components/FinancialTimeMachine';
 import PillarInterpretationCard from '../components/PillarInterpretationCard';
+import SectionNav from '../components/SectionNav';
+
+const DASHBOARD_SECTIONS = [
+    { id: 'snapshot', label: 'Snapshot' },
+    { id: 'score', label: 'Health Score' },
+    { id: 'projections', label: 'Projections' },
+    { id: 'red-flags', label: 'Red Flags' },
+    { id: 'actions', label: 'Actions' },
+    { id: 'benchmarks', label: 'Benchmarks' },
+    { id: 'premium', label: 'Premium' },
+];
 
 /* ─── Score Ring SVG ─── */
 const ScoreRing = ({ score, label, color }) => {
@@ -152,10 +163,11 @@ const FinancialDashboard = ({ isPremium = false }) => {
     return (
         <>
 
+            <SectionNav sections={DASHBOARD_SECTIONS} />
             <div className="w-full max-w-6xl mx-auto px-6 lg:px-10 py-6 pb-24 space-y-6">
 
                 {/* ── Greeting + Date ── */}
-                <div className="flex items-center justify-between">
+                <div id="snapshot" className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">Your Financial Snapshot</h2>
                         <p className="text-sm text-slate-400 mt-0.5">
@@ -187,7 +199,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 </div>
 
                 {/* ── Score Overview — Ring + Pillars in One Block ── */}
-                <div className="bg-surface-dark rounded-3xl p-6 border border-white/5 shadow-xl">
+                <div id="score" className="bg-surface-dark rounded-3xl p-6 border border-white/5 shadow-xl">
                     <div className="flex flex-col lg:flex-row gap-6">
                         {/* Left: Score Ring + Label */}
                         <div className="flex flex-col items-center lg:items-start gap-3 lg:w-[240px] shrink-0">
@@ -229,11 +241,13 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 </div>
 
                 {/* ── Financial Time Machine ── */}
-                <FinancialTimeMachine isPremium={isPremium} />
+                <div id="projections">
+                    <FinancialTimeMachine isPremium={isPremium} />
+                </div>
 
                 {/* ── Red Flags ── */}
                 {topFlags.length > 0 && (
-                    <div>
+                    <div id="red-flags">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-base font-bold uppercase tracking-[0.2em] text-slate-500">
                                 Top {topFlags.length} Red Flags
@@ -300,7 +314,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 )}
 
                 {topActions.length > 0 && (
-                <div>
+                <div id="actions">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                             Priority Actions
@@ -375,10 +389,14 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 )}
 
                 {/* ── Your Numbers vs Benchmarks (Personalised) ── */}
-                <BenchmarkComparison />
+                <div id="benchmarks">
+                    <BenchmarkComparison />
+                </div>
 
                 {/* ── Premium Insights (Locked Cards) ── */}
-                <LockedPremiumInsights />
+                <div id="premium">
+                    <LockedPremiumInsights />
+                </div>
 
                 {/* ── Upgrade CTA ── */}
                 <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/20 rounded-3xl p-6 text-center relative overflow-hidden">

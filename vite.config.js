@@ -35,7 +35,7 @@ export default defineConfig({
     port: 3005,
     allowedHosts: true,
     watch: {
-      ignored: ['**/.venv/**', '**/node_modules/**'],
+      ignored: ['**/.venv/**', '**/node_modules/**', '**/backend/**'],
     },
     proxy: {
       '/api': {
