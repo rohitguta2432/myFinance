@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Receipt, Scale, Home, FileText, Building2,
     CheckCircle2, AlertTriangle, Info, ArrowDownRight,
-    ArrowUpRight, Sparkles, TrendingDown, Zap,
+    ArrowUpRight, Sparkles, TrendingDown,
 } from 'lucide-react';
 import { useTaxAnalysis } from '../../../hooks/useTaxAnalysis';
 import { TaxSkeleton } from '../../../components/ui/DashboardSkeleton';
@@ -61,7 +61,7 @@ const TaxPlanningTab = () => {
         return <TaxSkeleton />;
     }
 
-    const { old: oldR, new: newR, recommended, savings, savingsFormatted } = regimeComparison;
+    const { old: oldR, new: newR, recommended, savingsFormatted } = regimeComparison;
 
     return (
         <>
@@ -78,115 +78,102 @@ const TaxPlanningTab = () => {
                 {/* ════════════════════════════════════════════════════
                    §5.1 TAX REGIME COMPARISON (Always)
                    ════════════════════════════════════════════════════ */}
-                <SectionCard id="regime">
-                    <SectionHeader
-                        icon={Scale}
-                        iconColor="bg-violet-500/15 text-violet-400"
-                        bgGradient="from-violet-500/10"
-                        title="Tax Regime Comparison"
-                        subtitle="Old vs New — FY 2026-27"
-                    />
-                    <div className="p-6 space-y-5">
 
-                        {/* Side-by-side cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* OLD REGIME */}
-                            <div className={`rounded-2xl p-5 border-2 relative transition-all ${recommended === 'old'
-                                ? 'border-emerald-500 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                : 'border-white/5 bg-white/[0.02]'
-                                }`}>
-                                {recommended === 'old' && (
-                                    <div className="absolute -top-[2px] -right-[2px] bg-emerald-500 text-black font-black text-xs px-3 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest">
-                                        RECOMMENDED
-                                    </div>
-                                )}
-                                <h4 className={`font-bold text-sm uppercase tracking-widest mb-4 ${recommended === 'old' ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                    Old Regime
-                                </h4>
-                                <div className="space-y-2 font-mono text-sm">
-                                    <RowItem label="Gross Taxable" value={fmt(oldR.grossIncome)} />
-                                    <RowItem label="(-) Std Deduction" value={`-${fmt(oldR.stdDeduction)}`} muted />
-                                    <RowItem label="(-) 80C" value={`-${fmt(oldR.deductions80C)}`} muted />
-                                    <RowItem label="(-) NPS 80CCD" value={`-${fmt(oldR.deductionsNps)}`} muted />
-                                    <div className="border-t border-dashed border-white/10 pt-2 mt-2" />
-                                    <RowItem label="Taxable Income" value={fmt(oldR.taxableIncome)} highlight />
-                                    <RowItem label="Tax" value={fmt(oldR.baseTax)} />
-                                    <RowItem label="(+) Cess 4%" value={fmt(oldR.cess)} muted />
-                                </div>
-                                <div className="border-t border-white/10 mt-4 pt-4">
-                                    <div className="flex justify-between items-baseline">
-                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">TOTAL TAX</span>
-                                        <span className={`text-xl font-black ${recommended === 'old' ? 'text-white' : 'text-slate-400'}`}>
-                                            {fmt(oldR.totalTax)}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 text-right mt-0.5">
-                                        Effective Rate: {oldR.effectiveRate.toFixed(1)}%
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* NEW REGIME */}
-                            <div className={`rounded-2xl p-5 border-2 relative transition-all ${recommended === 'new'
-                                ? 'border-emerald-500 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                : 'border-white/5 bg-white/[0.02]'
-                                }`}>
-                                {recommended === 'new' && (
-                                    <div className="absolute -top-[2px] -right-[2px] bg-emerald-500 text-black font-black text-xs px-3 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest">
-                                        RECOMMENDED
-                                    </div>
-                                )}
-                                <h4 className={`font-bold text-sm uppercase tracking-widest mb-4 ${recommended === 'new' ? 'text-emerald-400' : 'text-slate-400'}`}>
-                                    New Regime
-                                </h4>
-                                <div className="space-y-2 font-mono text-sm">
-                                    <RowItem label="Gross Taxable" value={fmt(newR.grossIncome)} />
-                                    <RowItem label="(-) Std Deduction" value={`-${fmt(newR.stdDeduction)}`} muted />
-                                    <RowItem label="(-) 80C / NPS / HRA" value="Not Allowed" strikethrough />
-                                    <div className="border-t border-dashed border-white/10 pt-2 mt-2" />
-                                    <RowItem label="Taxable Income" value={fmt(newR.taxableIncome)} highlight />
-                                    {newR.rebateApplied && (
-                                        <div className="flex items-center gap-1.5 bg-emerald-500/10 rounded-lg px-2 py-1.5 border border-emerald-500/15">
-                                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                            <span className="text-sm text-emerald-400 font-bold">Section 87A Rebate — Tax = ₹0</span>
-                                        </div>
-                                    )}
-                                    <RowItem label="Tax" value={fmt(newR.baseTax)} />
-                                    <RowItem label="(+) Cess 4%" value={fmt(newR.cess)} muted />
-                                </div>
-                                <div className="border-t border-white/10 mt-4 pt-4">
-                                    <div className="flex justify-between items-baseline">
-                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">TOTAL TAX</span>
-                                        <span className={`text-xl font-black ${recommended === 'new' ? 'text-white' : 'text-slate-400'}`}>
-                                            {fmt(newR.totalTax)}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 text-right mt-0.5">
-                                        Effective Rate: {newR.effectiveRate.toFixed(1)}%
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Savings Banner */}
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Sparkles className="w-5 h-5 text-emerald-400" />
-                                <h4 className="font-bold text-emerald-400">
-                                    Choose {recommended === 'old' ? 'OLD' : 'NEW'} REGIME
-                                </h4>
-                            </div>
-                            <p className="text-sm text-white">
-                                You save <span className="font-black">{savingsFormatted}</span> by choosing {recommended === 'old' ? 'Old Regime' : 'New Regime'}.
+                {/* Recommendation Banner */}
+                <div id="regime" className="rounded-2xl p-5 lg:p-6 border bg-primary/10 border-primary/30">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 className="font-bold text-lg mb-1 flex items-center gap-2 text-primary">
+                                <Sparkles className="w-5 h-5" />
+                                RECOMMENDATION: Choose <span className="text-white">{recommended === 'old' ? 'OLD' : 'NEW'} REGIME</span>
+                            </h3>
+                            <p className="text-white text-xl lg:text-2xl font-bold mb-2">
+                                You SAVE {savingsFormatted}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1.5">
-                                💡 {recommended === 'old'
+                            <p className="text-slate-400 text-sm">
+                                {recommended === 'old'
                                     ? 'Your deductions make Old Regime more beneficial. Review this each year if your investments change.'
                                     : 'With lower deductions, New Regime\'s wider slabs give you better savings.'}
                             </p>
                         </div>
                     </div>
-                </SectionCard>
+                </div>
+
+                {/* Comparison Table */}
+                <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-white/10">
+                                    <th className="text-left px-5 py-4 text-sm font-bold text-slate-400 w-[40%]"></th>
+                                    <th className={`text-center px-5 py-4 text-sm font-bold uppercase tracking-wider w-[30%] ${
+                                        recommended === 'old'
+                                            ? 'text-primary bg-primary/5 border-b-2 border-primary'
+                                            : 'text-slate-400'
+                                    }`}>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Old Regime
+                                            {recommended === 'old' && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                        </div>
+                                    </th>
+                                    <th className={`text-center px-5 py-4 text-sm font-bold uppercase tracking-wider w-[30%] ${
+                                        recommended === 'new'
+                                            ? 'text-primary bg-primary/5 border-b-2 border-primary'
+                                            : 'text-slate-400'
+                                    }`}>
+                                        <div className="flex items-center justify-center gap-2">
+                                            New Regime
+                                            {recommended === 'new' && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[
+                                    { label: 'Gross Income', old: oldR.grossIncome, new: newR.grossIncome },
+                                    { label: 'Standard Deduction', old: oldR.stdDeduction, new: newR.stdDeduction },
+                                    { label: 'Section 80C', old: oldR.deductions80C, new: 0 },
+                                    { label: 'NPS 80CCD', old: oldR.deductionsNps, new: 0 },
+                                    { label: 'HRA Exemption', old: oldR.hraExemption ?? 0, new: 0 },
+                                    { label: 'Other Deductions', old: oldR.otherDeductions ?? 0, new: 0 },
+                                    { label: 'Net Taxable Income', old: oldR.taxableIncome, new: newR.taxableIncome, bold: true },
+                                    { label: 'Tax Calculated', old: oldR.baseTax, new: newR.baseTax },
+                                    { label: 'Cess (4%)', old: oldR.cess, new: newR.cess },
+                                    { label: 'FINAL TAX', old: oldR.totalTax, new: newR.totalTax, final: true },
+                                ].map((row) => (
+                                    <tr
+                                        key={row.label}
+                                        className={`border-b border-white/5 transition-colors ${
+                                            row.final ? 'bg-surface-active' : row.bold ? 'bg-white/[0.02]' : ''
+                                        }`}
+                                    >
+                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-black text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
+                                            {row.label}
+                                        </td>
+                                        <td className={`text-center px-5 py-3 font-mono ${
+                                            row.final
+                                                ? `text-lg font-black ${recommended === 'old' ? 'text-white' : 'text-slate-300'}`
+                                                : row.bold
+                                                    ? 'text-sm font-bold text-white'
+                                                    : 'text-sm text-slate-300'
+                                        } ${recommended === 'old' ? 'bg-primary/5' : ''}`}>
+                                            {fmt(row.old)}
+                                        </td>
+                                        <td className={`text-center px-5 py-3 font-mono ${
+                                            row.final
+                                                ? `text-lg font-black ${recommended === 'new' ? 'text-primary' : 'text-slate-300'}`
+                                                : row.bold
+                                                    ? 'text-sm font-bold text-white'
+                                                    : 'text-sm text-slate-300'
+                                        } ${recommended === 'new' ? 'bg-primary/5' : ''}`}>
+                                            {fmt(row.new)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 {/* ════════════════════════════════════════════════════
                    §5.2  TDS RECONCILIATION (Always)
