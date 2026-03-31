@@ -6,6 +6,14 @@ import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useTaxQuery, useTaxMutation } from '../hooks/useTax';
 import { useTaxCalculationQuery } from '../hooks/useTaxCalculation';
 import { TaxOptimizationSkeleton } from '../../../components/ui/AssessmentSkeleton';
+import SectionNav from '../../dashboard/components/SectionNav';
+
+const STEP6_SECTIONS = [
+    { id: 'regime', label: 'Regime' },
+    { id: 'comparison', label: 'Comparison' },
+    { id: 'deductions', label: 'Deductions' },
+    { id: 'hra', label: 'HRA & Premium' },
+];
 
 const Step6TaxOptimization = () => {
     const navigate = useNavigate();
@@ -24,6 +32,7 @@ const Step6TaxOptimization = () => {
 
     // ─── Manual Deduction Inputs ─────────────────────────────────────────────
 
+    const [ppfNps, setPpfNps] = useState(0);
     const [homeLoanPrincipal, setHomeLoanPrincipal] = useState(0);
     const [tuitionFees, setTuitionFees] = useState(0);
     const [nscFd, setNscFd] = useState(0);
@@ -44,10 +53,9 @@ const Step6TaxOptimization = () => {
     const { data: calcData, isLoading: calcLoading } = useTaxCalculationQuery(debouncedParams);
 
     const autoEpf = calcData?.autoEpf ?? 0;
-    const autoPpf = calcData?.autoPpf ?? 0;
     const autoLifeIns = calcData?.autoLifeInsurance ?? 0;
 
-    const total80CRaw = autoEpf + autoPpf + autoLifeIns + homeLoanPrincipal + tuitionFees + nscFd;
+    const total80CRaw = autoEpf + autoLifeIns + ppfNps + homeLoanPrincipal + tuitionFees + nscFd;
     const final80C = Math.min(total80CRaw, 150000);
     const unused80C = Math.max(0, 150000 - final80C);
 
@@ -117,6 +125,7 @@ const Step6TaxOptimization = () => {
 
     return (
         <div className="flex flex-col h-full bg-background-dark pb-24">
+            <SectionNav sections={STEP6_SECTIONS} />
             <div className="flex-1 space-y-6 overflow-y-auto w-full px-2 sm:px-4 hide-scrollbar">
 
                 {/* Header */}
@@ -126,7 +135,7 @@ const Step6TaxOptimization = () => {
                 </div>
 
                 {/* ═══════════════════ RECOMMENDATION BANNER (full-width) ═══════════════════ */}
-                <div className={`rounded-2xl p-5 lg:p-6 border ${recommendedRegime === 'old' ? 'bg-primary/10 border-primary/30' : 'bg-primary/10 border-primary/30'}`}>
+                <div id="regime" className={`rounded-2xl p-5 lg:p-6 border ${recommendedRegime === 'old' ? 'bg-primary/10 border-primary/30' : 'bg-primary/10 border-primary/30'}`}>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h3 className="font-bold text-lg mb-1 flex items-center gap-2 text-primary">
@@ -159,7 +168,7 @@ const Step6TaxOptimization = () => {
                 </div>
 
                 {/* ═══════════════════ COMPARISON TABLE (full-width) ═══════════════════ */}
-                <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg">
+                <div id="comparison" className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg">
                     {/* Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -241,7 +250,7 @@ const Step6TaxOptimization = () => {
                 </div>
 
                 {/* ═══════════════════ 2-COLUMN: Income/Deductions | HRA/Premium ═══════════════════ */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full pb-10">
+                <div id="deductions" className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full pb-10">
 
                     {/* Left Column */}
                     <div className="space-y-6 w-full">
@@ -289,10 +298,13 @@ const Step6TaxOptimization = () => {
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-4">
                                             <div className="space-y-2">
                                                 {autoEpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> EPF Contribution</span><span className="text-slate-300">{fmt(autoEpf)} (Auto)</span></div>}
-                                                {autoPpf > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> PPF/NPS</span><span className="text-slate-300">{fmt(autoPpf)} (Auto)</span></div>}
                                                 {autoLifeIns > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Life Insurance</span><span className="text-slate-300">{fmt(autoLifeIns)} (Auto)</span></div>}
                                             </div>
                                             <div className="space-y-3 pt-3 border-t border-white/10">
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-slate-400">PPF/NPS (This Year):</span>
+                                                    <input type="number" value={ppfNps || ''} onChange={(e) => setPpfNps(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
+                                                </div>
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-slate-400">Home Loan Principal:</span>
                                                     <input type="number" value={homeLoanPrincipal || ''} onChange={(e) => setHomeLoanPrincipal(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
@@ -397,7 +409,7 @@ const Step6TaxOptimization = () => {
                     <div className="space-y-6 w-full">
 
                         {/* HRA Exemption */}
-                        <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
+                        <div id="hra" className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
                             <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
                                 <h3 className="font-bold text-white text-sm tracking-wide">HRA Exemption</h3>
                                 <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-calculated</span>

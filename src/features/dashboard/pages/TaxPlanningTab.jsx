@@ -6,6 +6,14 @@ import {
 } from 'lucide-react';
 import { useTaxAnalysis } from '../../../hooks/useTaxAnalysis';
 import { TaxSkeleton } from '../../../components/ui/DashboardSkeleton';
+import SectionNav from '../components/SectionNav';
+
+const TAX_SECTIONS = [
+    { id: 'regime', label: 'Regime' },
+    { id: 'tds', label: 'TDS' },
+    { id: 'deductions', label: 'Deductions' },
+    { id: 'nps', label: 'NPS' },
+];
 
 
 
@@ -13,8 +21,8 @@ import { TaxSkeleton } from '../../../components/ui/DashboardSkeleton';
    REUSABLE SUB-COMPONENTS
    ═══════════════════════════════════════════════════════════════ */
 
-const SectionCard = ({ children, className = '' }) => (
-    <section className={`bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden ${className}`}>
+const SectionCard = ({ children, className = '', id }) => (
+    <section id={id} className={`bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden ${className}`}>
         {children}
     </section>
 );
@@ -58,6 +66,7 @@ const TaxPlanningTab = () => {
     return (
         <>
 
+            <SectionNav sections={TAX_SECTIONS} />
             <div className="w-full max-w-6xl mx-auto px-4 py-6 pb-24 space-y-8">
 
                 {/* Page Title */}
@@ -69,7 +78,7 @@ const TaxPlanningTab = () => {
                 {/* ════════════════════════════════════════════════════
                    §5.1 TAX REGIME COMPARISON (Always)
                    ════════════════════════════════════════════════════ */}
-                <SectionCard>
+                <SectionCard id="regime">
                     <SectionHeader
                         icon={Scale}
                         iconColor="bg-violet-500/15 text-violet-400"
@@ -182,7 +191,7 @@ const TaxPlanningTab = () => {
                 {/* ════════════════════════════════════════════════════
                    §5.2  TDS RECONCILIATION (Always)
                    ════════════════════════════════════════════════════ */}
-                <SectionCard>
+                <SectionCard id="tds">
                     <SectionHeader
                         icon={Receipt}
                         iconColor="bg-sky-500/15 text-sky-400"
@@ -284,7 +293,7 @@ const TaxPlanningTab = () => {
                 {/* ════════════════════════════════════════════════════
                    §5.4  SECTION 80C DEDUCTIONS (Conditional on regime)
                    ════════════════════════════════════════════════════ */}
-                <SectionCard>
+                <SectionCard id="deductions">
                     <SectionHeader
                         icon={FileText}
                         iconColor="bg-indigo-500/15 text-indigo-400"
@@ -367,7 +376,7 @@ const TaxPlanningTab = () => {
                    §5.5  EMPLOYER NPS (Conditional)
                    ════════════════════════════════════════════════════ */}
                 {employerNps.show && (
-                    <SectionCard>
+                    <SectionCard id="nps">
                         <SectionHeader
                             icon={Building2}
                             iconColor="bg-cyan-500/15 text-cyan-400"

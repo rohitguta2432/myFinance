@@ -320,3 +320,8 @@ export const getGoalProjection = async () => {
 export const getTaxCalculation = async ({ deductions80C = 0, deductions80D = 0, otherDeductions = 0 } = {}) => {
     return await api.get(`/tax-calculation?deductions80C=${deductions80C}&deductions80D=${deductions80D}&otherDeductions=${otherDeductions}`);
 };
+
+// Retirement Auto-Fill — pulls expenses, age, assets to compute retirement analysis
+export const getRetirementAutoFill = async () => {
+    return await api.get('/retirement-autofill');
+};

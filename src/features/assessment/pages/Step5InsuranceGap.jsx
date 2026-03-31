@@ -6,6 +6,14 @@ import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
 import { useInsuranceGapQuery } from '../hooks/useInsuranceGap';
 import { InsuranceGapSkeleton } from '../../../components/ui/AssessmentSkeleton';
+import SectionNav from '../../dashboard/components/SectionNav';
+
+const STEP5_SECTIONS = [
+    { id: 'corporate', label: 'Corporate' },
+    { id: 'personal', label: 'Health & Life' },
+    { id: 'checklist', label: 'Checklist' },
+    { id: 'summary', label: 'Summary' },
+];
 
 const formatCurrency = (amount) => {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
@@ -110,9 +118,11 @@ const Step5InsuranceGap = () => {
                 <p className="text-sm text-slate-400">Wealth without protection is a house of cards. One medical emergency can wipe out years of savings. Let's ensure you're covered.</p>
             </div>
 
+            <SectionNav sections={STEP5_SECTIONS} />
             <div className="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
 
                 {/* SECTION A: Corporate */}
+                <div id="corporate" />
                 {employmentType === 'Salaried' && (
                     <section className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-lg">
                         <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-3">
@@ -181,7 +191,7 @@ const Step5InsuranceGap = () => {
                 )}
 
                 {/* SECTION B & C: Personal Health + Life — Side by Side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="personal" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <section className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden flex flex-col">
                     <div className="p-5 border-b border-white/5 flex-1">
                         <div className="flex items-center justify-between mb-4">
@@ -333,7 +343,7 @@ const Step5InsuranceGap = () => {
                 </div>
 
                 {/* SECTION D: Quick Checklist */}
-                <section className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-lg">
+                <section id="checklist" className="bg-surface-dark rounded-2xl p-5 border border-white/5 shadow-lg">
                     <h3 className="font-bold text-white text-lg mb-1">Quick Checklist</h3>
                     <p className="text-xs text-slate-400 mb-4">Do you have these secondary protections? (Optional)</p>
 
@@ -357,7 +367,7 @@ const Step5InsuranceGap = () => {
                 </section>
 
                 {/* FINAL ACTION SUMMARY */}
-                <section className="bg-surface-dark border-2 border-primary/20 rounded-3xl shadow-2xl relative mt-10 p-6">
+                <section id="summary" className="bg-surface-dark border-2 border-primary/20 rounded-3xl shadow-2xl relative mt-10 p-6">
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-background-dark font-black text-[10px] uppercase tracking-widest py-1 px-4 rounded-full shadow-lg">
                         Action Summary
                     </div>

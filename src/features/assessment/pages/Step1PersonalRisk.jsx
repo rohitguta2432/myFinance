@@ -5,6 +5,12 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useProfileQuery, useProfileMutation } from '../hooks/useProfile';
 import { ProfileSkeleton } from '../../../components/ui/AssessmentSkeleton';
+import SectionNav from '../../dashboard/components/SectionNav';
+
+const STEP1_SECTIONS = [
+    { id: 'profile', label: 'Profile' },
+    { id: 'investor', label: 'Investor Style' },
+];
 
 const Step1PersonalRisk = () => {
     const navigate = useNavigate();
@@ -213,8 +219,9 @@ const Step1PersonalRisk = () => {
 
     return (
         <div className="flex flex-col gap-6 pb-24">
+            <SectionNav sections={STEP1_SECTIONS} />
             {/* Section A: Personal Profile */}
-            <section className="space-y-5">
+            <section id="profile" className="space-y-5">
                 <div className="flex items-center gap-2 mb-2">
                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30">A</span>
                     <h3 className="text-white text-lg font-bold leading-tight">Personal Profile</h3>
@@ -513,7 +520,7 @@ const Step1PersonalRisk = () => {
             <div className="h-px w-full bg-white/10 my-2"></div>
 
             {/* Section B: Know Your Investor Style */}
-            <section className="space-y-5">
+            <section id="investor" className="space-y-5">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30">B</span>
                     <h3 className="text-white text-lg font-bold leading-tight">Know Your Investor Style</h3>

@@ -59,10 +59,9 @@ public class TaxCalculationService {
                 .filter(a -> containsAny(a.getAssetType(), "EPF"))
                 .mapToDouble(a -> safe(a.getCurrentValue()))
                 .sum();
-        double autoPpf = assets.stream()
-                .filter(a -> containsAny(a.getAssetType(), "PPF", "NPS"))
-                .mapToDouble(a -> safe(a.getCurrentValue()))
-                .sum();
+        // PPF/NPS auto-fetch removed — Asset.currentValue is lifetime balance,
+        // not current year contribution. Users enter manually on frontend.
+        double autoPpf = 0;
 
         List<Insurance> insurances = insuranceRepo.findByUserId(userId);
         double autoLifeInsurance = insurances.stream()

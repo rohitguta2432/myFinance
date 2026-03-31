@@ -6,6 +6,13 @@ import {
 } from 'lucide-react';
 import { useInsuranceAnalysis } from '../../../hooks/useInsuranceAnalysis';
 import { InsuranceSkeleton } from '../../../components/ui/DashboardSkeleton';
+import SectionNav from '../components/SectionNav';
+
+const INSURANCE_SECTIONS = [
+    { id: 'life', label: 'Term Life' },
+    { id: 'health', label: 'Health' },
+    { id: 'additional', label: 'Additional' },
+];
 
 
 
@@ -164,6 +171,7 @@ const InsuranceTab = () => {
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-6 pb-24 space-y-8">
+            <SectionNav sections={INSURANCE_SECTIONS} />
 
                 {/* Page Title */}
                 <div>
@@ -176,7 +184,7 @@ const InsuranceTab = () => {
                 {/* ════════════════════════════════════════════════
                    SECTION 1 — TERM LIFE INSURANCE
                    ════════════════════════════════════════════════ */}
-                <section className="bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden">
+                <section id="life" className="bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden">
                     {/* Section Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 via-transparent to-transparent p-6 border-b border-white/5">
                         <div className="flex items-center gap-3 mb-2">
@@ -259,7 +267,7 @@ const InsuranceTab = () => {
                 {/* ════════════════════════════════════════════════
                    SECTION 2 — HEALTH INSURANCE
                    ════════════════════════════════════════════════ */}
-                <section className="bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden">
+                <section id="health" className="bg-surface-dark rounded-3xl border border-white/5 shadow-xl overflow-hidden">
                     <div className="bg-gradient-to-r from-teal-500/10 via-transparent to-transparent p-6 border-b border-white/5">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center">
@@ -388,7 +396,7 @@ const InsuranceTab = () => {
                    SECTION 3 — ADDITIONAL COVERAGE
                    ════════════════════════════════════════════════ */}
                 {additionalCoverage.length > 0 && (
-                    <section>
+                    <section id="additional">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
                                 <Shield className="w-4 h-4 text-amber-400" />

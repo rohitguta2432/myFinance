@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp, CheckCircle2, ShieldAlert, AlertTriangle, AlertCircle, Lock, Building2, Stethoscope, Briefcase as BusinessIcon, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp, CheckCircle2, ShieldAlert, AlertTriangle, AlertCircle, Lock, Building2, Stethoscope, Briefcase as BusinessIcon, HelpCircle, Crown, Clock, Target, Wallet, BarChart3, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useGoalsQuery, useAddGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
 import { useGoalProjectionQuery } from '../hooks/useGoalProjection';
+import { useRetirementAutoFillQuery } from '../hooks/useRetirementAutoFill';
 import { GoalsSkeleton } from '../../../components/ui/AssessmentSkeleton';
 
 const GOAL_TYPES = [
@@ -43,6 +44,11 @@ const Step4FinancialGoals = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
+
+    // Retirement Auto-Fill
+    const [showRetirementPanel, setShowRetirementPanel] = useState(false);
+    const { data: retirementData, isLoading: isRetirementLoading } = useRetirementAutoFillQuery();
+    const [isPremium] = useState(true); // TODO: restore localStorage check after testing
 
     // Form State
     const [type, setType] = useState(GOAL_TYPES[0].id);
@@ -183,7 +189,7 @@ const Step4FinancialGoals = () => {
                     {GOAL_TYPES.map((t) => (
                         <button
                             key={t.id}
-                            onClick={() => openModal(t.id)}
+                            onClick={() => t.id === 'retirement' ? setShowRetirementPanel(prev => !prev) : openModal(t.id)}
                             className="flex flex-col items-center gap-2 group min-w-[80px]"
                         >
                             <div className="w-16 h-16 rounded-2xl bg-surface-dark border border-white/5 shadow-sm flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/10 transition-all">
@@ -194,6 +200,228 @@ const Step4FinancialGoals = () => {
                     ))}
                 </div>
             </div>
+
+            {/* ═══ Retirement Auto-Fill Panel ═══ */}
+            {showRetirementPanel && (
+                <div className="mb-6 animate-fade-in">
+                    {!isPremium ? (
+                        /* ── Free User: Blurred Teaser ── */
+                        <div className="relative bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
+                            <div className="p-6 blur-[6px] select-none pointer-events-none">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white/5 rounded-xl p-4"><p className="text-slate-500 text-sm">Corpus Required</p><p className="text-2xl font-bold text-white">₹11.7 Cr</p></div>
+                                    <div className="bg-white/5 rounded-xl p-4"><p className="text-slate-500 text-sm">Monthly SIP</p><p className="text-2xl font-bold text-primary">₹75,000</p></div>
+                                    <div className="bg-white/5 rounded-xl p-4"><p className="text-slate-500 text-sm">Gap</p><p className="text-2xl font-bold text-red-400">₹11.4 Cr</p></div>
+                                    <div className="bg-white/5 rounded-xl p-4"><p className="text-slate-500 text-sm">On Track</p><p className="text-2xl font-bold text-amber-400">1.5%</p></div>
+                                </div>
+                            </div>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background-dark/60 backdrop-blur-sm">
+                                <div className="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center mb-3 border border-amber-500/20">
+                                    <Lock className="w-7 h-7 text-amber-500" />
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-1">Unlock Your Retirement Plan</h3>
+                                <p className="text-sm text-slate-400 mb-4">See exact SIP & gap based on your real data</p>
+                                <button className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-background-dark font-bold rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all text-sm">
+                                    <Crown className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+                                    Upgrade to Premium
+                                </button>
+                            </div>
+                        </div>
+                    ) : isRetirementLoading ? (
+                        <div className="bg-surface-dark rounded-2xl border border-white/5 p-8 flex items-center justify-center">
+                            <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+                            <span className="ml-3 text-slate-400">Calculating your retirement plan...</span>
+                        </div>
+                    ) : retirementData ? (
+                        /* ── Premium User: Full Retirement Analysis ── */
+                        <div className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 p-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-white flex items-center gap-2 text-base">
+                                            <Briefcase className="w-5 h-5 text-primary" />
+                                            Retirement Goal Engine
+                                        </h3>
+                                        <p className="text-sm text-slate-400 mt-1">Auto-calculated from your financial data</p>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                                        retirementData.status === 'CRITICAL' ? 'bg-red-500/15 text-red-400' :
+                                        retirementData.status === 'MODERATE' ? 'bg-amber-500/15 text-amber-400' :
+                                        'bg-emerald-500/15 text-emerald-400'
+                                    }`}>
+                                        {retirementData.status === 'CRITICAL' ? '🔴 Critical Gap' :
+                                         retirementData.status === 'MODERATE' ? '🟡 Moderate Gap' : '🟢 On Track'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="p-5 space-y-4">
+                                {/* Section 1: Context */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Current Age</p>
+                                        <p className="text-xl font-bold text-white mt-1">{retirementData.currentAge}</p>
+                                    </div>
+                                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Retire At</p>
+                                        <p className="text-xl font-bold text-white mt-1">{retirementData.retirementAge}</p>
+                                    </div>
+                                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Years Left</p>
+                                        <p className="text-xl font-bold text-primary mt-1">{retirementData.yearsToRetirement}</p>
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Future Expense */}
+                                <div className="bg-white/5 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Wallet className="w-4 h-4 text-slate-400" />
+                                        <p className="text-sm font-semibold text-slate-300">Your Future Monthly Expense</p>
+                                    </div>
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-2xl font-bold text-white">{formatToCrLakh(retirementData.futureMonthlyExpense)}</span>
+                                        <span className="text-xs text-slate-500">/ month</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {formatToCrLakh(retirementData.monthlyExpense)} today → {formatToCrLakh(retirementData.futureMonthlyExpense)} in {retirementData.yearsToRetirement} years at 6% inflation
+                                    </p>
+                                </div>
+
+                                {/* Section 3: Corpus Required */}
+                                <div className="bg-white/5 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Target className="w-4 h-4 text-slate-400" />
+                                        <p className="text-sm font-semibold text-slate-300">Retirement Corpus Required</p>
+                                    </div>
+                                    <p className="text-3xl font-black text-white">{formatToCrLakh(retirementData.corpusRequired)}</p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {formatToCrLakh(retirementData.futureMonthlyExpense)} × 12 ÷ 3% withdrawal rate
+                                    </p>
+                                </div>
+
+                                {/* Section 4: Current Assets */}
+                                <div className="bg-white/5 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <BarChart3 className="w-4 h-4 text-slate-400" />
+                                        <p className="text-sm font-semibold text-slate-300">Your Retirement Assets (Projected)</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <p className="text-xs text-slate-500">Current (EPF+PPF+NPS)</p>
+                                            <p className="text-lg font-bold text-white">{formatToCrLakh(retirementData.currentRetirementAssets)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500">Future Value @ 8%</p>
+                                            <p className="text-lg font-bold text-primary">{formatToCrLakh(retirementData.projectedAssets)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 5: Gap Analysis */}
+                                <div className={`rounded-xl p-4 border ${
+                                    retirementData.status === 'CRITICAL' ? 'bg-red-500/5 border-red-500/20' :
+                                    retirementData.status === 'MODERATE' ? 'bg-amber-500/5 border-amber-500/20' :
+                                    'bg-emerald-500/5 border-emerald-500/20'
+                                }`}>
+                                    <p className="text-sm font-semibold text-slate-300 mb-2">Gap Analysis</p>
+                                    <p className={`text-2xl font-black ${
+                                        retirementData.status === 'CRITICAL' ? 'text-red-400' :
+                                        retirementData.status === 'MODERATE' ? 'text-amber-400' : 'text-emerald-400'
+                                    }`}>
+                                        {retirementData.gap > 0 ? `Short by ${formatToCrLakh(retirementData.gap)}` : 'Fully Covered!'}
+                                    </p>
+                                    <div className="mt-3">
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span className="text-slate-500">On Track</span>
+                                            <span className="text-slate-300 font-bold">{retirementData.onTrackPercent.toFixed(1)}%</span>
+                                        </div>
+                                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                                            <div className={`h-full rounded-full transition-all ${
+                                                retirementData.onTrackPercent >= 80 ? 'bg-emerald-500' :
+                                                retirementData.onTrackPercent >= 20 ? 'bg-amber-500' : 'bg-red-500'
+                                            }`} style={{ width: `${Math.min(100, retirementData.onTrackPercent)}%` }} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 6 & 7: SIP Options */}
+                                {retirementData.gap > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {/* Flat SIP */}
+                                        <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                                            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Flat SIP Required</p>
+                                            <p className="text-2xl font-bold text-white">{formatToCrLakh(retirementData.sipFlat)}<span className="text-sm text-slate-500 font-normal">/mo</span></p>
+                                            <p className="text-xs text-slate-500 mt-1">Same amount every month for {retirementData.yearsToRetirement} years</p>
+                                        </div>
+                                        {/* Step-up SIP */}
+                                        <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <p className="text-xs text-primary uppercase tracking-wide font-bold">Step-Up SIP</p>
+                                                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-white">
+                                                {formatToCrLakh(retirementData.sipStepUpStart)}<span className="text-sm text-slate-500 font-normal">/mo</span>
+                                            </p>
+                                            <p className="text-xs text-slate-400 mt-1">
+                                                Start lower, increase {retirementData.stepUpRate}% yearly
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Section 8: Delay Impact */}
+                                {retirementData.sipIfDelayed > 0 && retirementData.sipFlat > 0 && (
+                                    <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Clock className="w-4 h-4 text-red-400" />
+                                            <p className="text-sm font-semibold text-red-400">Delay Impact</p>
+                                        </div>
+                                        <p className="text-sm text-slate-300">
+                                            If you delay by <span className="text-red-400 font-bold">{retirementData.delayYears} years</span>, your SIP becomes{' '}
+                                            <span className="text-red-400 font-bold">{formatToCrLakh(retirementData.sipIfDelayed)}/mo</span>
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            Delay cost: +{formatToCrLakh(retirementData.sipIfDelayed - retirementData.sipFlat)}/month
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Add as Goal Button */}
+                                <button
+                                    onClick={async () => {
+                                        if (goals.length >= 2 && !isPremium) {
+                                            setIsLimitModalOpen(true);
+                                            return;
+                                        }
+                                        const retGoal = {
+                                            type: 'retirement',
+                                            name: 'Retirement',
+                                            cost: retirementData.corpusRequired / Math.pow(1.06, retirementData.yearsToRetirement),
+                                            horizon: retirementData.yearsToRetirement,
+                                            currentSavings: retirementData.currentRetirementAssets,
+                                            inflation: '6',
+                                            importance: 'Critical',
+                                        };
+                                        try {
+                                            const saved = await addGoalApi(retGoal);
+                                            addGoal(saved);
+                                            toast.success('Retirement goal added!');
+                                            setShowRetirementPanel(false);
+                                        } catch {
+                                            toast.error('Failed to add goal');
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-primary hover:bg-primary/90 text-background-dark font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                >
+                                    <ArrowUpRight className="w-4 h-4" />
+                                    Add Retirement Goal
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+            )}
 
             {/* ═══ Emergency Fund Status Card ═══ */}
             {efMonthlyExpenses > 0 && (() => {
