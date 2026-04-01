@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2, AlertTriangle, Info } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, TrendingUp, TrendingDown, DollarSign, Loader2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
@@ -164,35 +164,25 @@ const Step2IncomeExpenses = () => {
 
     const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + calculateMonthly(item), 0);
-    const manualEMIs = expenses
+    const totalMonthlyEMIs = expenses
         .filter(exp => exp.category === EMI_CATEGORY)
         .reduce((sum, item) => sum + calculateMonthly(item), 0);
 
-    // Cross-validate: EMI from Cash Flow vs Liabilities
-    const liabilitiesEMITotal = liabilities.reduce((sum, l) => sum + (parseFloat(l.emi) || 0), 0);
-
-    // Auto-sync: if user hasn't entered EMI expense but has liabilities, use liabilities EMI
-    const hasManualEMI = manualEMIs > 0;
-    const totalMonthlyEMIs = hasManualEMI ? manualEMIs : liabilitiesEMITotal;
-    const emiAutoSynced = !hasManualEMI && liabilitiesEMITotal > 0;
-
-    // Effective expenses = manual expenses + auto-synced liability EMI (if not manually entered)
-    const effectiveMonthlyExpenses = emiAutoSynced ? totalMonthlyExpenses + liabilitiesEMITotal : totalMonthlyExpenses;
-
     // We want the primary expenses listed as (Total Expenses - EMIs) in the card since it breaks out EMIs specifically.
-    const nonEMIExpenses = effectiveMonthlyExpenses - totalMonthlyEMIs;
+    const nonEMIExpenses = totalMonthlyExpenses - totalMonthlyEMIs;
 
     const discretionaryExpensesList = expenses.filter(exp => exp.type === 'Discretionary');
     const totalDiscretionary = discretionaryExpensesList.reduce((sum, item) => sum + calculateMonthly(item), 0);
 
-    const surplus = totalMonthlyIncome - effectiveMonthlyExpenses;
+    const surplus = totalMonthlyIncome - totalMonthlyExpenses;
     const savingsRate = totalMonthlyIncome > 0 ? Math.round((surplus / totalMonthlyIncome) * 100) : 0;
 
-    // Only show mismatch when user manually entered EMI AND it differs from liabilities
-    const emiMismatch = hasManualEMI && liabilitiesEMITotal > 0 && Math.abs(manualEMIs - liabilitiesEMITotal) > 1;
+    // Cross-validate: EMI from Cash Flow vs Liabilities
+    const liabilitiesEMITotal = liabilities.reduce((sum, l) => sum + (parseFloat(l.emi) || 0), 0);
+    const emiMismatch = (totalMonthlyEMIs > 0 || liabilitiesEMITotal > 0) && Math.abs(totalMonthlyEMIs - liabilitiesEMITotal) > 1;
 
     // Calculate hypothetical metrics if discretionary is reduced by 30%
-    const hypotheticalTotalExpenses = effectiveMonthlyExpenses - (totalDiscretionary * 0.30);
+    const hypotheticalTotalExpenses = totalMonthlyExpenses - (totalDiscretionary * 0.30);
     const hypotheticalSurplus = totalMonthlyIncome - hypotheticalTotalExpenses;
     const hypotheticalSavingsRate = totalMonthlyIncome > 0 ? Math.round((hypotheticalSurplus / totalMonthlyIncome) * 100) : 0;
 
@@ -380,20 +370,7 @@ const Step2IncomeExpenses = () => {
                     </div>
                 )}
 
-                {/* EMI auto-synced info */}
-                {emiAutoSynced && (
-                    <div className="mt-4 bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
-                        <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                        <div>
-                            <h5 className="text-primary font-bold text-sm mb-1">EMI Auto-Synced from Liabilities</h5>
-                            <p className="text-slate-400 text-xs leading-relaxed">
-                                Your liabilities (Step 3) have EMIs totalling <span className="font-bold text-white">₹{liabilitiesEMITotal.toLocaleString()}/mo</span>. This is automatically included in your cash flow calculation.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* EMI Mismatch Warning — only when user manually entered EMI AND it differs from liabilities */}
+                {/* EMI Mismatch Warning — always visible when both EMI sources exist and differ */}
                 {emiMismatch && (
                     <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
                         <div className="shrink-0 mt-0.5 text-red-400">
