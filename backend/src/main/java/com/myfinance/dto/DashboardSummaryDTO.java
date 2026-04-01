@@ -24,6 +24,7 @@ public class DashboardSummaryDTO {
     private ActionPlanDTO actionPlan;
     private InsuranceAnalysisDTO insuranceAnalysis;
     private TaxAnalysisDTO taxAnalysis;
+    private ExcessReallocationDTO excessReallocation;
     private Map<String, PillarInterpretationDTO> pillarInterpretations;
 
     // ══════════════════════════════════════════════════════════════
@@ -511,7 +512,35 @@ public class DashboardSummaryDTO {
     }
 
     // ══════════════════════════════════════════════════════════════
-    // 11. Pillar Interpretations (hook text per pillar)
+    // 11. Excess Reallocation (emergency fund surplus → retirement)
+    // ══════════════════════════════════════════════════════════════
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ExcessReallocationDTO {
+        private Boolean hasExcess;
+        private Double protectedEmergency; // monthlyExpenses × 10
+        private Double deployableSurplus; // liquidAssets - protectedEmergency
+        private Integer yearsToRetirement;
+        private Double equityPct;
+        private Double debtPct;
+        private Double equityTransfer;
+        private Double debtTransfer;
+        private String equityTransferFormatted;
+        private String debtTransferFormatted;
+        private String deployableSurplusFormatted;
+        private Boolean useStp; // STP recommended if equity > 5L
+        private Integer stpMonths; // 6–12
+        private String riskProfile;
+        private Integer emergencyTargetMonths;
+        private Integer bufferMonths;
+        private String reason;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 12. Pillar Interpretations (hook text per pillar)
     // ══════════════════════════════════════════════════════════════
 
     @Data

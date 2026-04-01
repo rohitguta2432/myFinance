@@ -27,6 +27,7 @@ public class DashboardService {
     private final ActionPlanCalculator actionPlanCalc;
     private final InsuranceAnalysisCalculator insuranceAnalysisCalc;
     private final TaxAnalysisCalculator taxAnalysisCalc;
+    private final ExcessReallocationCalculator excessReallocationCalc;
     private final PillarInterpretationCalculator pillarInterpretationCalc;
 
     public DashboardSummaryDTO getSummary(Long userId) {
@@ -67,7 +68,10 @@ public class DashboardService {
         // 11. Tax Analysis
         TaxAnalysisDTO taxAnalysis = taxAnalysisCalc.calculate(data);
 
-        // 12. Pillar Interpretations (migrated from frontend useHookText.js)
+        // 12. Excess Reallocation (emergency fund surplus → retirement)
+        ExcessReallocationDTO excessReallocation = excessReallocationCalc.calculate(data, rawData);
+
+        // 13. Pillar Interpretations (migrated from frontend useHookText.js)
         var pillarInterpretations = pillarInterpretationCalc.calculate(healthScore.getSortedPillars(), rawData);
 
         long elapsed = System.currentTimeMillis() - start;
@@ -84,6 +88,7 @@ public class DashboardService {
                 .actionPlan(actionPlan)
                 .insuranceAnalysis(insuranceAnalysis)
                 .taxAnalysis(taxAnalysis)
+                .excessReallocation(excessReallocation)
                 .pillarInterpretations(pillarInterpretations)
                 .build();
     }

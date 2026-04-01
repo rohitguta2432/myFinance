@@ -86,6 +86,9 @@ public class DashboardDataLoader {
         String riskTolerance = profile.getRiskTolerance() != null
                 ? profile.getRiskTolerance().name().toLowerCase()
                 : "moderate";
+        String employmentType = profile.getEmploymentType() != null
+                ? profile.getEmploymentType().name()
+                : "SALARIED";
         int dependents = profile.getDependents() != null ? profile.getDependents() : 0;
         int childDependents = profile.getChildDependents() != null ? profile.getChildDependents() : 0;
 
@@ -101,6 +104,7 @@ public class DashboardDataLoader {
                 .age(age)
                 .city(city)
                 .riskTolerance(riskTolerance)
+                .employmentType(employmentType)
                 .dependents(dependents)
                 .childDependents(childDependents)
                 .monthlyIncome(monthlyIncome)
@@ -173,7 +177,7 @@ public class DashboardDataLoader {
         private Tax tax;
 
         private int age;
-        private String city, riskTolerance;
+        private String city, riskTolerance, employmentType;
         private int dependents, childDependents;
         private double monthlyIncome, annualIncome, monthlyExpenses, monthlyEMI, monthlySavings;
         private double totalAssets, totalLiabilities, netWorth;

@@ -54,6 +54,9 @@ class DashboardServiceTest {
     private TaxAnalysisCalculator taxAnalysisCalc;
 
     @Mock
+    private ExcessReallocationCalculator excessReallocationCalc;
+
+    @Mock
     private PillarInterpretationCalculator pillarInterpretationCalc;
 
     @InjectMocks
@@ -151,6 +154,11 @@ class DashboardServiceTest {
                     TaxAnalysisDTO.builder().grossTotalIncome(1200000.0).build();
             when(taxAnalysisCalc.calculate(data)).thenReturn(taxAnalysis);
 
+            ExcessReallocationDTO excessReallocation = ExcessReallocationDTO.builder()
+                    .hasExcess(false)
+                    .build();
+            when(excessReallocationCalc.calculate(data, rawData)).thenReturn(excessReallocation);
+
             Map<String, PillarInterpretationDTO> interpretations = Map.of(
                     "survival",
                     PillarInterpretationDTO.builder().tier("ok").status("OK").build());
@@ -169,6 +177,7 @@ class DashboardServiceTest {
             assertThat(result.getActionPlan()).isEqualTo(actionPlan);
             assertThat(result.getInsuranceAnalysis()).isEqualTo(insuranceAnalysis);
             assertThat(result.getTaxAnalysis()).isEqualTo(taxAnalysis);
+            assertThat(result.getExcessReallocation()).isEqualTo(excessReallocation);
             assertThat(result.getPillarInterpretations()).isEqualTo(interpretations);
         }
 
@@ -203,6 +212,8 @@ class DashboardServiceTest {
                     .thenReturn(InsuranceAnalysisDTO.builder().build());
             when(taxAnalysisCalc.calculate(any()))
                     .thenReturn(TaxAnalysisDTO.builder().build());
+            when(excessReallocationCalc.calculate(any(), any()))
+                    .thenReturn(ExcessReallocationDTO.builder().build());
             when(pillarInterpretationCalc.calculate(any(), any())).thenReturn(Map.of());
 
             dashboardService.getSummary(userId);

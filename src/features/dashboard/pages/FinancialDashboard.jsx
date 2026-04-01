@@ -11,6 +11,7 @@ import LockedPremiumInsights from '../components/LockedPremiumInsights';
 import FinancialTimeMachine from '../components/FinancialTimeMachine';
 import PillarInterpretationCard from '../components/PillarInterpretationCard';
 import SectionNav from '../components/SectionNav';
+import ExcessReallocationCard from '../components/ExcessReallocationCard';
 
 const DASHBOARD_SECTIONS = [
     { id: 'snapshot', label: 'Snapshot' },
@@ -475,6 +476,9 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 <div id="benchmarks">
                     <BenchmarkComparison />
                 </div>
+
+                {/* ── Excess Reallocation (surplus → retirement) ── */}
+                <ExcessReallocationCard />
 
                 {/* ── Premium Insights (Locked Cards) ── */}
                 <div id="premium">
