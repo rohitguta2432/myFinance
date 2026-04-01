@@ -41,7 +41,7 @@ const Step4FinancialGoals = () => {
     const { mutateAsync: deleteGoalApi, isPending: isDeletingGoal } = useDeleteGoalMutation();
 
     useEffect(() => {
-        if (goalsData?.length) {
+        if (goalsData) {
             useAssessmentStore.setState({ goals: goalsData });
         }
     }, [goalsData]);
