@@ -416,12 +416,12 @@ const Step6TaxOptimization = () => {
                             </div>
                             <div className="p-5 font-mono text-sm space-y-2">
                                 <div className="flex justify-between items-center text-slate-300">
-                                    <span>Standard Exemption</span>
+                                    <span>HRA Received</span>
                                     <span>{fmt(actualHraReceived)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-slate-300">
                                     <span>Auto-calculated</span>
-                                    <span>-</span>
+                                    <span>{fmt(hraExemption)}</span>
                                 </div>
                                 <div className="border-t border-dashed border-white/20 pt-3 flex justify-between items-center">
                                     <span className="text-white font-bold tracking-widest">EXEMPTION</span>

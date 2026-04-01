@@ -56,7 +56,8 @@ public class TaxAnalysisCalculator {
         double stdDeduction = 75000; // FY 2024-25 standard deduction
 
         // === OLD REGIME ===
-        double oldTotalDeductions = ded80C + dedNPS + dedHRA + dedHomeLoan + ded80D + stdDeduction;
+        double oldOtherDeductions = rentalStdDeduction + dedHomeLoan + ded80D;
+        double oldTotalDeductions = ded80C + dedNPS + dedHRA + oldOtherDeductions + stdDeduction;
         double oldTaxableIncome = Math.max(0, grossIncome - oldTotalDeductions);
         double oldBaseTax = calcOldRegimeTax(oldTaxableIncome);
         boolean oldRebate = oldTaxableIncome <= 500000;
@@ -76,6 +77,8 @@ public class TaxAnalysisCalculator {
                 .stdDeduction(stdDeduction)
                 .deductions80C(ded80C)
                 .deductionsNps(dedNPS)
+                .hraExemption(dedHRA)
+                .otherDeductions(oldOtherDeductions)
                 .totalDeductions(oldTotalDeductions)
                 .taxableIncome(oldTaxableIncome)
                 .baseTax(oldBaseTax)
@@ -107,6 +110,8 @@ public class TaxAnalysisCalculator {
                 .stdDeduction(newStdDed)
                 .deductions80C(0.0)
                 .deductionsNps(newEmployerNps)
+                .hraExemption(0.0)
+                .otherDeductions(0.0)
                 .totalDeductions(newTotalDed)
                 .taxableIncome(newTaxableIncome)
                 .baseTax(newBaseTax)

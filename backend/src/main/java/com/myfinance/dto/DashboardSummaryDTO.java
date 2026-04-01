@@ -435,6 +435,8 @@ public class DashboardSummaryDTO {
         private Double stdDeduction;
         private Double deductions80C;
         private Double deductionsNps;
+        private Double hraExemption;
+        private Double otherDeductions;
         private Double totalDeductions;
         private Double taxableIncome;
         private Double baseTax;
