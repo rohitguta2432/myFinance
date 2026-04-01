@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useInsuranceQuery, useInsuranceMutation } from '../hooks/useInsurance';
 import { useInsuranceGapQuery } from '../hooks/useInsuranceGap';
+import { useProfileQuery } from '../hooks/useProfile';
 import { InsuranceGapSkeleton } from '../../../components/ui/AssessmentSkeleton';
 import SectionNav from '../../dashboard/components/SectionNav';
 
@@ -34,6 +35,15 @@ const Step5InsuranceGap = () => {
         removePersonalLife,
         toggleChecklist
     } = useAssessmentStore();
+
+    // Sync employmentType from backend (needed for corporate section visibility)
+    const { data: profileData } = useProfileQuery();
+    const setEmploymentType = useAssessmentStore((s) => s.setEmploymentType);
+    useEffect(() => {
+        if (profileData?.employmentType && !employmentType) {
+            setEmploymentType(profileData.employmentType);
+        }
+    }, [profileData?.employmentType, employmentType, setEmploymentType]);
 
     // API Integration
     const { mutateAsync: saveInsuranceApi, isPending: isSaving } = useInsuranceMutation();
