@@ -151,7 +151,17 @@ const Step3AssetsLiabilities = () => {
         }
     }, [category, activeTab]);
 
-    const handleSave = async () => {
+    const clearValueFields = () => {
+        setName('');
+        setAmount('');
+        setPurchaseValue('');
+        setEmi('');
+        setInterestRate('');
+        setMonthsLeft('');
+        setMoratoriumMonths('');
+    };
+
+    const handleSave = async (keepOpen = false) => {
         const newItem = {
             category,
             subCategory: activeTab === 'assets' ? subCategory : undefined,
@@ -189,7 +199,7 @@ const Step3AssetsLiabilities = () => {
 
         if (activeTab === 'assets') {
             addAsset(optimisticItem);
-            setIsModalOpen(false);
+            if (!keepOpen) setIsModalOpen(false);
             try {
                 await addAssetApi(newItem);
                 toast.success('Asset saved successfully');
@@ -199,7 +209,7 @@ const Step3AssetsLiabilities = () => {
             }
         } else {
             addLiability(optimisticItem);
-            setIsModalOpen(false);
+            if (!keepOpen) setIsModalOpen(false);
             try {
                 await addLiabilityApi(newItem);
                 toast.success('Liability saved successfully');
@@ -208,6 +218,9 @@ const Step3AssetsLiabilities = () => {
                 toast.error('Failed to save liability. Please try again.');
             }
         }
+
+        // Keep modal open with category preserved, clear value fields
+        if (keepOpen) clearValueFields();
     };
 
     // ── Backend-computed portfolio analysis ──────────────────────────────
@@ -838,12 +851,22 @@ const Step3AssetsLiabilities = () => {
                                 </>
                             )}
 
-                            <button
-                                onClick={handleSave}
-                                className="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-4 rounded-xl mt-4 shadow-[0_0_15px_rgba(13,242,89,0.3)] active:scale-[0.98] transition-all"
-                            >
-                                {editingItem ? 'Update' : 'Save'} {activeTab === 'assets' ? 'Asset' : 'Liability'}
-                            </button>
+                            <div className={`mt-4 ${editingItem ? '' : 'flex gap-3'}`}>
+                                <button
+                                    onClick={() => handleSave(false)}
+                                    className={`${editingItem ? 'w-full' : 'flex-1'} bg-primary hover:bg-primary-dark text-background-dark font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(13,242,89,0.3)] active:scale-[0.98] transition-all`}
+                                >
+                                    {editingItem ? 'Update' : 'Save'} {activeTab === 'assets' ? 'Asset' : 'Liability'}
+                                </button>
+                                {!editingItem && (
+                                    <button
+                                        onClick={() => handleSave(true)}
+                                        className="flex-1 bg-surface-active hover:bg-white/10 text-white font-bold py-4 rounded-xl border border-white/10 active:scale-[0.98] transition-all"
+                                    >
+                                        Save & Add Another
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
