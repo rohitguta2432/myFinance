@@ -545,9 +545,27 @@ const Step4FinancialGoals = () => {
                                     <p className="text-xs text-slate-400">Target: {formatToCrLakh(gBufferedCost)} ({new Date().getFullYear() + goal.horizon})</p>
                                     <p className="text-xs text-slate-400">Current: {formatToCrLakh(goal.currentSavings || 0)}</p>
                                 </div>
-                                <button onClick={() => openModal(null, goal)} className="text-primary text-sm font-semibold hover:underline bg-primary/10 px-3 py-1 rounded-full">
-                                    Edit
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button onClick={() => openModal(null, goal)} className="text-primary text-sm font-semibold hover:underline bg-primary/10 px-3 py-1 rounded-full">
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                await deleteGoalApi(goal.id);
+                                                removeGoal(goal.id);
+                                                toast.success('Goal deleted successfully');
+                                            } catch (error) {
+                                                console.error('Failed to delete goal:', error);
+                                                toast.error('Failed to delete goal');
+                                            }
+                                        }}
+                                        disabled={isDeletingGoal}
+                                        className="text-red-400/60 text-sm font-semibold hover:text-red-400 hover:underline bg-red-500/10 px-3 py-1 rounded-full disabled:opacity-50"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="mb-4">
@@ -573,21 +591,6 @@ const Step4FinancialGoals = () => {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        await deleteGoalApi(goal.id);
-                                        toast.success('Goal deleted successfully');
-                                    } catch (error) {
-                                        console.error('Failed to delete goal:', error);
-                                        toast.error('Failed to delete goal');
-                                    }
-                                }}
-                                disabled={isDeletingGoal}
-                                className="absolute top-4 right-20 text-slate-500 hover:text-red-400 p-1 text-xs underline disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isDeletingGoal ? 'Deleting...' : 'Delete'}
-                            </button>
                         </div>
                     );
                 })}
