@@ -10,7 +10,7 @@ const FinancialTimeMachine = ({ isPremium = false }) => {
     // Animate the daily cost number counting up
     useEffect(() => {
         if (!data) return;
-        const target = data.dailyCost;
+        const target = Math.round(data.dailyCost);
         const duration = 1500;
         const steps = 40;
         const increment = target / steps;
