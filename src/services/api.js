@@ -49,10 +49,10 @@ async function request(endpoint, options = {}) {
         throw new Error(error.message || `API error: ${response.status}`);
     }
 
-    // Handle 204 No Content
-    if (response.status === 204) return null;
-
-    return response.json();
+    // Handle empty responses (204 No Content or empty 200)
+    const text = await response.text();
+    if (!text) return null;
+    return JSON.parse(text);
 }
 
 export const api = {
