@@ -125,8 +125,16 @@ const LockedHookCard = ({ pillar, hookData }) => {
 const FinancialDashboard = ({ isPremium = false }) => {
     const { totalScore, scoreLabel, sortedPillars, mostCritical, rawData, isLoading } = useFinancialHealthScore();
     const hookTexts = useHookText(sortedPillars, rawData);
-    const { topFlags, hiddenCount: flagsHidden, totalTriggered: flagsTriggered } = useRedFlags();
-    const { topActions, hiddenCount: actionsHidden, totalTriggered: actionsTriggered } = usePriorityActions();
+    const { allFlags, totalTriggered: flagsTriggered } = useRedFlags();
+    const { allActions, totalTriggered: actionsTriggered } = usePriorityActions();
+
+    // Free tier: 1 red flag visible, 3 priority actions visible
+    const FREE_FLAGS_LIMIT = 1;
+    const FREE_ACTIONS_LIMIT = 3;
+    const visibleFlags = isPremium ? allFlags : allFlags.slice(0, FREE_FLAGS_LIMIT);
+    const lockedFlags = isPremium ? [] : allFlags.slice(FREE_FLAGS_LIMIT);
+    const visibleActions = isPremium ? allActions : allActions.slice(0, FREE_ACTIONS_LIMIT);
+    const lockedActions = isPremium ? [] : allActions.slice(FREE_ACTIONS_LIMIT);
     const { city } = useAssessmentStore();
 
     // Inject city into rawData for hook text city health benchmark logic
@@ -246,18 +254,19 @@ const FinancialDashboard = ({ isPremium = false }) => {
                 </div>
 
                 {/* ── Red Flags ── */}
-                {topFlags.length > 0 && (
+                {allFlags.length > 0 && (
                     <div id="red-flags">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-base font-bold uppercase tracking-[0.2em] text-slate-500">
-                                Top {topFlags.length} Red Flags
+                                Red Flags ({flagsTriggered})
                             </h3>
-                            {flagsTriggered > 3 && (
-                                <span className="text-sm text-slate-600">{flagsTriggered} total detected</span>
+                            {!isPremium && flagsTriggered > FREE_FLAGS_LIMIT && (
+                                <span className="text-xs text-amber-400 font-semibold">{flagsTriggered - FREE_FLAGS_LIMIT} locked</span>
                             )}
                         </div>
                         <div className="space-y-3">
-                            {topFlags.map((flag, i) => {
+                            {/* Visible flags — full detail */}
+                            {visibleFlags.map((flag) => {
                                 const sevColors = {
                                     CRITICAL: { bg: 'bg-red-500/8', border: 'border-red-500/25', badge: 'bg-red-500', text: 'text-red-400', icon: XCircle },
                                     WARNING: { bg: 'bg-amber-500/8', border: 'border-amber-500/20', badge: 'bg-amber-500', text: 'text-amber-400', icon: AlertTriangle },
@@ -298,33 +307,74 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                     </div>
                                 );
                             })}
+
+                            {/* Locked flags — title + severity visible, details blurred */}
+                            {lockedFlags.map((flag) => {
+                                const sevColors = {
+                                    CRITICAL: { bg: 'bg-red-500/5', border: 'border-red-500/10', badge: 'bg-red-500', text: 'text-red-400', icon: XCircle },
+                                    WARNING: { bg: 'bg-amber-500/5', border: 'border-amber-500/10', badge: 'bg-amber-500', text: 'text-amber-400', icon: AlertTriangle },
+                                    INFO: { bg: 'bg-blue-500/5', border: 'border-blue-500/10', badge: 'bg-blue-500', text: 'text-blue-400', icon: Info },
+                                };
+                                const s = sevColors[flag.severity] || sevColors.WARNING;
+                                const Icon = s.icon;
+                                return (
+                                    <div key={flag.id} className={`${s.bg} ${s.border} border rounded-xl p-4 relative overflow-hidden`}>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                                                <Icon className={`w-4 h-4 ${s.text}`} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                    <span className={`px-2 py-1 ${s.badge} text-[11px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
+                                                        {flag.severity}
+                                                    </span>
+                                                    <h4 className="text-lg font-bold text-white">{flag.title}</h4>
+                                                </div>
+                                                <div className="blur-[6px] select-none pointer-events-none">
+                                                    <p className="text-base text-slate-400 leading-relaxed mb-2">
+                                                        {flag.explanation}
+                                                    </p>
+                                                    <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                                        <span className="text-base mt-px">📌</span>
+                                                        <p className="text-sm text-slate-300 leading-relaxed">{flag.action}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Lock className="w-4 h-4 text-amber-500/60 shrink-0 mt-1" />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        {flagsHidden > 0 && (
-                            <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-4 flex items-center justify-between">
+
+                        {/* Upgrade CTA for locked flags */}
+                        {lockedFlags.length > 0 && (
+                            <div className="mt-3 bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-500/15 rounded-xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Lock className="w-5 h-5 text-slate-500" />
-                                    <span className="text-base text-slate-500">
-                                        +{flagsHidden} more flag{flagsHidden > 1 ? 's' : ''} detected
+                                    <Lock className="w-5 h-5 text-amber-400" />
+                                    <span className="text-sm text-slate-400">
+                                        Unlock all {flagsTriggered} red flags with detailed action plans
                                     </span>
                                 </div>
-                                <span className="text-sm text-primary font-semibold">Unlock Premium →</span>
+                                <span className="text-sm text-amber-400 font-bold whitespace-nowrap">Upgrade →</span>
                             </div>
                         )}
                     </div>
                 )}
 
-                {topActions.length > 0 && (
+                {allActions.length > 0 && (
                 <div id="actions">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                            Priority Actions
+                            Priority Actions ({actionsTriggered})
                         </h3>
-                        {actionsTriggered > 3 && (
-                            <span className="text-xs text-slate-600">{actionsTriggered} actions identified</span>
+                        {!isPremium && actionsTriggered > FREE_ACTIONS_LIMIT && (
+                            <span className="text-xs text-amber-400 font-semibold">{actionsTriggered - FREE_ACTIONS_LIMIT} locked</span>
                         )}
                     </div>
                     <div className="space-y-3">
-                        {topActions.map((act, i) => (
+                        {/* Visible actions — full detail */}
+                        {visibleActions.map((act, i) => (
                             <div key={act.id} className="bg-surface-dark border border-white/5 rounded-xl p-4 hover:border-primary/20 transition-colors">
                                 <div className="flex items-start gap-3">
                                     <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-lg shrink-0">
@@ -373,16 +423,49 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                 </div>
                             </div>
                         ))}
+
+                        {/* Locked actions — title visible, details blurred */}
+                        {lockedActions.map((act, i) => (
+                            <div key={act.id} className="bg-surface-dark border border-white/5 rounded-xl p-4 relative overflow-hidden">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-lg shrink-0 opacity-50">
+                                        {act.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="px-2 py-1 bg-slate-500/15 text-[10px] font-bold text-slate-400 uppercase tracking-widest rounded-full leading-none">
+                                                #{FREE_ACTIONS_LIMIT + i + 1}
+                                            </span>
+                                            <h4 className="text-base font-bold text-white">{act.title}</h4>
+                                        </div>
+                                        <div className="blur-[6px] select-none pointer-events-none">
+                                            <p className="text-sm text-slate-400 leading-relaxed mb-2">
+                                                {act.description}
+                                            </p>
+                                            {act.howTo && (
+                                                <div className="flex items-start gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                                    <span className="text-base mt-px">▶</span>
+                                                    <p className="text-sm text-slate-300">{act.howTo}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Lock className="w-4 h-4 text-amber-500/60 shrink-0 mt-1" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    {actionsHidden > 0 && (
-                        <div className="mt-3 bg-surface-dark border border-white/5 rounded-xl p-4 flex items-center justify-between">
+
+                    {/* Upgrade CTA for locked actions */}
+                    {lockedActions.length > 0 && (
+                        <div className="mt-3 bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-500/15 rounded-xl p-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Lock className="w-4 h-4 text-slate-500" />
-                                <span className="text-sm text-slate-500">
-                                    +{actionsHidden} more action{actionsHidden > 1 ? 's' : ''} identified
+                                <Lock className="w-5 h-5 text-amber-400" />
+                                <span className="text-sm text-slate-400">
+                                    Unlock all {actionsTriggered} actions with step-by-step guides
                                 </span>
                             </div>
-                            <span className="text-xs text-primary font-semibold">Unlock Premium →</span>
+                            <span className="text-sm text-amber-400 font-bold whitespace-nowrap">Upgrade →</span>
                         </div>
                     )}
                 </div>

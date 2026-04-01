@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,13 @@ public class GoalService {
                 dto.getGoalType(),
                 dto.getName(),
                 dto.getTargetAmount());
+        if ("retirement".equalsIgnoreCase(dto.getGoalType()) || "emergency".equalsIgnoreCase(dto.getGoalType())) {
+            List<Goal> existing = goalRepo.findByUserIdAndGoalType(userId, dto.getGoalType());
+            if (!existing.isEmpty()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "You can only have one " + dto.getGoalType() + " goal.");
+            }
+        }
         Goal goal = Goal.builder()
                 .userId(userId)
                 .goalType(dto.getGoalType())

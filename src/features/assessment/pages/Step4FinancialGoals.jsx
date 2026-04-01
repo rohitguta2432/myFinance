@@ -19,6 +19,8 @@ const GOAL_TYPES = [
     { id: 'custom', label: 'Custom', icon: HelpCircle, defaultCost: 1000000, defaultHorizon: 5 },
 ];
 
+const SINGLETON_GOAL_TYPES = ['retirement', 'emergency'];
+
 const IMPORTANCE_LEVELS = [
     { id: 'Critical', label: 'Critical' },
     { id: 'High', label: 'High' },
@@ -29,6 +31,9 @@ const IMPORTANCE_LEVELS = [
 const Step4FinancialGoals = () => {
     const navigate = useNavigate();
     const { goals, addGoal, removeGoal, updateGoal } = useAssessmentStore();
+
+    const hasSingletonGoal = (goalType) =>
+        SINGLETON_GOAL_TYPES.includes(goalType) && goals.some(g => g.type === goalType);
 
     // API Integration
     const { data: goalsData, isLoading: isFetchingGoals } = useGoalsQuery();
@@ -62,6 +67,12 @@ const Step4FinancialGoals = () => {
     const openModal = (goalType = null, goalToEdit = null) => {
         if (!goalToEdit && goals.length >= 2) {
             setIsLimitModalOpen(true);
+            return;
+        }
+
+        if (!goalToEdit && hasSingletonGoal(goalType)) {
+            const label = GOAL_TYPES.find(t => t.id === goalType)?.label || goalType;
+            toast.error(`You already have a ${label} goal. Edit or delete it instead.`);
             return;
         }
 
@@ -110,7 +121,13 @@ const Step4FinancialGoals = () => {
         } else {
             const newGoal = { ...goalData, id: Date.now() };
             addGoal(newGoal); // optimistic
-            try { await addGoalApi(newGoal); } catch (e) { console.warn('Goal API save failed:', e.message); }
+            try {
+                const saved = await addGoalApi(newGoal);
+                if (saved?.id) updateGoal(newGoal.id, { id: saved.id });
+            } catch (e) {
+                removeGoal(newGoal.id);
+                toast.error(e.message || 'Failed to save goal');
+            }
         }
         setIsModalOpen(false);
     };
@@ -186,18 +203,31 @@ const Step4FinancialGoals = () => {
             {/* Carousel */}
             <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                 <div className="flex gap-4 w-max">
-                    {GOAL_TYPES.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => t.id === 'retirement' ? setShowRetirementPanel(prev => !prev) : openModal(t.id)}
-                            className="flex flex-col items-center gap-2 group min-w-[80px]"
-                        >
-                            <div className="w-16 h-16 rounded-2xl bg-surface-dark border border-white/5 shadow-sm flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/10 transition-all">
-                                <t.icon className="w-8 h-8 text-slate-400 group-hover:text-primary transition-colors" />
-                            </div>
-                            <span className="text-xs font-medium text-slate-400 group-hover:text-primary whitespace-nowrap">{t.label}</span>
-                        </button>
-                    ))}
+                    {GOAL_TYPES.map((t) => {
+                        const disabled = hasSingletonGoal(t.id);
+                        return (
+                            <button
+                                key={t.id}
+                                onClick={() => {
+                                    if (t.id === 'retirement') {
+                                        if (disabled) {
+                                            setShowRetirementPanel(prev => !prev);
+                                        } else {
+                                            openModal('retirement');
+                                        }
+                                        return;
+                                    }
+                                    openModal(t.id);
+                                }}
+                                className={`flex flex-col items-center gap-2 group min-w-[80px] ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            >
+                                <div className="w-16 h-16 rounded-2xl bg-surface-dark border border-white/5 shadow-sm flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/10 transition-all">
+                                    <t.icon className="w-8 h-8 text-slate-400 group-hover:text-primary transition-colors" />
+                                </div>
+                                <span className="text-xs font-medium text-slate-400 group-hover:text-primary whitespace-nowrap">{disabled ? `${t.label} (Added)` : t.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -236,187 +266,123 @@ const Step4FinancialGoals = () => {
                         /* ── Premium User: Full Retirement Analysis ── */
                         <div className="bg-surface-dark rounded-2xl border border-white/5 shadow-lg overflow-hidden">
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 p-5">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-white flex items-center gap-2 text-base">
-                                            <Briefcase className="w-5 h-5 text-primary" />
-                                            Retirement Goal Engine
-                                        </h3>
-                                        <p className="text-sm text-slate-400 mt-1">Auto-calculated from your financial data</p>
+                            <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <Briefcase className="w-5 h-5 text-primary" />
                                     </div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                                        retirementData.status === 'CRITICAL' ? 'bg-red-500/15 text-red-400' :
-                                        retirementData.status === 'MODERATE' ? 'bg-amber-500/15 text-amber-400' :
-                                        'bg-emerald-500/15 text-emerald-400'
-                                    }`}>
-                                        {retirementData.status === 'CRITICAL' ? '🔴 Critical Gap' :
-                                         retirementData.status === 'MODERATE' ? '🟡 Moderate Gap' : '🟢 On Track'}
-                                    </span>
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm tracking-wide">RETIREMENT PLANNER</h3>
+                                        <p className="text-xs text-slate-500">Auto-calculated from your data</p>
+                                    </div>
                                 </div>
+                                <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${
+                                    retirementData.status === 'CRITICAL' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                    retirementData.status === 'MODERATE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                    'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                }`}>
+                                    {retirementData.status === 'CRITICAL' ? 'Critical' :
+                                     retirementData.status === 'MODERATE' ? 'Moderate' : 'On Track'}
+                                </span>
                             </div>
 
-                            <div className="p-5 space-y-4">
-                                {/* Section 1: Context */}
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="bg-white/5 rounded-xl p-3 text-center">
-                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Current Age</p>
-                                        <p className="text-xl font-bold text-white mt-1">{retirementData.currentAge}</p>
+                            <div className="p-5 space-y-3">
+                                {/* Row 1: Age Context — compact inline strip */}
+                                <div className="flex items-center justify-between bg-white/[0.03] rounded-lg px-4 py-2.5 border border-white/5">
+                                    <div className="flex items-center gap-6 text-sm">
+                                        <span className="text-slate-500">Age <span className="text-white font-semibold ml-1">{retirementData.currentAge}</span></span>
+                                        <span className="text-slate-500">Retire at <span className="text-white font-semibold ml-1">{retirementData.retirementAge}</span></span>
                                     </div>
-                                    <div className="bg-white/5 rounded-xl p-3 text-center">
-                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Retire At</p>
-                                        <p className="text-xl font-bold text-white mt-1">{retirementData.retirementAge}</p>
-                                    </div>
-                                    <div className="bg-white/5 rounded-xl p-3 text-center">
-                                        <p className="text-xs text-slate-500 uppercase tracking-wide">Years Left</p>
-                                        <p className="text-xl font-bold text-primary mt-1">{retirementData.yearsToRetirement}</p>
-                                    </div>
+                                    <span className="text-sm font-bold text-primary tabular-nums">{retirementData.yearsToRetirement} years left</span>
                                 </div>
 
-                                {/* Section 2: Future Expense */}
-                                <div className="bg-white/5 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Wallet className="w-4 h-4 text-slate-400" />
-                                        <p className="text-sm font-semibold text-slate-300">Your Future Monthly Expense</p>
-                                    </div>
-                                    <div className="flex items-baseline gap-3">
-                                        <span className="text-2xl font-bold text-white">{formatToCrLakh(retirementData.futureMonthlyExpense)}</span>
-                                        <span className="text-xs text-slate-500">/ month</span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        {formatToCrLakh(retirementData.monthlyExpense)} today → {formatToCrLakh(retirementData.futureMonthlyExpense)} in {retirementData.yearsToRetirement} years at 6% inflation
-                                    </p>
-                                </div>
-
-                                {/* Section 3: Corpus Required */}
-                                <div className="bg-white/5 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Target className="w-4 h-4 text-slate-400" />
-                                        <p className="text-sm font-semibold text-slate-300">Retirement Corpus Required</p>
-                                    </div>
-                                    <p className="text-3xl font-black text-white">{formatToCrLakh(retirementData.corpusRequired)}</p>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        {formatToCrLakh(retirementData.futureMonthlyExpense)} × 12 ÷ 3% withdrawal rate
-                                    </p>
-                                </div>
-
-                                {/* Section 4: Current Assets */}
-                                <div className="bg-white/5 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <BarChart3 className="w-4 h-4 text-slate-400" />
-                                        <p className="text-sm font-semibold text-slate-300">Your Retirement Assets (Projected)</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
+                                {/* Row 2: Two-column — What You Need vs What You Have */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Left: What You Need */}
+                                    <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 space-y-3">
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">What You Need</p>
                                         <div>
-                                            <p className="text-xs text-slate-500">Current (EPF+PPF+NPS)</p>
-                                            <p className="text-lg font-bold text-white">{formatToCrLakh(retirementData.currentRetirementAssets)}</p>
+                                            <p className="text-xs text-slate-400">Future Monthly Expense</p>
+                                            <p className="text-lg font-bold text-white tabular-nums">{formatToCrLakh(retirementData.futureMonthlyExpense)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
+                                            <p className="text-[10px] text-slate-600 mt-0.5">{formatToCrLakh(retirementData.monthlyExpense)} today at 6% inflation</p>
                                         </div>
+                                        <div className="border-t border-white/5 pt-3">
+                                            <p className="text-xs text-slate-400">Retirement Corpus</p>
+                                            <p className="text-2xl font-black text-white tabular-nums">{formatToCrLakh(retirementData.corpusRequired)}</p>
+                                            <p className="text-[10px] text-slate-600 mt-0.5">at 3% annual withdrawal rate</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: What You Have */}
+                                    <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 space-y-3">
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">What You Have</p>
                                         <div>
-                                            <p className="text-xs text-slate-500">Future Value @ 8%</p>
-                                            <p className="text-lg font-bold text-primary">{formatToCrLakh(retirementData.projectedAssets)}</p>
+                                            <p className="text-xs text-slate-400">Current Retirement Corpus</p>
+                                            <p className="text-lg font-bold text-white tabular-nums">{formatToCrLakh(retirementData.currentRetirementAssets)}</p>
+                                            <p className="text-[10px] text-slate-600 mt-0.5">EPF + PPF + NPS + retirement-tagged assets</p>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-3">
+                                            <p className="text-xs text-slate-400">Projected Value @ 8%</p>
+                                            <p className="text-2xl font-black text-primary tabular-nums">{formatToCrLakh(retirementData.projectedAssets)}</p>
+                                            <p className="text-[10px] text-slate-600 mt-0.5">in {retirementData.yearsToRetirement} years</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Section 5: Gap Analysis */}
+                                {/* Row 3: Gap Analysis */}
                                 <div className={`rounded-xl p-4 border ${
-                                    retirementData.status === 'CRITICAL' ? 'bg-red-500/5 border-red-500/20' :
-                                    retirementData.status === 'MODERATE' ? 'bg-amber-500/5 border-amber-500/20' :
-                                    'bg-emerald-500/5 border-emerald-500/20'
+                                    retirementData.status === 'CRITICAL' ? 'bg-red-500/5 border-red-500/15' :
+                                    retirementData.status === 'MODERATE' ? 'bg-amber-500/5 border-amber-500/15' :
+                                    'bg-emerald-500/5 border-emerald-500/15'
                                 }`}>
-                                    <p className="text-sm font-semibold text-slate-300 mb-2">Gap Analysis</p>
-                                    <p className={`text-2xl font-black ${
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Gap Analysis</p>
+                                        <span className="text-xs text-slate-400 font-semibold tabular-nums">{retirementData.onTrackPercent.toFixed(1)}% on track</span>
+                                    </div>
+                                    <p className={`text-xl font-black tabular-nums ${
                                         retirementData.status === 'CRITICAL' ? 'text-red-400' :
                                         retirementData.status === 'MODERATE' ? 'text-amber-400' : 'text-emerald-400'
                                     }`}>
                                         {retirementData.gap > 0 ? `Short by ${formatToCrLakh(retirementData.gap)}` : 'Fully Covered!'}
                                     </p>
-                                    <div className="mt-3">
-                                        <div className="flex justify-between text-xs mb-1">
-                                            <span className="text-slate-500">On Track</span>
-                                            <span className="text-slate-300 font-bold">{retirementData.onTrackPercent.toFixed(1)}%</span>
-                                        </div>
-                                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                                            <div className={`h-full rounded-full transition-all ${
-                                                retirementData.onTrackPercent >= 80 ? 'bg-emerald-500' :
-                                                retirementData.onTrackPercent >= 20 ? 'bg-amber-500' : 'bg-red-500'
-                                            }`} style={{ width: `${Math.min(100, retirementData.onTrackPercent)}%` }} />
-                                        </div>
+                                    <div className="mt-2.5 w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div className={`h-full rounded-full transition-all ${
+                                            retirementData.onTrackPercent >= 80 ? 'bg-emerald-500' :
+                                            retirementData.onTrackPercent >= 20 ? 'bg-amber-500' : 'bg-red-500'
+                                        }`} style={{ width: `${Math.min(100, retirementData.onTrackPercent)}%` }} />
                                     </div>
                                 </div>
 
-                                {/* Section 6 & 7: SIP Options */}
+                                {/* Row 4: SIP Options */}
                                 {retirementData.gap > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {/* Flat SIP */}
-                                        <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                                            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Flat SIP Required</p>
-                                            <p className="text-2xl font-bold text-white">{formatToCrLakh(retirementData.sipFlat)}<span className="text-sm text-slate-500 font-normal">/mo</span></p>
-                                            <p className="text-xs text-slate-500 mt-1">Same amount every month for {retirementData.yearsToRetirement} years</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-2">Flat SIP</p>
+                                            <p className="text-xl font-bold text-white tabular-nums">{formatToCrLakh(retirementData.sipFlat)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
+                                            <p className="text-[10px] text-slate-600 mt-1">Fixed for {retirementData.yearsToRetirement} years</p>
                                         </div>
-                                        {/* Step-up SIP */}
                                         <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-                                            <div className="flex items-center gap-1 mb-1">
-                                                <p className="text-xs text-primary uppercase tracking-wide font-bold">Step-Up SIP</p>
-                                                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                                <p className="text-[10px] text-primary uppercase tracking-widest font-bold">Step-Up SIP</p>
+                                                <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">RECOMMENDED</span>
                                             </div>
-                                            <p className="text-2xl font-bold text-white">
-                                                {formatToCrLakh(retirementData.sipStepUpStart)}<span className="text-sm text-slate-500 font-normal">/mo</span>
-                                            </p>
-                                            <p className="text-xs text-slate-400 mt-1">
-                                                Start lower, increase {retirementData.stepUpRate}% yearly
-                                            </p>
+                                            <p className="text-xl font-bold text-white tabular-nums">{formatToCrLakh(retirementData.sipStepUpStart)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
+                                            <p className="text-[10px] text-slate-400 mt-1">+{retirementData.stepUpRate}% yearly increase</p>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Section 8: Delay Impact */}
+                                {/* Row 5: Delay Impact */}
                                 {retirementData.sipIfDelayed > 0 && retirementData.sipFlat > 0 && (
-                                    <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Clock className="w-4 h-4 text-red-400" />
-                                            <p className="text-sm font-semibold text-red-400">Delay Impact</p>
-                                        </div>
-                                        <p className="text-sm text-slate-300">
-                                            If you delay by <span className="text-red-400 font-bold">{retirementData.delayYears} years</span>, your SIP becomes{' '}
-                                            <span className="text-red-400 font-bold">{formatToCrLakh(retirementData.sipIfDelayed)}/mo</span>
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            Delay cost: +{formatToCrLakh(retirementData.sipIfDelayed - retirementData.sipFlat)}/month
+                                    <div className="flex items-center gap-3 bg-red-500/5 border border-red-500/10 rounded-lg px-4 py-3">
+                                        <Clock className="w-4 h-4 text-red-400 shrink-0" />
+                                        <p className="text-xs text-slate-400">
+                                            Delay by <span className="text-red-400 font-bold">{retirementData.delayYears}y</span> → SIP becomes <span className="text-red-400 font-bold">{formatToCrLakh(retirementData.sipIfDelayed)}/mo</span>
+                                            <span className="text-slate-600 ml-1">(+{formatToCrLakh(retirementData.sipIfDelayed - retirementData.sipFlat)}/mo)</span>
                                         </p>
                                     </div>
                                 )}
 
-                                {/* Add as Goal Button */}
-                                <button
-                                    onClick={async () => {
-                                        if (goals.length >= 2 && !isPremium) {
-                                            setIsLimitModalOpen(true);
-                                            return;
-                                        }
-                                        const retGoal = {
-                                            type: 'retirement',
-                                            name: 'Retirement',
-                                            cost: retirementData.corpusRequired / Math.pow(1.06, retirementData.yearsToRetirement),
-                                            horizon: retirementData.yearsToRetirement,
-                                            currentSavings: retirementData.currentRetirementAssets,
-                                            inflation: '6',
-                                            importance: 'Critical',
-                                        };
-                                        try {
-                                            const saved = await addGoalApi(retGoal);
-                                            addGoal(saved);
-                                            toast.success('Retirement goal added!');
-                                            setShowRetirementPanel(false);
-                                        } catch {
-                                            toast.error('Failed to add goal');
-                                        }
-                                    }}
-                                    className="w-full py-3 bg-primary hover:bg-primary/90 text-background-dark font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ArrowUpRight className="w-4 h-4" />
-                                    Add Retirement Goal
-                                </button>
                             </div>
                         </div>
                     ) : null}

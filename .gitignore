@@ -47,6 +47,9 @@ init-letsencrypt.sh
 cloudflared
 cloudflare*.log
 
+# Large skill assets (breaks Vite file watcher)
+.claude/skills/gstack/
+
 # Logs
 logs
 *.log

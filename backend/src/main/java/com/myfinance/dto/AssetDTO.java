@@ -12,4 +12,6 @@ public class AssetDTO {
     private String name;
     private Double currentValue;
     private Double allocationPercentage;
+    private String category;
+    private String timeHorizon;
 }

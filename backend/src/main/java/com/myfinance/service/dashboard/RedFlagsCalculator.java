@@ -183,10 +183,9 @@ public class RedFlagsCalculator {
 
         // Sort by impact DESC
         flags.sort((a, b) -> Double.compare(b.getImpact(), a.getImpact()));
-        List<RedFlagItemDTO> top = flags.size() > 3 ? flags.subList(0, 3) : flags;
 
         return RedFlagsDTO.builder()
-                .flags(new ArrayList<>(top))
+                .flags(new ArrayList<>(flags))
                 .totalCount(flags.size())
                 .build();
     }

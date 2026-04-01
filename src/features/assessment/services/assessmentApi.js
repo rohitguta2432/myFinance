@@ -89,13 +89,17 @@ const mapAssetToDTO = (data) => ({
     name: data.name,
     currentValue: parseFloat(data.amount) || 0,
     allocationPercentage: null, // Calculated server-side
+    category: data.category,
+    timeHorizon: data.timeHorizon,
 });
 
 const mapAssetFromDTO = (dto) => ({
     id: dto.id,
     category: dto.assetType,
+    subCategory: dto.assetType,
     name: dto.name,
     amount: dto.currentValue,
+    timeHorizon: dto.timeHorizon,
 });
 
 const mapLiabilityToDTO = (data) => ({

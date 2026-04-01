@@ -12,6 +12,7 @@ export const useRedFlags = () => {
 
     if (isLoading || error || !data) {
         return {
+            allFlags: [],
             topFlags: [],
             hiddenCount: 0,
             totalTriggered: 0,
@@ -23,12 +24,11 @@ export const useRedFlags = () => {
     const rf = data.redFlags || {};
     const allFlags = rf.flags ?? [];
     const totalCount = rf.totalCount ?? allFlags.length;
-    const topFlags = allFlags.slice(0, 3);
-    const hiddenCount = Math.max(0, totalCount - topFlags.length);
 
     return {
-        topFlags,
-        hiddenCount,
+        allFlags,
+        topFlags: allFlags.slice(0, 3),
+        hiddenCount: Math.max(0, totalCount - 3),
         totalTriggered: totalCount,
         isLoading: false,
         error: null,

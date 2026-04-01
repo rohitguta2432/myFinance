@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import InactivityGuard from './InactivityGuard';
 
 const AUTH_REQUIRED = import.meta.env.VITE_AUTH_REQUIRED !== 'false';
 
@@ -17,5 +18,9 @@ export default function ProtectedRoute() {
         return <Navigate to="/login" replace />;
     }
 
-    return <Outlet />;
+    return (
+        <InactivityGuard>
+            <Outlet />
+        </InactivityGuard>
+    );
 }

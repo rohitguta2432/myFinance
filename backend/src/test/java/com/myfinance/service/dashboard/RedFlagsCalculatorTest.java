@@ -325,8 +325,8 @@ class RedFlagsCalculatorTest {
                     .dscr(0.5)
                     .build();
             RedFlagsDTO result = calculator.calculate(data, raw);
-            assertThat(result.getFlags()).hasSizeLessThanOrEqualTo(3);
-            assertThat(result.getTotalCount()).isGreaterThanOrEqualTo(3);
+            assertThat(result.getFlags()).hasSizeGreaterThanOrEqualTo(3);
+            assertThat(result.getTotalCount()).isEqualTo(result.getFlags().size());
         }
 
         @Test

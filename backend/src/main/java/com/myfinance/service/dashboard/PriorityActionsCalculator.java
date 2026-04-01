@@ -168,10 +168,9 @@ public class PriorityActionsCalculator {
                     .build());
         }
 
-        // Sort by priority score and take top 3
+        // Sort by priority score
         actions.sort((a, b) -> Double.compare(b.getPriorityScore(), a.getPriorityScore()));
-        List<PriorityActionItemDTO> top3 = actions.size() > 3 ? actions.subList(0, 3) : actions;
 
-        return PriorityActionsDTO.builder().actions(new ArrayList<>(top3)).build();
+        return PriorityActionsDTO.builder().actions(new ArrayList<>(actions)).build();
     }
 }

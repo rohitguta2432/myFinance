@@ -301,7 +301,7 @@ class PriorityActionsCalculatorTest {
                     .benchmarkMultiplier(2.0)
                     .build();
             PriorityActionsDTO result = calculator.calculate(data, raw);
-            assertThat(result.getActions()).hasSizeLessThanOrEqualTo(3);
+            assertThat(result.getActions()).hasSizeGreaterThanOrEqualTo(3);
         }
 
         @Test

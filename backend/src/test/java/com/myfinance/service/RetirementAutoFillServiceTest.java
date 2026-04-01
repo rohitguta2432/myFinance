@@ -57,6 +57,16 @@ class RetirementAutoFillServiceTest {
                 .build();
     }
 
+    private Asset assetWithHorizon(String type, String category, String timeHorizon, double value) {
+        return Asset.builder()
+                .userId(USER_ID)
+                .assetType(type)
+                .category(category)
+                .timeHorizon(timeHorizon)
+                .currentValue(value)
+                .build();
+    }
+
     // ── Happy Path ───────────────────────────────────────────────────────────
 
     @Nested
@@ -216,6 +226,50 @@ class RetirementAutoFillServiceTest {
             // Non-retirement assets should NOT be counted
             assertThat(result.getCurrentRetirementAssets()).isEqualTo(0);
             assertThat(result.getProjectedAssets()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("Savings & Investments with Retirement time horizon counts as retirement asset")
+        void savingsWithRetirementHorizonCounted() {
+            when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profileWithAge(35)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(expense(50000, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(
+                            retirementAsset("🏢 EPF (Provident Fund)", 150000),
+                            assetWithHorizon(
+                                    "📊 Mutual Funds — Equity", "Savings & Investments", "Retirement", 500000)));
+
+            RetirementAutoFillDTO result = service.calculate(USER_ID);
+
+            // EPF (150K) + MF with Retirement horizon (500K) = 650K
+            assertThat(result.getCurrentRetirementAssets()).isEqualTo(650000);
+        }
+
+        @Test
+        @DisplayName("Savings & Investments without Retirement horizon is excluded")
+        void savingsWithNonRetirementHorizonExcluded() {
+            when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profileWithAge(35)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(expense(50000, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(assetWithHorizon(
+                            "📊 Mutual Funds — Equity", "Savings & Investments", "Short (0-2 years)", 500000)));
+
+            RetirementAutoFillDTO result = service.calculate(USER_ID);
+
+            assertThat(result.getCurrentRetirementAssets()).isEqualTo(0);
+        }
+
+        @Test
+        @DisplayName("Real Assets with Retirement horizon are excluded")
+        void realAssetsWithRetirementHorizonExcluded() {
+            when(profileRepo.findByUserId(USER_ID)).thenReturn(Optional.of(profileWithAge(35)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(List.of(expense(50000, Frequency.MONTHLY)));
+            when(assetRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(assetWithHorizon("🏠 Real Estate", "Real Assets", "Retirement", 5000000)));
+
+            RetirementAutoFillDTO result = service.calculate(USER_ID);
+
+            assertThat(result.getCurrentRetirementAssets()).isEqualTo(0);
         }
 
         @Test

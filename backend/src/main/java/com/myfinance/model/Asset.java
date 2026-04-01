@@ -25,4 +25,8 @@ public class Asset {
     private Double currentValue;
 
     private Double allocationPercentage;
+
+    private String category;
+
+    private String timeHorizon;
 }

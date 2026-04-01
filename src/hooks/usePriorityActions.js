@@ -12,6 +12,7 @@ export const usePriorityActions = () => {
 
     if (isLoading || error || !data) {
         return {
+            allActions: [],
             topActions: [],
             hiddenCount: 0,
             totalTriggered: 0,
@@ -22,12 +23,11 @@ export const usePriorityActions = () => {
 
     const pa = data.priorityActions || {};
     const allActions = pa.actions ?? [];
-    const topActions = allActions.slice(0, 3);
-    const hiddenCount = Math.max(0, allActions.length - topActions.length);
 
     return {
-        topActions,
-        hiddenCount,
+        allActions,
+        topActions: allActions.slice(0, 3),
+        hiddenCount: Math.max(0, allActions.length - 3),
         totalTriggered: allActions.length,
         isLoading: false,
         error: null,

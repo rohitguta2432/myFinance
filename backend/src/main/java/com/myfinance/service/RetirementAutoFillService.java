@@ -72,10 +72,10 @@ public class RetirementAutoFillService {
         // 4) Corpus required (annual expense / withdrawal rate)
         double corpusRequired = futureMonthlyExpense * 12 / WITHDRAWAL_RATE;
 
-        // 5) Current retirement assets (EPF + PPF + NPS)
+        // 5) Current retirement assets (EPF/PPF/NPS + any Savings & Investments with Retirement horizon)
         List<Asset> assets = assetRepo.findByUserId(userId);
         double currentRetirementAssets = assets.stream()
-                .filter(a -> a.getAssetType() != null && RETIREMENT_ASSET_TYPES.contains(a.getAssetType()))
+                .filter(this::isRetirementAsset)
                 .mapToDouble(a -> a.getCurrentValue() != null ? a.getCurrentValue() : 0)
                 .sum();
 
@@ -126,6 +126,15 @@ public class RetirementAutoFillService {
                 .delayYears(DELAY_YEARS)
                 .status(status)
                 .build();
+    }
+
+    private boolean isRetirementAsset(Asset a) {
+        if (a.getAssetType() != null && RETIREMENT_ASSET_TYPES.contains(a.getAssetType())) {
+            return true;
+        }
+        return "Savings & Investments".equals(a.getCategory())
+                && a.getTimeHorizon() != null
+                && a.getTimeHorizon().equalsIgnoreCase("Retirement");
     }
 
     private double calculateSIP(double gap, int years, double annualRate) {

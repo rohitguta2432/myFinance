@@ -51,6 +51,8 @@ public class NetWorthService {
                 .name(dto.getName())
                 .currentValue(dto.getCurrentValue())
                 .allocationPercentage(dto.getAllocationPercentage())
+                .category(dto.getCategory())
+                .timeHorizon(dto.getTimeHorizon())
                 .build();
         AssetDTO saved = toAssetDTO(assetRepo.save(asset));
         auditLogService.log(userId, "ADD_ASSET", "asset", saved.getId(), null);
@@ -110,6 +112,8 @@ public class NetWorthService {
                 .name(a.getName())
                 .currentValue(a.getCurrentValue())
                 .allocationPercentage(a.getAllocationPercentage())
+                .category(a.getCategory())
+                .timeHorizon(a.getTimeHorizon())
                 .build();
     }
 
