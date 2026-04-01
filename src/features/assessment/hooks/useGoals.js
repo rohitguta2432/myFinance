@@ -41,6 +41,7 @@ export const useDeleteGoalMutation = () => {
 
     return useMutation({
         mutationFn: deleteGoal,
+        retry: false,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['goals'] });
             queryClient.invalidateQueries({ queryKey: ['goal-projection'] });

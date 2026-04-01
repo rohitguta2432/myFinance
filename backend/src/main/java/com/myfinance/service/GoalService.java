@@ -83,11 +83,12 @@ public class GoalService {
     @Transactional
     public void deleteGoal(Long userId, Long id) {
         log.info("goals.delete user={} id={}", userId, id);
-        Goal goal = goalRepo.findById(id)
+        goalRepo.findById(id)
                 .filter(g -> g.getUserId() != null && g.getUserId().equals(userId))
-                .orElseThrow(() -> new RuntimeException("Goal not found or unauthorized: " + id));
-        goalRepo.delete(goal);
-        auditLogService.log(userId, "DELETE_GOAL", "goal", id, null);
+                .ifPresent(goal -> {
+                    goalRepo.delete(goal);
+                    auditLogService.log(userId, "DELETE_GOAL", "goal", id, null);
+                });
     }
 
     private GoalDTO toDTO(Goal g) {
