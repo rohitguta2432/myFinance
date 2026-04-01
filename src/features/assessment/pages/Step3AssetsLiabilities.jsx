@@ -698,9 +698,10 @@ const Step3AssetsLiabilities = () => {
                                         <div>
                                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Purchase Value (₹)</label>
                                             <input
-                                                type="number"
+                                                type="text"
+                                                inputMode="numeric"
                                                 value={purchaseValue}
-                                                onChange={(e) => setPurchaseValue(e.target.value)}
+                                                onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setPurchaseValue(v); }}
                                                 className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                 placeholder="0"
                                             />
@@ -708,9 +709,10 @@ const Step3AssetsLiabilities = () => {
                                         <div>
                                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Current Value (₹)</label>
                                             <input
-                                                type="number"
+                                                type="text"
+                                                inputMode="numeric"
                                                 value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
+                                                onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setAmount(v); }}
                                                 className="w-full bg-background-dark border border-white/10 rounded-lg p-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                 placeholder="0"
                                             />
