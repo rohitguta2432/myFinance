@@ -52,11 +52,11 @@ const ScoreRing = ({ score, label, color }) => {
                     style={{ filter: `drop-shadow(0 0 8px ${color}40)` }}
                 />
             </svg>
-            <div className="absolute flex flex-col items-center">
+            <div className="absolute flex flex-col items-center w-[140px] text-center">
                 <span className="text-5xl font-black tabular-nums tracking-tight text-slate-800"
                     style={{ textShadow: `0 0 20px ${color}30` }}
                 >{Math.round(animatedScore)}</span>
-                <span className="text-sm font-semibold uppercase tracking-[0.15em] mt-1" style={{ color }}>{label}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] mt-1 leading-tight" style={{ color }}>{label}</span>
                 <span className="text-xs text-slate-500 mt-0.5">out of 100</span>
             </div>
         </div>
