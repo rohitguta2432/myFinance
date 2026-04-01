@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getGoals, addGoal, deleteGoal } from '../services/assessmentApi';
+import { getGoals, addGoal, updateGoal, deleteGoal } from '../services/assessmentApi';
 
 /**
  * Step 4: Financial Goals — fetch list on mount, add via mutation.
@@ -17,6 +17,18 @@ export const useAddGoalMutation = () => {
 
     return useMutation({
         mutationFn: addGoal,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
+            queryClient.invalidateQueries({ queryKey: ['goal-projection'] });
+        },
+    });
+};
+
+export const useUpdateGoalMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: updateGoal,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['goals'] });
             queryClient.invalidateQueries({ queryKey: ['goal-projection'] });

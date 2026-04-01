@@ -29,6 +29,13 @@ public class GoalController {
         return ResponseEntity.ok(goalService.addGoal(userId, dto));
     }
 
+    @Operation(summary = "Update financial goal")
+    @PutMapping("/{id}")
+    public ResponseEntity<GoalDTO> updateGoal(
+            @RequestAttribute("userId") Long userId, @PathVariable Long id, @RequestBody GoalDTO dto) {
+        return ResponseEntity.ok(goalService.updateGoal(userId, id, dto));
+    }
+
     @Operation(summary = "Delete financial goal")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGoal(@RequestAttribute("userId") Long userId, @PathVariable Long id) {

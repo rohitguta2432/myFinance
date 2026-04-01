@@ -282,6 +282,12 @@ export const addGoal = async (data) => {
     return mapGoalFromDTO(dto);
 };
 
+export const updateGoal = async (data) => {
+    const { id, ...rest } = data;
+    const dto = await api.put(`/goals/${id}`, mapGoalToDTO(rest));
+    return mapGoalFromDTO(dto);
+};
+
 export const deleteGoal = async (id) => {
     await api.delete(`/goals/${id}`);
 };

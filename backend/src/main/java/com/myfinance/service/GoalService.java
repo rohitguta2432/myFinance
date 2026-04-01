@@ -61,6 +61,26 @@ public class GoalService {
     }
 
     @Transactional
+    public GoalDTO updateGoal(Long userId, Long id, GoalDTO dto) {
+        log.info("goals.update user={} id={}", userId, id);
+        Goal goal = goalRepo.findById(id)
+                .filter(g -> g.getUserId() != null && g.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Goal not found or unauthorized: " + id));
+        goal.setGoalType(dto.getGoalType());
+        goal.setName(dto.getName());
+        goal.setTargetAmount(dto.getTargetAmount());
+        goal.setCurrentCost(dto.getCurrentCost());
+        goal.setTimeHorizonYears(dto.getTimeHorizonYears());
+        goal.setInflationRate(dto.getInflationRate());
+        goal.setCurrentSavings(dto.getCurrentSavings());
+        goal.setImportance(dto.getImportance());
+        GoalDTO saved = toDTO(goalRepo.save(goal));
+        auditLogService.log(userId, "UPDATE_GOAL", "goal", id, null);
+        log.info("goals.update.success id={}", id);
+        return saved;
+    }
+
+    @Transactional
     public void deleteGoal(Long userId, Long id) {
         log.info("goals.delete user={} id={}", userId, id);
         Goal goal = goalRepo.findById(id)

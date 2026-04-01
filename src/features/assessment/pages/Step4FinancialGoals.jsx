@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Plus, X, Home, Car, GraduationCap, Plane, Heart, Briefcase, TrendingUp, CheckCircle2, ShieldAlert, AlertTriangle, AlertCircle, Lock, Building2, Stethoscope, Briefcase as BusinessIcon, HelpCircle, Crown, Clock, Target, Wallet, BarChart3, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useGoalsQuery, useAddGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
+import { useGoalsQuery, useAddGoalMutation, useUpdateGoalMutation, useDeleteGoalMutation } from '../hooks/useGoals';
 import { useGoalProjectionQuery } from '../hooks/useGoalProjection';
 import { useRetirementAutoFillQuery } from '../hooks/useRetirementAutoFill';
 import { GoalsSkeleton } from '../../../components/ui/AssessmentSkeleton';
@@ -38,6 +38,7 @@ const Step4FinancialGoals = () => {
     // API Integration
     const { data: goalsData, isLoading: isFetchingGoals } = useGoalsQuery();
     const { mutateAsync: addGoalApi } = useAddGoalMutation();
+    const { mutateAsync: updateGoalApi } = useUpdateGoalMutation();
     const { mutateAsync: deleteGoalApi, isPending: isDeletingGoal } = useDeleteGoalMutation();
 
     useEffect(() => {
@@ -112,11 +113,8 @@ const Step4FinancialGoals = () => {
 
         if (editingId) {
             updateGoal(editingId, goalData);
-            // Persist: delete old + re-add (no PUT endpoint for goals)
             try {
-                await deleteGoalApi(editingId);
-                const saved = await addGoalApi({ ...goalData, id: editingId });
-                if (saved?.id) updateGoal(editingId, { ...goalData, id: saved.id });
+                await updateGoalApi({ id: editingId, ...goalData });
             } catch (e) { console.warn('Goal update API failed:', e.message); }
         } else {
             const newGoal = { ...goalData, id: Date.now() };
