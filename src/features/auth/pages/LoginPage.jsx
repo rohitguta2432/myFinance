@@ -1,6 +1,7 @@
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { useAssessmentStore } from '../../assessment/store/useAssessmentStore';
 import { api } from '../../../services/api';
 import {
     ShieldCheck,
@@ -38,7 +39,9 @@ export default function LoginPage() {
             const res = await api.post('/auth/google', { credential });
             // res = { token: "jwt...", user: { id, email, name, pictureUrl } }
             login(res);
-            navigate('/', { replace: true });
+            // New users (no assessment) go straight to Step 1; returning users go to dashboard
+            const hasAssessment = useAssessmentStore.getState().isComplete;
+            navigate(hasAssessment ? '/' : '/assessment/step-1', { replace: true });
         } catch (err) {
             console.error('Authentication failed:', err);
         }
