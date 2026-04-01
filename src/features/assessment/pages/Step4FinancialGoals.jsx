@@ -485,18 +485,18 @@ const Step4FinancialGoals = () => {
                             {monthlySurplus > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/15">
-                                        <p className="text-sm font-bold text-white">Aggressive — Save</p>
+                                        <p className="text-sm font-bold text-white">Aggressive — 100% of Surplus</p>
                                         <p className="text-xs text-slate-400 mt-1">
-                                            Save ₹{Math.round(monthlySurplus).toLocaleString('en-IN')}/month
+                                            ₹{Math.round(monthlySurplus).toLocaleString('en-IN')}/month
                                         </p>
                                         <p className="text-emerald-400 font-bold text-xs mt-1">
                                             → ready in {formatMonths(efAggressive)}
                                         </p>
                                     </div>
                                     <div className="bg-blue-500/5 rounded-xl p-4 border border-blue-500/15">
-                                        <p className="text-sm font-bold text-white">Conservative — Save</p>
+                                        <p className="text-sm font-bold text-white">Conservative — 50% of Surplus</p>
                                         <p className="text-xs text-slate-400 mt-1">
-                                            Save ₹{Math.round(monthlySurplus * 0.5).toLocaleString('en-IN')}/month
+                                            ₹{Math.round(monthlySurplus * 0.5).toLocaleString('en-IN')}/month
                                         </p>
                                         <p className="text-blue-400 font-bold text-xs mt-1">
                                             → ready in {formatMonths(efConservative)}
