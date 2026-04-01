@@ -13,74 +13,59 @@ export const useBalanceSheetQuery = () => {
     });
 };
 
+// All downstream queries that depend on assets/liabilities data
+const invalidateBalanceSheetDependents = (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+    queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
+    queryClient.invalidateQueries({ queryKey: ['goal-projection'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['tax-calculation'] });
+};
+
 export const useAddAssetMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: addAsset,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
 
 export const useAddLiabilityMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: addLiability,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
 
 export const useUpdateAssetMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: updateAsset,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
 
 export const useUpdateLiabilityMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: updateLiability,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
 
 export const useDeleteAssetMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: deleteAsset,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
 
 export const useDeleteLiabilityMutation = () => {
     const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: deleteLiability,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
-            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
-        },
+        onSuccess: () => invalidateBalanceSheetDependents(queryClient),
     });
 };
