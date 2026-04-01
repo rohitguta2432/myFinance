@@ -73,8 +73,8 @@ export default function LoginPage() {
                                     <span className="lp-hero-green">simplified.</span>
                                 </h1>
                                 <p className="lp-hero-sub">
-                                    Free personal financial planning &amp; tax
-                                    optimization built for India.
+                                    Groww helps you invest. INDmoney tracks your money.
+                                    MyFinancial tells you if you're financially healthy — and exactly what to fix.
                                 </p>
                             </div>
 
