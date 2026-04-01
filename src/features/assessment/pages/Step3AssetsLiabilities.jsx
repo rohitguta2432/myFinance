@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, X, Wallet, CreditCard, Building, TrendingUp, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Pencil, Wallet, CreditCard, Building, TrendingUp, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
-import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
+import { useBalanceSheetQuery, useAddAssetMutation, useAddLiabilityMutation, useUpdateAssetMutation, useUpdateLiabilityMutation, useDeleteAssetMutation, useDeleteLiabilityMutation } from '../hooks/useBalanceSheet';
 import { useRiskScoringQuery } from '../hooks/useRiskScoring';
 import { usePortfolioAnalysisQuery } from '../hooks/usePortfolioAnalysis';
 import { AssetsLiabilitiesSkeleton } from '../../../components/ui/AssessmentSkeleton';
@@ -16,6 +16,8 @@ const Step3AssetsLiabilities = () => {
     const { data: balanceData, isLoading: isFetchingBalance } = useBalanceSheetQuery();
     const { mutateAsync: addAssetApi } = useAddAssetMutation();
     const { mutateAsync: addLiabilityApi } = useAddLiabilityMutation();
+    const { mutateAsync: updateAssetApi } = useUpdateAssetMutation();
+    const { mutateAsync: updateLiabilityApi } = useUpdateLiabilityMutation();
     const { mutateAsync: deleteAssetApi, isPending: isDeletingAsset } = useDeleteAssetMutation();
     const { mutateAsync: deleteLiabilityApi, isPending: isDeletingLiability } = useDeleteLiabilityMutation();
 
@@ -36,6 +38,7 @@ const Step3AssetsLiabilities = () => {
 
     const [activeTab, setActiveTab] = useState('assets'); // 'assets' or 'liabilities'
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState(null); // null = add mode, object = edit mode
 
     // Form State
     const [category, setCategory] = useState('');
@@ -100,6 +103,7 @@ const Step3AssetsLiabilities = () => {
     ];
 
     const openModal = () => {
+        setEditingItem(null);
         if (activeTab === 'assets') {
             setCategory('Savings & Investments');
             setSubCategory(assetCategories['Savings & Investments'][0]);
@@ -116,6 +120,28 @@ const Step3AssetsLiabilities = () => {
         setInterestRate('');
         setMonthsLeft('');
         setMoratoriumMonths('');
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (item) => {
+        setEditingItem(item);
+        if (activeTab === 'assets') {
+            // Find which category group this subCategory belongs to
+            const matchedCat = Object.entries(assetCategories).find(([, subs]) => subs.includes(item.subCategory || item.category));
+            setCategory(matchedCat ? matchedCat[0] : 'Savings & Investments');
+            setSubCategory(item.subCategory || item.category || '');
+            setPurchaseValue(item.purchaseValue ?? '');
+            setTimeHorizon(item.timeHorizon || 'Short (0-2 years)');
+            setLiquidity(item.liquidity || 'Immediate (instant access like savings account)');
+        } else {
+            setCategory(item.category || liabilityCategories[0]);
+            setEmi(item.emi ?? '');
+            setInterestRate(item.interestRate ?? '');
+            setMonthsLeft(item.monthsLeft ?? '');
+            setMoratoriumMonths(item.moratoriumMonths ?? '');
+        }
+        setName(item.name || '');
+        setAmount(item.amount ?? '');
         setIsModalOpen(true);
     };
 
@@ -140,6 +166,24 @@ const Step3AssetsLiabilities = () => {
             moratoriumMonths: activeTab === 'liabilities' && category === '🎓 Education Loan' ? (parseInt(moratoriumMonths, 10) || 0) : undefined,
         };
 
+        // ── Edit mode ──
+        if (editingItem) {
+            setIsModalOpen(false);
+            try {
+                if (activeTab === 'assets') {
+                    await updateAssetApi({ id: editingItem.id, ...newItem });
+                } else {
+                    await updateLiabilityApi({ id: editingItem.id, ...newItem });
+                }
+                toast.success(`${activeTab === 'assets' ? 'Asset' : 'Liability'} updated successfully`);
+            } catch {
+                toast.error('Failed to update. Please try again.');
+            }
+            setEditingItem(null);
+            return;
+        }
+
+        // ── Add mode ──
         const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
         const optimisticItem = { ...newItem, id: tempId };
 
@@ -541,8 +585,15 @@ const Step3AssetsLiabilities = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <span className="font-bold text-white">₹ {item.amount.toLocaleString()}</span>
+                            <button
+                                onClick={() => openEditModal(item)}
+                                className="text-slate-500 hover:text-primary transition-colors"
+                                title="Edit"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                            </button>
                             <button
                                 onClick={async () => {
                                     if (activeTab === 'assets') {
@@ -610,7 +661,7 @@ const Step3AssetsLiabilities = () => {
                     <div className="relative bg-surface-dark w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-white/10 animate-slide-up max-h-[90vh] overflow-y-auto">
                         <div className="w-12 h-1 bg-surface-active rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Add {activeTab === 'assets' ? 'Asset' : 'Liability'}</h3>
+                            <h3 className="text-xl font-bold text-white">{editingItem ? 'Edit' : 'Add'} {activeTab === 'assets' ? 'Asset' : 'Liability'}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
                                 <X className="w-6 h-6" />
                             </button>
@@ -789,7 +840,7 @@ const Step3AssetsLiabilities = () => {
                                 onClick={handleSave}
                                 className="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-4 rounded-xl mt-4 shadow-[0_0_15px_rgba(13,242,89,0.3)] active:scale-[0.98] transition-all"
                             >
-                                Save {activeTab === 'assets' ? 'Asset' : 'Liability'}
+                                {editingItem ? 'Update' : 'Save'} {activeTab === 'assets' ? 'Asset' : 'Liability'}
                             </button>
                         </div>
                     </div>

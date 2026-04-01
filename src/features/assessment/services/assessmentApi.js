@@ -251,6 +251,18 @@ export const addLiability = async (data) => {
     return mapLiabilityFromDTO(dto);
 };
 
+export const updateAsset = async (data) => {
+    const { id, ...rest } = data;
+    const dto = await api.put(`/networth/asset/${id}`, mapAssetToDTO(rest));
+    return mapAssetFromDTO(dto);
+};
+
+export const updateLiability = async (data) => {
+    const { id, ...rest } = data;
+    const dto = await api.put(`/networth/liability/${id}`, mapLiabilityToDTO(rest));
+    return mapLiabilityFromDTO(dto);
+};
+
 export const deleteAsset = async (id) => {
     await api.delete(`/networth/asset/${id}`);
 };

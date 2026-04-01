@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBalanceSheet, addAsset, addLiability, deleteAsset, deleteLiability } from '../services/assessmentApi';
+import { getBalanceSheet, addAsset, addLiability, updateAsset, updateLiability, deleteAsset, deleteLiability } from '../services/assessmentApi';
 
 /**
  * Step 3: Assets & Liabilities — fetch on mount, add via mutations.
@@ -30,6 +30,30 @@ export const useAddLiabilityMutation = () => {
 
     return useMutation({
         mutationFn: addLiability,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
+        },
+    });
+};
+
+export const useUpdateAssetMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: updateAsset,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });
+        },
+    });
+};
+
+export const useUpdateLiabilityMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: updateLiability,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['balance-sheet'] });
             queryClient.invalidateQueries({ queryKey: ['portfolio-analysis'] });

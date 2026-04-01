@@ -37,6 +37,20 @@ public class NetWorthController {
         return ResponseEntity.ok(netWorthService.addLiability(userId, dto));
     }
 
+    @Operation(summary = "Update asset")
+    @PutMapping("/asset/{id}")
+    public ResponseEntity<AssetDTO> updateAsset(
+            @RequestAttribute("userId") Long userId, @PathVariable Long id, @RequestBody AssetDTO dto) {
+        return ResponseEntity.ok(netWorthService.updateAsset(userId, id, dto));
+    }
+
+    @Operation(summary = "Update liability")
+    @PutMapping("/liability/{id}")
+    public ResponseEntity<LiabilityDTO> updateLiability(
+            @RequestAttribute("userId") Long userId, @PathVariable Long id, @RequestBody LiabilityDTO dto) {
+        return ResponseEntity.ok(netWorthService.updateLiability(userId, id, dto));
+    }
+
     @Operation(summary = "Delete asset")
     @DeleteMapping("/asset/{id}")
     public ResponseEntity<Void> deleteAsset(@RequestAttribute("userId") Long userId, @PathVariable Long id) {

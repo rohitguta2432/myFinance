@@ -84,6 +84,44 @@ public class NetWorthService {
     }
 
     @Transactional
+    public AssetDTO updateAsset(Long userId, Long id, AssetDTO dto) {
+        log.info("networth.asset.update user={} id={}", userId, id);
+        Asset asset = assetRepo
+                .findById(id)
+                .filter(a -> a.getUserId() != null && a.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Asset not found or unauthorized: " + id));
+        asset.setAssetType(dto.getAssetType());
+        asset.setName(dto.getName());
+        asset.setCurrentValue(dto.getCurrentValue());
+        asset.setAllocationPercentage(dto.getAllocationPercentage());
+        asset.setCategory(dto.getCategory());
+        asset.setTimeHorizon(dto.getTimeHorizon());
+        AssetDTO saved = toAssetDTO(assetRepo.save(asset));
+        auditLogService.log(userId, "UPDATE_ASSET", "asset", id, null);
+        log.info("networth.asset.update.success id={}", id);
+        return saved;
+    }
+
+    @Transactional
+    public LiabilityDTO updateLiability(Long userId, Long id, LiabilityDTO dto) {
+        log.info("networth.liability.update user={} id={}", userId, id);
+        Liability liability = liabilityRepo
+                .findById(id)
+                .filter(l -> l.getUserId() != null && l.getUserId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Liability not found or unauthorized: " + id));
+        liability.setLiabilityType(dto.getLiabilityType());
+        liability.setName(dto.getName());
+        liability.setOutstandingAmount(dto.getOutstandingAmount());
+        liability.setMonthlyEmi(dto.getMonthlyEmi());
+        liability.setInterestRate(dto.getInterestRate());
+        liability.setMonthsLeft(dto.getMonthsLeft());
+        LiabilityDTO saved = toLiabilityDTO(liabilityRepo.save(liability));
+        auditLogService.log(userId, "UPDATE_LIABILITY", "liability", id, null);
+        log.info("networth.liability.update.success id={}", id);
+        return saved;
+    }
+
+    @Transactional
     public void deleteAsset(Long userId, Long id) {
         log.info("networth.asset.delete user={} id={}", userId, id);
         Asset asset = assetRepo
