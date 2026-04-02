@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Plus, X, ChevronDown, Check, CheckCircle2, Trend
 import toast from 'react-hot-toast';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import { useFinancialsQuery, useAddIncomeMutation, useAddExpenseMutation, useDeleteIncomeMutation, useDeleteExpenseMutation, useUpdateIncomeMutation, useUpdateExpenseMutation } from '../hooks/useFinancials';
+import { useBalanceSheetQuery } from '../hooks/useBalanceSheet';
 import { Pencil } from 'lucide-react';
 import { CashFlowSkeleton } from '../../../components/ui/AssessmentSkeleton';
 import SectionNav from '../../dashboard/components/SectionNav';
@@ -58,6 +59,14 @@ const Step2IncomeExpenses = () => {
     const { mutateAsync: deleteExpenseApi, isPending: isDeletingExpense } = useDeleteExpenseMutation();
     const { mutateAsync: updateIncomeApi } = useUpdateIncomeMutation();
     const { mutateAsync: updateExpenseApi } = useUpdateExpenseMutation();
+
+    // Fetch liabilities for EMI cross-validation
+    const { data: balanceData } = useBalanceSheetQuery();
+    useEffect(() => {
+        if (balanceData?.liabilities) {
+            useAssessmentStore.setState({ liabilities: balanceData.liabilities });
+        }
+    }, [balanceData]);
 
     // Hydrate store from API
     useEffect(() => {
