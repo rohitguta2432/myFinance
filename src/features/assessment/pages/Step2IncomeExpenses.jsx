@@ -174,7 +174,7 @@ const Step2IncomeExpenses = () => {
     const totalMonthlyIncome = incomes.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyExpenses = expenses.reduce((sum, item) => sum + calculateMonthly(item), 0);
     const totalMonthlyEMIs = expenses
-        .filter(exp => exp.category === EMI_CATEGORY)
+        .filter(exp => exp.category?.includes(EMI_CATEGORY))
         .reduce((sum, item) => sum + calculateMonthly(item), 0);
 
     // We want the primary expenses listed as (Total Expenses - EMIs) in the card since it breaks out EMIs specifically.
