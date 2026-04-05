@@ -154,9 +154,8 @@ class DashboardServiceTest {
                     TaxAnalysisDTO.builder().grossTotalIncome(1200000.0).build();
             when(taxAnalysisCalc.calculate(data)).thenReturn(taxAnalysis);
 
-            ExcessReallocationDTO excessReallocation = ExcessReallocationDTO.builder()
-                    .hasExcess(false)
-                    .build();
+            ExcessReallocationDTO excessReallocation =
+                    ExcessReallocationDTO.builder().hasExcess(false).build();
             when(excessReallocationCalc.calculate(data, rawData)).thenReturn(excessReallocation);
 
             Map<String, PillarInterpretationDTO> interpretations = Map.of(

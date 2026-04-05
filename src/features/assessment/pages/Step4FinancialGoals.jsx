@@ -208,11 +208,7 @@ const Step4FinancialGoals = () => {
                                 key={t.id}
                                 onClick={() => {
                                     if (t.id === 'retirement') {
-                                        if (disabled) {
-                                            setShowRetirementPanel(prev => !prev);
-                                        } else {
-                                            openModal('retirement');
-                                        }
+                                        setShowRetirementPanel(prev => !prev);
                                         return;
                                     }
                                     openModal(t.id);
@@ -381,6 +377,35 @@ const Step4FinancialGoals = () => {
                                     </div>
                                 )}
 
+                                {/* Add Retirement Goal Button */}
+                                {!hasSingletonGoal('retirement') && (
+                                    <button
+                                        onClick={async () => {
+                                            const retGoal = {
+                                                type: 'retirement',
+                                                name: 'Retirement',
+                                                cost: Math.round(retirementData.corpusRequired / Math.pow(1.06, retirementData.yearsToRetirement)),
+                                                horizon: retirementData.yearsToRetirement,
+                                                currentSavings: retirementData.currentRetirementAssets,
+                                                inflation: '6',
+                                                importance: 'Critical',
+                                            };
+                                            try {
+                                                const saved = await addGoalApi(retGoal);
+                                                addGoal(saved);
+                                                toast.success('Retirement goal added!');
+                                                setShowRetirementPanel(false);
+                                            } catch {
+                                                toast.error('Failed to add goal');
+                                            }
+                                        }}
+                                        className="w-full py-3 bg-primary hover:bg-primary/90 text-background-dark font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <ArrowUpRight className="w-4 h-4" />
+                                        Add Retirement Goal
+                                    </button>
+                                )}
+
                             </div>
                         </div>
                     ) : null}
@@ -547,22 +572,24 @@ const Step4FinancialGoals = () => {
                                     <button onClick={() => openModal(null, goal)} className="text-primary text-sm font-semibold hover:underline bg-primary/10 px-3 py-1 rounded-full">
                                         Edit
                                     </button>
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                await deleteGoalApi(goal.id);
-                                                removeGoal(goal.id);
-                                                toast.success('Goal deleted successfully');
-                                            } catch (error) {
-                                                console.error('Failed to delete goal:', error);
-                                                toast.error('Failed to delete goal');
-                                            }
-                                        }}
-                                        disabled={isDeletingGoal}
-                                        className="text-red-400/60 text-sm font-semibold hover:text-red-400 hover:underline bg-red-500/10 px-3 py-1 rounded-full disabled:opacity-50"
-                                    >
-                                        Delete
-                                    </button>
+                                    {goal.type !== 'retirement' && (
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await deleteGoalApi(goal.id);
+                                                    removeGoal(goal.id);
+                                                    toast.success('Goal deleted successfully');
+                                                } catch (error) {
+                                                    console.error('Failed to delete goal:', error);
+                                                    toast.error('Failed to delete goal');
+                                                }
+                                            }}
+                                            disabled={isDeletingGoal}
+                                            className="text-red-400/60 text-sm font-semibold hover:text-red-400 hover:underline bg-red-500/10 px-3 py-1 rounded-full disabled:opacity-50"
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
