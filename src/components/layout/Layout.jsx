@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, ShieldCheck, DollarSign, Wallet, Flag, Shield, Calculator, CheckCircle, LogOut } from 'lucide-react';
+import { ArrowLeft, User, DollarSign, Wallet, Flag, Shield, Calculator, CheckCircle, LogOut } from 'lucide-react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
@@ -55,10 +55,7 @@ const Layout = () => {
                             </button>
                         )}
                         <div className="flex items-center gap-2">
-                            <div className="bg-primary/20 p-1.5 rounded-lg flex items-center justify-center">
-                                <ShieldCheck className="text-primary w-4 h-4" />
-                            </div>
-                            <span className="text-white text-base font-bold tracking-tight">MyFinancial</span>
+                            <img src="/myfinancial-logo.svg" alt="MyFinancial" className="h-10" />
                         </div>
                         {/* Step title shown on assessment pages */}
                         {isAssessment && (

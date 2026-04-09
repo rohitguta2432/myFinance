@@ -52,7 +52,7 @@ export default function LoginPage() {
             <div className="lp-page">
                 {/* ── Top Navbar ── */}
                 <nav className="lp-nav">
-                    <div className="lp-nav-brand">MyFinancial</div>
+                    <div className="lp-nav-brand"><img src="/myfinancial-logo.svg" alt="MyFinancial" style={{ height: '40px' }} /></div>
                     <div className="lp-nav-links">
                         <a href="https://www.myfinancial.in/blog" target="_blank" rel="noopener noreferrer" className="font-bold">Blog</a>
                     </div>

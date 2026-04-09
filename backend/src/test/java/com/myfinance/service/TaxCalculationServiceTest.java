@@ -394,6 +394,10 @@ class TaxCalculationServiceTest {
             // Old regime: otherDeductions includes rentalStdDeduction
             RegimeBreakdown old = result.getOldRegime();
             assertThat(old.getOtherDeductions()).isCloseTo(108000.0, within(0.01));
+
+            // New regime: Section 24(a) applies regardless of regime
+            RegimeBreakdown newR = result.getNewRegime();
+            assertThat(newR.getOtherDeductions()).isCloseTo(108000.0, within(0.01));
         }
 
         @Test
@@ -407,9 +411,30 @@ class TaxCalculationServiceTest {
 
             TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 50000);
 
-            // 50000 + 108000 = 158000
+            // Old: 50000 + 108000 = 158000
             RegimeBreakdown old = result.getOldRegime();
             assertThat(old.getOtherDeductions()).isCloseTo(158000.0, within(0.01));
+
+            // New: only rental std deduction (user-provided otherDeductions not applied)
+            RegimeBreakdown newR = result.getNewRegime();
+            assertThat(newR.getOtherDeductions()).isCloseTo(108000.0, within(0.01));
+        }
+
+        @Test
+        @DisplayName("new regime net taxable should reflect rental deduction")
+        void newRegimeNetTaxableWithRental() {
+            when(incomeRepo.findByUserId(USER_ID))
+                    .thenReturn(List.of(buildIncome("Rental Income", 100000.0, Frequency.MONTHLY)));
+            when(expenseRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
+            when(assetRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
+            when(insuranceRepo.findByUserId(USER_ID)).thenReturn(Collections.emptyList());
+
+            TaxCalculationDTO result = service.calculate(USER_ID, 0, 0, 0);
+
+            // Gross = 1200000, rental 30% = 360000, std ded = 75000
+            // New regime net taxable = 1200000 - 75000 - 360000 = 765000
+            RegimeBreakdown newR = result.getNewRegime();
+            assertThat(newR.getNetTaxable()).isCloseTo(765000.0, within(0.01));
         }
     }
 

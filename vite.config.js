@@ -10,12 +10,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'My Finance PWA',
-        short_name: 'Finance',
-        description: 'My Personal Finance App',
-        theme_color: '#ffffff',
+        name: 'MyFinancial',
+        short_name: 'MyFinancial',
+        description: 'Free Personal Financial Planning & Tax Optimizer',
+        theme_color: '#1a1a1a',
+        background_color: '#1a1a1a',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -26,6 +27,12 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512-maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

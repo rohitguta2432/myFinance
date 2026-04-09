@@ -99,7 +99,7 @@ public class TaxCalculationService {
         // 5) Tax calculation — both regimes
         RegimeBreakdown oldRegime =
                 calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, totalOtherDeductions);
-        RegimeBreakdown newRegime = calculateNewRegime(grossTotalIncome);
+        RegimeBreakdown newRegime = calculateNewRegime(grossTotalIncome, rentalStdDeduction);
 
         // 6) Recommendation
         String recommended = oldRegime.getTotalTax() <= newRegime.getTotalTax() ? "old" : "new";
@@ -162,9 +162,9 @@ public class TaxCalculationService {
 
     // ─── New Regime (FY 2026-27) ────────────────────────────────────────────────
 
-    private RegimeBreakdown calculateNewRegime(double income) {
+    private RegimeBreakdown calculateNewRegime(double income, double rentalStdDeduction) {
         double stdDeduction = 75000;
-        double netTaxable = Math.max(0, income - stdDeduction);
+        double netTaxable = Math.max(0, income - stdDeduction - rentalStdDeduction);
 
         double tax = 0;
         if (netTaxable <= 700000) {
@@ -195,7 +195,7 @@ public class TaxCalculationService {
                 .deductions80C(0.0)
                 .deductions80D(0.0)
                 .hraExemption(0.0)
-                .otherDeductions(0.0)
+                .otherDeductions(rentalStdDeduction)
                 .netTaxable(netTaxable)
                 .baseTax(tax)
                 .cess(cess)

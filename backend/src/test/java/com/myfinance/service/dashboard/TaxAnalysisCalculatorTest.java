@@ -112,6 +112,10 @@ class TaxAnalysisCalculatorTest {
             assertThat(result.getRental().getGrossRentalIncome()).isCloseTo(360000.0, within(0.01));
             assertThat(result.getRental().getStdDeduction()).isCloseTo(108000.0, within(0.01));
             assertThat(result.getRental().getNetRentalIncome()).isCloseTo(252000.0, within(0.01));
+
+            // Section 24(a) applies to both regimes
+            assertThat(result.getRegimeComparison().getOld().getOtherDeductions()).isCloseTo(108000.0, within(0.01));
+            assertThat(result.getRegimeComparison().getNewRegime().getOtherDeductions()).isCloseTo(108000.0, within(0.01));
         }
 
         @Test

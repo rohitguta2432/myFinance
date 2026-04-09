@@ -91,7 +91,8 @@ public class TaxAnalysisCalculator {
         // === NEW REGIME ===
         double newStdDed = 75000;
         double newEmployerNps = Math.min(employerNps, grossIncome * 0.14);
-        double newTotalDed = newStdDed + newEmployerNps;
+        double newOtherDeductions = rentalStdDeduction;
+        double newTotalDed = newStdDed + newEmployerNps + newOtherDeductions;
         double newTaxableIncome = Math.max(0, grossIncome - newTotalDed);
         double newBaseTax = calcNewRegimeTax(newTaxableIncome);
         boolean newRebate = newTaxableIncome <= 700000;
@@ -111,7 +112,7 @@ public class TaxAnalysisCalculator {
                 .deductions80C(0.0)
                 .deductionsNps(newEmployerNps)
                 .hraExemption(0.0)
-                .otherDeductions(0.0)
+                .otherDeductions(newOtherDeductions)
                 .totalDeductions(newTotalDed)
                 .taxableIncome(newTaxableIncome)
                 .baseTax(newBaseTax)
