@@ -140,10 +140,10 @@ const Step2IncomeExpenses = () => {
             if (editingId) {
                 const prev = incomes.find(i => i.id === editingId);
                 updateIncome(editingId, incomeItem);
-                try { await updateIncomeApi(incomeItem); } catch (e) { updateIncome(editingId, prev); toast.error('Failed to update income — reverted'); }
+                try { await updateIncomeApi(incomeItem); } catch (e) { updateIncome(editingId, prev); toast.error('Could not update income — change reverted, check your connection'); }
             } else {
                 addIncome(incomeItem);
-                try { await addIncomeApi(incomeItem); } catch (e) { removeIncome(incomeItem.id); toast.error('Failed to save income — removed'); }
+                try { await addIncomeApi(incomeItem); } catch (e) { removeIncome(incomeItem.id); toast.error('Could not save income — check your connection and try again'); }
             }
         } else {
             const expenseItem = {
@@ -154,10 +154,10 @@ const Step2IncomeExpenses = () => {
             if (editingId) {
                 const prev = expenses.find(e => e.id === editingId);
                 updateExpense(editingId, expenseItem);
-                try { await updateExpenseApi(expenseItem); } catch (e) { updateExpense(editingId, prev); toast.error('Failed to update expense — reverted'); }
+                try { await updateExpenseApi(expenseItem); } catch (e) { updateExpense(editingId, prev); toast.error('Could not update expense — change reverted, check your connection'); }
             } else {
                 addExpense(expenseItem);
-                try { await addExpenseApi(expenseItem); } catch (e) { removeExpense(expenseItem.id); toast.error('Failed to save expense — removed'); }
+                try { await addExpenseApi(expenseItem); } catch (e) { removeExpense(expenseItem.id); toast.error('Could not save expense — check your connection and try again'); }
             }
         }
         setIsModalOpen(false);
@@ -261,7 +261,7 @@ const Step2IncomeExpenses = () => {
                                 {getExpenseDisplay(exp.category).emoji}
                             </div>
                             <div>
-                                <p className="font-bold text-sm text-white">{getExpenseDisplay(exp.category).name} <span className="text-[10px] font-normal bg-surface-active px-1.5 py-0.5 rounded ml-1 text-slate-400">{exp.type}</span></p>
+                                <p className="font-bold text-sm text-white">{getExpenseDisplay(exp.category).name} <span className="text-xs font-normal bg-surface-active px-1.5 py-0.5 rounded ml-1 text-slate-400">{exp.type}</span></p>
                                 <p className="text-xs text-slate-400">
                                     {exp.frequency}
                                     {exp.description && <span className="block text-slate-500 mt-0.5">{exp.description}</span>}
@@ -330,12 +330,12 @@ const Step2IncomeExpenses = () => {
 
                                 <div className="border-t border-dashed border-white/20 my-3 pt-4 flex justify-between items-center">
                                     <span className="text-white font-bold text-lg font-sans">SURPLUS</span>
-                                    <span className={`font-black text-xl tabular-nums ${surplus >= 0 ? 'text-primary' : 'text-red-400'}`}>₹{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                    <span className={`font-bold text-xl tabular-nums ${surplus >= 0 ? 'text-primary' : 'text-red-400'}`}>₹{surplus.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                                 </div>
 
                                 <div className="pt-2 flex justify-between items-center">
                                     <span className="text-slate-300 font-sans">Savings Rate</span>
-                                    <span className={`font-black text-lg ${savingsRate >= 20 ? 'text-primary' : 'text-red-400'}`}>{savingsRate}%</span>
+                                    <span className={`font-bold text-lg ${savingsRate >= 20 ? 'text-primary' : 'text-red-400'}`}>{savingsRate}%</span>
                                 </div>
                             </div>
 

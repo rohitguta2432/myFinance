@@ -147,12 +147,12 @@ const TaxPlanningTab = () => {
                                             row.final ? 'bg-surface-active' : row.bold ? 'bg-white/[0.02]' : ''
                                         }`}
                                     >
-                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-black text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
+                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-bold text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
                                             {row.label}
                                         </td>
                                         <td className={`text-center px-5 py-3 font-mono ${
                                             row.final
-                                                ? `text-lg font-black ${recommended === 'old' ? 'text-white' : 'text-slate-300'}`
+                                                ? `text-lg font-bold ${recommended === 'old' ? 'text-white' : 'text-slate-300'}`
                                                 : row.bold
                                                     ? 'text-sm font-bold text-white'
                                                     : 'text-sm text-slate-300'
@@ -161,7 +161,7 @@ const TaxPlanningTab = () => {
                                         </td>
                                         <td className={`text-center px-5 py-3 font-mono ${
                                             row.final
-                                                ? `text-lg font-black ${recommended === 'new' ? 'text-primary' : 'text-slate-300'}`
+                                                ? `text-lg font-bold ${recommended === 'new' ? 'text-primary' : 'text-slate-300'}`
                                                 : row.bold
                                                     ? 'text-sm font-bold text-white'
                                                     : 'text-sm text-slate-300'
@@ -190,12 +190,12 @@ const TaxPlanningTab = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-background-dark rounded-xl border border-white/5 p-4 text-center">
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Estimated Tax Liability</p>
-                                <p className="text-lg font-black text-white">{tds.recommendedTaxFormatted}</p>
+                                <p className="text-lg font-bold text-white">{tds.recommendedTaxFormatted}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">{recommended === 'old' ? 'Old Regime' : 'New Regime'}</p>
                             </div>
                             <div className="bg-background-dark rounded-xl border border-white/5 p-4 text-center">
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">TDS Deducted (Est.)</p>
-                                <p className="text-lg font-black text-white">{tds.totalTDSFormatted}</p>
+                                <p className="text-lg font-bold text-white">{tds.totalTDSFormatted}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">@10% of salary</p>
                             </div>
                         </div>

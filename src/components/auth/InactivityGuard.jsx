@@ -111,7 +111,7 @@ export default function InactivityGuard({ children }) {
 
                         <div className="flex items-center justify-center gap-2 mb-5">
                             <Clock className="w-5 h-5 text-amber-400" />
-                            <span className="text-3xl font-black text-amber-400 tabular-nums">
+                            <span className="text-3xl font-bold text-amber-400 tabular-nums">
                                 {minutes}:{seconds.toString().padStart(2, '0')}
                             </span>
                         </div>

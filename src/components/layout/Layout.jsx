@@ -124,7 +124,7 @@ const Layout = () => {
                 {/* Desktop Sidebar — step navigator (assessment only) */}
                 {isAssessment && (
                     <aside className="hidden lg:flex flex-col w-64 shrink-0 p-6 pt-8 border-r border-white/5">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-6">Assessment Progress</p>
+                        <p className="text-xs uppercase tracking-widest font-bold text-slate-500 mb-6">Assessment Progress</p>
                         <nav className="space-y-1">
                             {steps.map((s) => {
                                 const Icon = s.icon;

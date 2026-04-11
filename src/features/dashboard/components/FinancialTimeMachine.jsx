@@ -63,7 +63,7 @@ const FinancialTimeMachine = ({ isPremium = false }) => {
                     <div className="inline-flex flex-col items-center px-8 py-4 rounded-xl"
                         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
                     >
-                        <p className="text-4xl font-black tabular-nums tracking-tight"
+                        <p className="text-4xl font-bold tabular-nums tracking-tight"
                             style={{
                                 background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
                                 WebkitBackgroundClip: 'text',
@@ -83,20 +83,20 @@ const FinancialTimeMachine = ({ isPremium = false }) => {
                     <div className="rounded-xl p-3 text-center"
                         style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
                     >
-                        <p className="text-base font-black text-emerald-600 tabular-nums">{missedWealthFormatted}</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">missed by not starting 5 yrs ago</p>
+                        <p className="text-base font-bold text-emerald-600 tabular-nums">{missedWealthFormatted}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-tight">missed by not starting 5 yrs ago</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
                         style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
                     >
-                        <p className="text-base font-black text-amber-600 tabular-nums">{totalDelayCostFormatted}</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">total delay cost so far</p>
+                        <p className="text-base font-bold text-amber-600 tabular-nums">{totalDelayCostFormatted}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-tight">total delay cost so far</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
                         style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                     >
-                        <p className="text-base font-black text-red-600 tabular-nums">{oneYearPenaltyFormatted}</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">more if you wait another year</p>
+                        <p className="text-base font-bold text-red-600 tabular-nums">{oneYearPenaltyFormatted}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-tight">more if you wait another year</p>
                     </div>
                 </div>
 

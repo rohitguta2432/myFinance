@@ -54,7 +54,7 @@ const ExcessReallocationCard = () => {
                 </div>
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
                     <p className="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Deployable Surplus</p>
-                    <p className="text-2xl font-black text-primary">{deployableSurplusFormatted}</p>
+                    <p className="text-2xl font-bold text-primary">{deployableSurplusFormatted}</p>
                     <p className="text-xs text-slate-500 mt-1">100% → Retirement Corpus</p>
                 </div>
             </div>
@@ -80,7 +80,7 @@ const ExcessReallocationCard = () => {
                             {useStp && (
                                 <div className="flex items-center gap-1 mt-2">
                                     <Clock className="w-3 h-3 text-amber-400" />
-                                    <p className="text-[11px] text-amber-400 font-medium">
+                                    <p className="text-xs text-amber-400 font-medium">
                                         Via STP over {stpMonths} months
                                     </p>
                                 </div>
@@ -95,7 +95,7 @@ const ExcessReallocationCard = () => {
                                 <span className="text-xs text-slate-500 ml-auto">{debtPct}%</span>
                             </div>
                             <p className="text-lg font-bold text-white">{debtTransferFormatted}</p>
-                            <p className="text-[11px] text-slate-500 mt-2">Direct investment</p>
+                            <p className="text-xs text-slate-500 mt-2">Direct investment</p>
                         </div>
                     )}
                 </div>

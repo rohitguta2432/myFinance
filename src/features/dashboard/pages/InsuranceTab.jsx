@@ -108,7 +108,7 @@ const AdditionalCard = ({ card }) => (
         <p className="text-sm text-slate-400 leading-relaxed mb-3">{card.explanation}</p>
         <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2">
             <Wallet className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="text-[11px] text-slate-400">
+            <span className="text-xs text-slate-400">
                 Estimated: <span className="font-bold text-white">
                     {typeof card.estimatedPremium === 'number'
                         ? `₹${card.estimatedPremium.toLocaleString('en-IN')}/year`
@@ -229,7 +229,7 @@ const InsuranceTab = () => {
                                     <span className="text-sm">🎯</span>
                                     <p className="text-xs font-bold text-white">Required Cover (Max)</p>
                                 </div>
-                                <span className="text-sm font-black text-primary tabular-nums">{termLife.requiredCoverFormatted}</span>
+                                <span className="text-sm font-bold text-primary tabular-nums">{termLife.requiredCoverFormatted}</span>
                             </div>
                             <MetricRow
                                 label="Your Existing Cover"
@@ -243,7 +243,7 @@ const InsuranceTab = () => {
                                         <AlertTriangle className="w-4 h-4 text-red-400" />
                                         <span className="text-xs font-bold text-red-400">COVER GAP</span>
                                     </div>
-                                    <span className="text-sm font-black text-red-400 tabular-nums">{termLife.coverGapFormatted}</span>
+                                    <span className="text-sm font-bold text-red-400 tabular-nums">{termLife.coverGapFormatted}</span>
                                 </div>
                             )}
                         </div>
@@ -305,7 +305,7 @@ const InsuranceTab = () => {
                                         : 'border-white/5 bg-white/[0.02]'
                                         }`}>
                                         <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${t.active ? 'text-teal-400' : 'text-slate-500'}`}>{t.tier}</p>
-                                        <p className={`text-sm font-black ${t.active ? 'text-white' : 'text-slate-600'}`}>{t.cover}</p>
+                                        <p className={`text-sm font-bold ${t.active ? 'text-white' : 'text-slate-600'}`}>{t.cover}</p>
                                         <p className="text-xs text-slate-500 mt-0.5">{t.cities}</p>
                                     </div>
                                 ))}
@@ -329,7 +329,7 @@ const InsuranceTab = () => {
                                         <AlertTriangle className="w-4 h-4 text-amber-400" />
                                         <span className="text-xs font-bold text-amber-400">COVER GAP</span>
                                     </div>
-                                    <span className="text-sm font-black text-amber-400 tabular-nums">{healthInsurance.gapFormatted}</span>
+                                    <span className="text-sm font-bold text-amber-400 tabular-nums">{healthInsurance.gapFormatted}</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 py-2.5 mt-1 bg-emerald-500/10 rounded-lg px-3 border border-emerald-500/15">

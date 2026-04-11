@@ -81,12 +81,12 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                         <span className="text-xl shrink-0">{pillar.icon}</span>
                         <h4 className="text-base font-bold text-white truncate">{pillar.name}</h4>
                         <span
-                            className={`px-2 py-0.5 ${config.chipBg} ${config.chipText} text-[11px] font-bold uppercase tracking-widest rounded-full leading-none shrink-0`}
+                            className={`px-2 py-0.5 ${config.chipBg} ${config.chipText} text-xs font-bold uppercase tracking-widest rounded-full leading-none shrink-0`}
                         >
                             {config.label}
                         </span>
                         {isWorst && (
-                            <span className="px-2 py-1 bg-red-500 text-[10px] font-bold text-white uppercase tracking-widest rounded-full leading-none shrink-0">
+                            <span className="px-2 py-1 bg-red-500 text-xs font-bold text-white uppercase tracking-widest rounded-full leading-none shrink-0">
                                 RISK
                             </span>
                         )}
@@ -95,7 +95,7 @@ const PillarInterpretationCard = ({ pillar, hookData, index = 0, isWorst = false
                     <div className="flex items-center gap-2 shrink-0 ml-2">
                         <div className="flex items-baseline gap-0.5">
                             <span
-                                className="text-xl font-black tabular-nums"
+                                className="text-xl font-bold tabular-nums"
                                 style={{ color: config.barTo }}
                             >
                                 {pillar.score}

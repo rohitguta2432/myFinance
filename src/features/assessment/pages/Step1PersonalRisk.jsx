@@ -245,7 +245,7 @@ const Step1PersonalRisk = () => {
                                 className="z-10 relative w-full"
                             />
                         </div>
-                        <div className="flex justify-between mt-1 text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                        <div className="flex justify-between mt-1 text-xs text-slate-400 uppercase tracking-wider font-medium">
                             <span>18</span>
                             <span>75+</span>
                         </div>
@@ -457,7 +457,7 @@ const Step1PersonalRisk = () => {
                             onClick={() => setOpenDropdown(openDropdown === 'employment' ? null : 'employment')}
                             className="rounded-xl bg-surface-dark border border-white/5 p-4 shadow-sm cursor-pointer hover:border-primary/30 transition-colors"
                         >
-                            <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Employment <span className="text-red-400">*</span></label>
+                            <label className="text-xs uppercase font-bold text-slate-500 block mb-1">Employment <span className="text-red-400">*</span></label>
                             <div className="flex items-center justify-between">
                                 <span className={`text-sm font-medium ${employmentType ? 'text-white' : 'text-slate-500'}`}>
                                     {employmentType || 'Select...'}
@@ -489,7 +489,7 @@ const Step1PersonalRisk = () => {
                             onClick={() => setOpenDropdown(openDropdown === 'residency' ? null : 'residency')}
                             className="rounded-xl bg-surface-dark border border-white/5 p-4 shadow-sm cursor-pointer hover:border-primary/30 transition-colors"
                         >
-                            <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Residency <span className="text-red-400">*</span></label>
+                            <label className="text-xs uppercase font-bold text-slate-500 block mb-1">Residency <span className="text-red-400">*</span></label>
                             <div className="flex items-center justify-between">
                                 <span className={`text-sm font-medium ${residencyStatus ? 'text-white' : 'text-slate-500'}`}>
                                     {residencyStatus || 'Select...'}

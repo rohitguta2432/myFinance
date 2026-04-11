@@ -202,7 +202,7 @@ const ProjectionChart = () => {
 
             {/* Assumptions */}
             <div className="rounded-xl p-3 bg-white/[0.02] border border-white/5">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Info className="w-3 h-3" />
                     Assumptions
                 </p>
@@ -215,7 +215,7 @@ const ProjectionChart = () => {
                         'Does not account for inflation, taxation, or market volatility',
                         'Past performance does not guarantee future results',
                     ].map((text, i) => (
-                        <li key={i} className="text-[10px] text-slate-500 leading-relaxed flex items-start gap-1.5">
+                        <li key={i} className="text-xs text-slate-500 leading-relaxed flex items-start gap-1.5">
                             <span className="text-slate-600 mt-0.5">•</span>
                             <span>{text}</span>
                         </li>

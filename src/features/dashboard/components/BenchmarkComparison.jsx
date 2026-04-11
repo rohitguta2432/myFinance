@@ -21,7 +21,7 @@ const BenchmarkRow = ({ bm, index }) => {
             <div className="w-28 shrink-0">
                 <span className="text-sm font-semibold text-slate-300 leading-tight block">{bm.label}</span>
                 {bm.note && (
-                    <span className="text-[11px] text-slate-600 leading-none block mt-0.5 truncate" title={bm.note}>
+                    <span className="text-xs text-slate-600 leading-none block mt-0.5 truncate" title={bm.note}>
                         {bm.note}
                     </span>
                 )}
@@ -96,16 +96,16 @@ const BenchmarkComparison = () => {
                 <div className="flex items-center gap-3 px-4 py-2 border-b border-white/5 bg-white/[0.02]">
                     <div className="w-8 shrink-0" />
                     <div className="w-28 shrink-0">
-                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Metric</span>
+                        <span className="text-xs text-slate-600 uppercase tracking-wider font-bold">Metric</span>
                     </div>
                     <div className="flex-1">
-                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Progress</span>
+                        <span className="text-xs text-slate-600 uppercase tracking-wider font-bold">Progress</span>
                     </div>
                     <div className="w-16 text-right shrink-0">
-                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Yours</span>
+                        <span className="text-xs text-slate-600 uppercase tracking-wider font-bold">Yours</span>
                     </div>
                     <div className="w-16 text-right shrink-0">
-                        <span className="text-[11px] text-slate-600 uppercase tracking-wider font-bold">Target</span>
+                        <span className="text-xs text-slate-600 uppercase tracking-wider font-bold">Target</span>
                     </div>
                     <div className="w-3 shrink-0" />
                 </div>
@@ -125,7 +125,7 @@ const BenchmarkComparison = () => {
                 ].map((l) => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: l.color }} />
-                        <span className="text-[11px] text-slate-600">{l.label}</span>
+                        <span className="text-xs text-slate-600">{l.label}</span>
                     </div>
                 ))}
             </div>

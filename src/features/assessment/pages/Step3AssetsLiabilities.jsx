@@ -187,7 +187,7 @@ const Step3AssetsLiabilities = () => {
                 }
                 toast.success(`${activeTab === 'assets' ? 'Asset' : 'Liability'} updated successfully`);
             } catch {
-                toast.error('Failed to update. Please try again.');
+                toast.error(`Could not update ${activeTab === 'assets' ? 'asset' : 'liability'} — check your connection and try again`);
             }
             setEditingItem(null);
             return;
@@ -205,7 +205,7 @@ const Step3AssetsLiabilities = () => {
                 toast.success('Asset saved successfully');
             } catch {
                 removeAsset(tempId);
-                toast.error('Failed to save asset. Please try again.');
+                toast.error('Could not save asset — check your connection and try again');
             }
         } else {
             addLiability(optimisticItem);
@@ -215,7 +215,7 @@ const Step3AssetsLiabilities = () => {
                 toast.success('Liability saved successfully');
             } catch {
                 removeLiability(tempId);
-                toast.error('Failed to save liability. Please try again.');
+                toast.error('Could not save liability — check your connection and try again');
             }
         }
 
@@ -332,7 +332,7 @@ const Step3AssetsLiabilities = () => {
                                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#0ab842]"></div>
                                 <p className="text-slate-400 text-xs font-bold tracking-widest uppercase">Total Net Worth</p>
                             </div>
-                            <h1 className={`text-5xl md:text-6xl font-black tracking-tight ${netWorthFormat.colorClass} drop-shadow-lg`}>
+                            <h1 className={`text-5xl md:text-6xl font-bold tracking-tight ${netWorthFormat.colorClass} drop-shadow-lg`}>
                                 {netWorthFormat.text}
                             </h1>
                         </div>
@@ -344,7 +344,7 @@ const Step3AssetsLiabilities = () => {
                                     <TrendingUp className="w-5 h-5 text-primary" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Assets</span>
+                                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Assets</span>
                                     <span className="text-white font-bold tracking-wide">{formatNetWorth(totalAssets).text}</span>
                                 </div>
                             </div>
@@ -354,7 +354,7 @@ const Step3AssetsLiabilities = () => {
                                     <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Liabilities</span>
+                                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Liabilities</span>
                                     <span className="text-white font-bold tracking-wide">{formatNetWorth(totalLiabilities).text}</span>
                                 </div>
                             </div>
@@ -809,7 +809,7 @@ const Step3AssetsLiabilities = () => {
                                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Interest Rate (%)</label>
                                                 <div className="group relative">
                                                     <Info className="w-3.5 h-3.5 text-slate-500" />
-                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max bg-surface text-slate-300 text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max bg-surface text-slate-300 text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                                         Check your loan statement
                                                     </div>
                                                 </div>

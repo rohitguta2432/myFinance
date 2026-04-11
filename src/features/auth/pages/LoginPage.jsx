@@ -23,7 +23,7 @@ const STATS = [
 ];
 
 const FEATURES = [
-    { icon: BarChart3, title: 'Post-tax return analysis', desc: 'See what you actually keep after Uncle Sam.' },
+    { icon: BarChart3, title: 'Post-tax return analysis', desc: 'See what you actually keep after taxes.' },
     { icon: ShieldCheck, title: 'Tax regime optimizer', desc: 'Old vs New regime automatically compared.' },
     { icon: Target, title: 'Goal-based roadmap', desc: 'Visualize your journey to financial freedom.' },
 ];
@@ -145,7 +145,7 @@ export default function LoginPage() {
                         <a href="#security">Security</a>
                         <a href="#cookies">Cookie Settings</a>
                     </div>
-                    <span className="lp-footer-copy">© 2024 MyFinancial Technologies Private Limited</span>
+                    <span className="lp-footer-copy">© 2026 MyFinancial Technologies Private Limited</span>
                 </footer>
             </div>
 
@@ -175,7 +175,7 @@ export default function LoginPage() {
                 .lp-nav-brand {
                     font-size: 1.2rem;
                     font-weight: 700;
-                    color: #0DF259;
+                    color: #0ab842;
                     letter-spacing: -0.02em;
                 }
                 .lp-nav-links {
@@ -193,7 +193,7 @@ export default function LoginPage() {
                 .lp-nav-links a:hover { color: #fff; }
                 .lp-nav-signup {
                     margin-left: 32px;
-                    background: #0DF259;
+                    background: #0ab842;
                     color: #060b11;
                     border: none;
                     padding: 8px 20px;
@@ -232,7 +232,7 @@ export default function LoginPage() {
                 }
                 .lp-left-glow--1 {
                     width: 500px; height: 500px;
-                    background: #0DF259;
+                    background: #0ab842;
                     top: -100px; left: -100px;
                 }
                 .lp-left-glow--2 {
@@ -263,7 +263,7 @@ export default function LoginPage() {
                     margin: 0 0 20px;
                 }
                 .lp-hero-green {
-                    color: #0DF259;
+                    color: #0ab842;
                 }
                 .lp-hero-sub {
                     color: rgba(255,255,255,0.5);
@@ -294,13 +294,13 @@ export default function LoginPage() {
                 }
                 .lp-stat:hover {
                     transform: translateY(-3px);
-                    border-color: rgba(13,242,89,0.25);
+                    border-color: rgba(10,184,66,0.25);
                 }
                 .lp-stat-label {
                     font-size: 0.65rem;
                     font-weight: 700;
                     letter-spacing: 0.08em;
-                    color: #0DF259;
+                    color: #0ab842;
                     text-transform: uppercase;
                 }
                 .lp-stat-value {
@@ -395,7 +395,7 @@ export default function LoginPage() {
                     box-sizing: border-box;
                 }
                 .lp-field-input::placeholder { color: rgba(255,255,255,0.25); }
-                .lp-field-input:focus { border-color: rgba(13,242,89,0.4); }
+                .lp-field-input:focus { border-color: rgba(10,184,66,0.4); }
 
                 .lp-email-btn {
                     width: 100%;
@@ -431,11 +431,11 @@ export default function LoginPage() {
                     width: 32px;
                     height: 32px;
                     border-radius: 8px;
-                    background: rgba(13,242,89,0.12);
+                    background: rgba(10,184,66,0.12);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: #0DF259;
+                    color: #0ab842;
                     flex-shrink: 0;
                 }
                 .lp-feature-title {
@@ -464,7 +464,7 @@ export default function LoginPage() {
                     gap: 2px;
                 }
                 .lp-privacy a {
-                    color: #0DF259;
+                    color: #0ab842;
                     text-decoration: underline;
                     text-underline-offset: 2px;
                 }

@@ -44,7 +44,7 @@ const UpgradeModal = ({ isOpen, onClose, tabLabel }) => {
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-5">
                         <Lock className="w-7 h-7 text-amber-400" />
                     </div>
-                    <h3 className="text-2xl font-black text-white mb-2">
+                    <h3 className="text-2xl font-bold text-white mb-2">
                         {tabLabel} is a Premium Feature
                     </h3>
                     <p className="text-base text-slate-400 mb-6 leading-relaxed">
@@ -175,7 +175,7 @@ const DashboardPage = () => {
                             className="w-full py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl text-center hover:border-amber-500/40 transition-all cursor-pointer group"
                         >
                             <span className="text-sm font-bold text-amber-400 group-hover:text-amber-300">🔓 Upgrade to Premium</span>
-                            <span className="block text-[11px] text-slate-600 mt-0.5">Unlock all features</span>
+                            <span className="block text-xs text-slate-600 mt-0.5">Unlock all features</span>
                         </button>
                     </div>
                 )}

@@ -124,7 +124,7 @@ const Step4FinancialGoals = () => {
                 if (saved?.id) updateGoal(newGoal.id, { id: saved.id });
             } catch (e) {
                 removeGoal(newGoal.id);
-                toast.error(e.message || 'Failed to save goal');
+                toast.error(e.message || 'Could not save goal — check your connection and try again');
             }
         }
         setIsModalOpen(false);
@@ -294,31 +294,31 @@ const Step4FinancialGoals = () => {
                                 <div className="grid grid-cols-2 gap-3">
                                     {/* Left: What You Need */}
                                     <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 space-y-3">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">What You Need</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">What You Need</p>
                                         <div>
                                             <p className="text-xs text-slate-400">Future Monthly Expense</p>
                                             <p className="text-lg font-bold text-white tabular-nums">{formatToCrLakh(retirementData.futureMonthlyExpense)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
-                                            <p className="text-[10px] text-slate-600 mt-0.5">{formatToCrLakh(retirementData.monthlyExpense)} today at 6% inflation</p>
+                                            <p className="text-xs text-slate-600 mt-0.5">{formatToCrLakh(retirementData.monthlyExpense)} today at 6% inflation</p>
                                         </div>
                                         <div className="border-t border-white/5 pt-3">
                                             <p className="text-xs text-slate-400">Retirement Corpus</p>
-                                            <p className="text-2xl font-black text-white tabular-nums">{formatToCrLakh(retirementData.corpusRequired)}</p>
-                                            <p className="text-[10px] text-slate-600 mt-0.5">at 3% annual withdrawal rate</p>
+                                            <p className="text-2xl font-bold text-white tabular-nums">{formatToCrLakh(retirementData.corpusRequired)}</p>
+                                            <p className="text-xs text-slate-600 mt-0.5">at 3% annual withdrawal rate</p>
                                         </div>
                                     </div>
 
                                     {/* Right: What You Have */}
                                     <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 space-y-3">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">What You Have</p>
+                                        <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">What You Have</p>
                                         <div>
                                             <p className="text-xs text-slate-400">Current Retirement Corpus</p>
                                             <p className="text-lg font-bold text-white tabular-nums">{formatToCrLakh(retirementData.currentRetirementAssets)}</p>
-                                            <p className="text-[10px] text-slate-600 mt-0.5">EPF + PPF + NPS + retirement-tagged assets</p>
+                                            <p className="text-xs text-slate-600 mt-0.5">EPF + PPF + NPS + retirement-tagged assets</p>
                                         </div>
                                         <div className="border-t border-white/5 pt-3">
                                             <p className="text-xs text-slate-400">Projected Value @ 8%</p>
-                                            <p className="text-2xl font-black text-primary tabular-nums">{formatToCrLakh(retirementData.projectedAssets)}</p>
-                                            <p className="text-[10px] text-slate-600 mt-0.5">in {retirementData.yearsToRetirement} years</p>
+                                            <p className="text-2xl font-bold text-primary tabular-nums">{formatToCrLakh(retirementData.projectedAssets)}</p>
+                                            <p className="text-xs text-slate-600 mt-0.5">in {retirementData.yearsToRetirement} years</p>
                                         </div>
                                     </div>
                                 </div>
@@ -333,7 +333,7 @@ const Step4FinancialGoals = () => {
                                         <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Gap Analysis</p>
                                         <span className="text-xs text-slate-400 font-semibold tabular-nums">{retirementData.onTrackPercent.toFixed(1)}% on track</span>
                                     </div>
-                                    <p className={`text-xl font-black tabular-nums ${
+                                    <p className={`text-xl font-bold tabular-nums ${
                                         retirementData.status === 'CRITICAL' ? 'text-red-400' :
                                         retirementData.status === 'MODERATE' ? 'text-amber-400' : 'text-emerald-400'
                                     }`}>
@@ -351,17 +351,17 @@ const Step4FinancialGoals = () => {
                                 {retirementData.gap > 0 && (
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
-                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-2">Flat SIP</p>
+                                            <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-2">Flat SIP</p>
                                             <p className="text-xl font-bold text-white tabular-nums">{formatToCrLakh(retirementData.sipFlat)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
-                                            <p className="text-[10px] text-slate-600 mt-1">Fixed for {retirementData.yearsToRetirement} years</p>
+                                            <p className="text-xs text-slate-600 mt-1">Fixed for {retirementData.yearsToRetirement} years</p>
                                         </div>
                                         <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
                                             <div className="flex items-center gap-1.5 mb-2">
-                                                <p className="text-[10px] text-primary uppercase tracking-widest font-bold">Step-Up SIP</p>
+                                                <p className="text-xs text-primary uppercase tracking-widest font-bold">Step-Up SIP</p>
                                                 <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">RECOMMENDED</span>
                                             </div>
                                             <p className="text-xl font-bold text-white tabular-nums">{formatToCrLakh(retirementData.sipStepUpStart)}<span className="text-xs text-slate-500 font-normal ml-1">/mo</span></p>
-                                            <p className="text-[10px] text-slate-400 mt-1">+{retirementData.stepUpRate}% yearly increase</p>
+                                            <p className="text-xs text-slate-400 mt-1">+{retirementData.stepUpRate}% yearly increase</p>
                                         </div>
                                     </div>
                                 )}
@@ -396,7 +396,7 @@ const Step4FinancialGoals = () => {
                                                 toast.success('Retirement goal added!');
                                                 setShowRetirementPanel(false);
                                             } catch {
-                                                toast.error('Failed to add goal');
+                                                toast.error('Could not add retirement goal — check your connection and try again');
                                             }
                                         }}
                                         className="w-full py-3 bg-primary hover:bg-primary/90 text-background-dark font-bold rounded-xl transition-all flex items-center justify-center gap-2"
@@ -454,17 +454,17 @@ const Step4FinancialGoals = () => {
                         <div className="p-4 text-center">
                             <p className="text-xs text-slate-400 mb-1">Monthly Expenses</p>
                             <p className="text-white font-bold text-base">₹{Math.round(efMonthlyExpenses).toLocaleString('en-IN')}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">from your cash flow</p>
+                            <p className="text-xs text-slate-500 mt-0.5">from your cash flow</p>
                         </div>
                         <div className="p-4 text-center">
                             <p className="text-xs text-slate-400 mb-1">Target Corpus</p>
                             <p className="text-white font-bold text-base">{formatToCrLakh(efTarget)}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{efTargetMonths} × monthly expenses</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{efTargetMonths} × monthly expenses</p>
                         </div>
                         <div className="p-4 text-center">
                             <p className="text-xs text-slate-400 mb-1">Liquid Assets</p>
                             <p className={`font-bold text-base ${efCurrent > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatToCrLakh(efCurrent)}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">FDs, Savings, Debt MFs</p>
+                            <p className="text-xs text-slate-500 mt-0.5">FDs, Savings, Debt MFs</p>
                         </div>
                     </div>
 
@@ -563,7 +563,7 @@ const Step4FinancialGoals = () => {
                                     <div className="flex items-center gap-2 mb-1">
                                         <Icon className="w-5 h-5 text-slate-400" />
                                         <h3 className="font-bold text-white uppercase text-sm tracking-wide">{goal.name}</h3>
-                                        <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-white/5 text-slate-400">[{goal.importance || 'High'} Priority]</span>
+                                        <span className="text-xs uppercase px-2 py-0.5 rounded bg-white/5 text-slate-400">[{goal.importance || 'High'} Priority]</span>
                                     </div>
                                     <p className="text-xs text-slate-400">Target: {formatToCrLakh(gBufferedCost)} ({new Date().getFullYear() + goal.horizon})</p>
                                     <p className="text-xs text-slate-400">Current: {formatToCrLakh(goal.currentSavings || 0)}</p>
@@ -581,7 +581,7 @@ const Step4FinancialGoals = () => {
                                                     toast.success('Goal deleted successfully');
                                                 } catch (error) {
                                                     console.error('Failed to delete goal:', error);
-                                                    toast.error('Failed to delete goal');
+                                                    toast.error('Could not delete goal — check your connection and try again');
                                                 }
                                             }}
                                             disabled={isDeletingGoal}
@@ -598,8 +598,8 @@ const Step4FinancialGoals = () => {
                                     <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(100, progressPercent)}%` }}></div>
                                 </div>
                                 <div className="flex justify-between items-center mt-1">
-                                    <span className="text-[10px] text-slate-500">Progress: {progressPercent.toFixed(1)}% complete</span>
-                                    <span className="text-[10px] text-slate-300">{formatToCrLakh(gBufferedCost - gSavings)} to go</span>
+                                    <span className="text-xs text-slate-500">Progress: {progressPercent.toFixed(1)}% complete</span>
+                                    <span className="text-xs text-slate-300">{formatToCrLakh(gBufferedCost - gSavings)} to go</span>
                                 </div>
                             </div>
 
@@ -741,7 +741,7 @@ const Step4FinancialGoals = () => {
                         <div className="space-y-3">
                             <button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-background-dark font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all">
                                 Upgrade to Premium
-                                <span className="block text-[10px] font-medium opacity-80">(₹ 999 /year for unlimited goals)</span>
+                                <span className="block text-xs font-medium opacity-80">(₹ 999 /year for unlimited goals)</span>
                             </button>
                             <button
                                 onClick={() => setIsLimitModalOpen(false)}
@@ -849,7 +849,7 @@ const Step4FinancialGoals = () => {
                             {(numericCost > 0 && numericHorizon > 0) && (
                                 <div className="mt-6 border border-white/10 rounded-2xl overflow-hidden bg-background-dark">
                                     <div className="bg-white/5 py-2 text-center border-b border-white/5">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Projection Summary</span>
+                                        <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Projection Summary</span>
                                     </div>
                                     <div className="p-4 space-y-3 text-sm">
                                         <div className="flex justify-between items-center">
@@ -859,14 +859,14 @@ const Step4FinancialGoals = () => {
                                         <div className="flex justify-between items-start">
                                             <div className="w-1/2">
                                                 <span className="text-slate-400 block">In {numericHorizon} years</span>
-                                                <span className="text-[10px] text-slate-500">(with {numericInflation * 100}% inflation)</span>
+                                                <span className="text-xs text-slate-500">(with {numericInflation * 100}% inflation)</span>
                                             </div>
                                             <span className="text-white font-medium text-right w-1/2 mt-0.5">{formatToCrLakh(futureCost)}</span>
                                         </div>
                                         <div className="flex justify-between items-start">
                                             <div className="w-1/2">
                                                 <span className="text-slate-400 block">With Buffer +20%</span>
-                                                <span className="text-[10px] text-slate-500">(for taxes & fees)</span>
+                                                <span className="text-xs text-slate-500">(for taxes & fees)</span>
                                             </div>
                                             <span className="text-white font-medium text-right w-1/2 mt-0.5">{formatToCrLakh(bufferedCost)}</span>
                                         </div>
@@ -874,7 +874,7 @@ const Step4FinancialGoals = () => {
                                             <div className="flex justify-between items-start border-t border-white/5 pt-3">
                                                 <div className="w-1/2">
                                                     <span className="text-slate-400 block">Your Current Savings</span>
-                                                    <span className="text-[10px] text-slate-500">Will Grow To (at 12% returns)</span>
+                                                    <span className="text-xs text-slate-500">Will Grow To (at 12% returns)</span>
                                                 </div>
                                                 <div className="text-right w-1/2 mt-0.5">
                                                     <span className="text-white text-xs line-through block opacity-50">{formatToCrLakh(numericSavings)}</span>
@@ -889,7 +889,7 @@ const Step4FinancialGoals = () => {
                                     </div>
 
                                     <div className="bg-primary/5 border-t border-primary/20 p-4">
-                                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-3 text-center">To achieve this goal, you need:</p>
+                                        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3 text-center">To achieve this goal, you need:</p>
                                         <div className="space-y-3">
                                             <div className="flex items-start gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
@@ -905,7 +905,7 @@ const Step4FinancialGoals = () => {
                                                 <div className="absolute inset-0 flex items-center">
                                                     <div className="w-full border-t border-white/10"></div>
                                                 </div>
-                                                <div className="relative flex justify-center text-[10px] uppercase font-bold text-slate-500">
+                                                <div className="relative flex justify-center text-xs uppercase font-bold text-slate-500">
                                                     <span className="bg-primary/5 px-2 rounded">OR</span>
                                                 </div>
                                             </div>
@@ -918,7 +918,7 @@ const Step4FinancialGoals = () => {
                                                     <p className="font-bold text-white tracking-wide">₹ {Math.round(requiredLumpSum).toLocaleString('en-IN')} <span className="text-xs text-slate-400 font-normal">lump sum today</span></p>
                                                 </div>
                                             </div>
-                                            <p className="text-[10px] text-slate-500 text-center mt-3 pt-2 border-t border-white/5">
+                                            <p className="text-xs text-slate-500 text-center mt-3 pt-2 border-t border-white/5">
                                                 Assumes 12% annual return (based on your Moderate risk)
                                             </p>
                                         </div>

@@ -110,7 +110,7 @@ const ActionCard = ({ action, rank }) => {
                 <div className="flex items-start gap-3">
                     {/* Rank badge */}
                     <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-                        <span className="text-base font-black text-primary">#{rank}</span>
+                        <span className="text-base font-bold text-primary">#{rank}</span>
                     </div>
                     <div className="space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">

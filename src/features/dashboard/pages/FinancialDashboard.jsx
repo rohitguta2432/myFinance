@@ -53,10 +53,10 @@ const ScoreRing = ({ score, label, color }) => {
                 />
             </svg>
             <div className="absolute flex flex-col items-center w-[140px] text-center">
-                <span className="text-5xl font-black tabular-nums tracking-tight text-slate-800"
+                <span className="text-5xl font-bold tabular-nums tracking-tight text-slate-800"
                     style={{ textShadow: `0 0 20px ${color}30` }}
                 >{Math.round(animatedScore)}</span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] mt-1 leading-tight" style={{ color }}>{label}</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.1em] mt-1 leading-tight" style={{ color }}>{label}</span>
                 <span className="text-xs text-slate-500 mt-0.5">out of 100</span>
             </div>
         </div>
@@ -283,7 +283,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                    <span className={`px-2 py-1 ${s.badge} text-[11px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
+                                                    <span className={`px-2 py-1 ${s.badge} text-xs font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
                                                         {flag.severity}
                                                     </span>
                                                     <h4 className="text-lg font-bold text-white">{flag.title}</h4>
@@ -326,7 +326,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                    <span className={`px-2 py-1 ${s.badge} text-[11px] font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
+                                                    <span className={`px-2 py-1 ${s.badge} text-xs font-bold text-white uppercase tracking-widest rounded-full leading-none`}>
                                                         {flag.severity}
                                                     </span>
                                                     <h4 className="text-lg font-bold text-white">{flag.title}</h4>
@@ -383,7 +383,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="px-2 py-1 bg-emerald-500/15 text-[10px] font-bold text-emerald-400 uppercase tracking-widest rounded-full leading-none">
+                                            <span className="px-2 py-1 bg-emerald-500/15 text-xs font-bold text-emerald-400 uppercase tracking-widest rounded-full leading-none">
                                                 #{i + 1}
                                             </span>
                                             <h4 className="text-base font-bold text-white">{act.title}</h4>
@@ -434,7 +434,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="px-2 py-1 bg-slate-500/15 text-[10px] font-bold text-slate-400 uppercase tracking-widest rounded-full leading-none">
+                                            <span className="px-2 py-1 bg-slate-500/15 text-xs font-bold text-slate-400 uppercase tracking-widest rounded-full leading-none">
                                                 #{FREE_ACTIONS_LIMIT + i + 1}
                                             </span>
                                             <h4 className="text-base font-bold text-white">{act.title}</h4>
@@ -491,7 +491,7 @@ const FinancialDashboard = ({ isPremium = false }) => {
                         style={{ background: 'radial-gradient(circle at 50% 0%, rgba(245,158,11,0.2), transparent 60%)' }}
                     />
                     <div className="relative z-10">
-                        <h3 className="text-2xl font-black mb-2">Unlock Your Full Financial Blueprint</h3>
+                        <h3 className="text-2xl font-bold mb-2">Unlock Your Full Financial Blueprint</h3>
                         <p className="text-base text-slate-400 mb-5 max-w-lg mx-auto">
                             Get personalized action plans, detailed pillar breakdowns, and step-by-step recommendations to reach 90+ score.
                         </p>

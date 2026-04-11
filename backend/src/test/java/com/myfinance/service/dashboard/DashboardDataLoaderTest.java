@@ -278,10 +278,10 @@ class DashboardDataLoaderTest {
 
             UserFinancialData data = dataLoader.load(userId);
 
-            // savings = 100000 - 50000 - 5000 = 45000
-            // savingsRate = 45000 / 100000 * 100 = 45
-            assertThat(data.getMonthlySavings()).isCloseTo(45000.0, within(0.01));
-            assertThat(data.getSavingsRate()).isCloseTo(45.0, within(0.01));
+            // savings = 100000 - 50000 = 50000 (EMI not subtracted; already in expenses when user enters it)
+            // savingsRate = 50000 / 100000 * 100 = 50
+            assertThat(data.getMonthlySavings()).isCloseTo(50000.0, within(0.01));
+            assertThat(data.getSavingsRate()).isCloseTo(50.0, within(0.01));
         }
 
         @Test

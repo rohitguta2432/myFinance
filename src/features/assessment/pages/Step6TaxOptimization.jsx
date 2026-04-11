@@ -216,12 +216,12 @@ const Step6TaxOptimization = () => {
                                             row.final ? 'bg-surface-active' : row.bold ? 'bg-white/[0.02]' : ''
                                         }`}
                                     >
-                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-black text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
+                                        <td className={`px-5 py-3 text-sm ${row.final ? 'text-white font-bold text-base' : row.bold ? 'text-white font-bold' : 'text-slate-300'}`}>
                                             {row.label}
                                         </td>
                                         <td className={`text-center px-5 py-3 font-mono ${
                                             row.final
-                                                ? `text-lg font-black ${taxRegime === 'old' ? 'text-white' : 'text-slate-300'}`
+                                                ? `text-lg font-bold ${taxRegime === 'old' ? 'text-white' : 'text-slate-300'}`
                                                 : row.bold
                                                     ? 'text-sm font-bold text-white'
                                                     : 'text-sm text-slate-300'
@@ -230,7 +230,7 @@ const Step6TaxOptimization = () => {
                                         </td>
                                         <td className={`text-center px-5 py-3 font-mono ${
                                             row.final
-                                                ? `text-lg font-black ${taxRegime === 'new' ? 'text-primary' : 'text-slate-300'}`
+                                                ? `text-lg font-bold ${taxRegime === 'new' ? 'text-primary' : 'text-slate-300'}`
                                                 : row.bold
                                                     ? 'text-sm font-bold text-white'
                                                     : 'text-sm text-slate-300'
@@ -259,7 +259,7 @@ const Step6TaxOptimization = () => {
                         <div className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
                             <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
                                 <h3 className="font-bold text-white text-sm tracking-wide">Income Summary</h3>
-                                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-Populated</span>
+                                <span className="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded uppercase">Auto-Populated</span>
                             </div>
                             <div className="p-5 font-mono text-sm space-y-3">
                                 {Object.entries(incomeCategories).map(([source, amt]) => (
@@ -352,15 +352,15 @@ const Step6TaxOptimization = () => {
                                     {openAccordion === '80d' && (
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-3">
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Self + Spouse Premium <br /><span className="text-[10px]">(max ₹25,000)</span></span>
+                                                <span className="text-slate-400">Self + Spouse Premium <br /><span className="text-xs">(max ₹25,000)</span></span>
                                                 <input type="number" value={medSelfSpouse || ''} onChange={(e) => setMedSelfSpouse(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Parents Premium (&lt;60) <br /><span className="text-[10px]">(max ₹25,000)</span></span>
+                                                <span className="text-slate-400">Parents Premium (&lt;60) <br /><span className="text-xs">(max ₹25,000)</span></span>
                                                 <input type="number" value={medParentsLt60 || ''} onChange={(e) => setMedParentsLt60(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Parents Premium (≥60) <br /><span className="text-[10px]">(max ₹50,000)</span></span>
+                                                <span className="text-slate-400">Parents Premium (≥60) <br /><span className="text-xs">(max ₹50,000)</span></span>
                                                 <input type="number" value={medParentsGt60 || ''} onChange={(e) => setMedParentsGt60(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                         </div>
@@ -382,19 +382,19 @@ const Step6TaxOptimization = () => {
                                     {openAccordion === 'other' && (
                                         <div className="p-5 border-t border-white/5 bg-background-dark space-y-3">
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Addt. NPS 80CCD(1B) <br /><span className="text-[10px]">(max ₹50,000)</span></span>
+                                                <span className="text-slate-400">Addt. NPS 80CCD(1B) <br /><span className="text-xs">(max ₹50,000)</span></span>
                                                 <input type="number" value={otherNps || ''} onChange={(e) => setOtherNps(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Edu Loan Int. 80E <br /><span className="text-[10px]">(no limit)</span></span>
+                                                <span className="text-slate-400">Edu Loan Int. 80E <br /><span className="text-xs">(no limit)</span></span>
                                                 <input type="number" value={eduLoanInterest || ''} onChange={(e) => setEduLoanInterest(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Home Loan Int. 24(b) <br /><span className="text-[10px]">(max ₹2,00,000)</span></span>
+                                                <span className="text-slate-400">Home Loan Int. 24(b) <br /><span className="text-xs">(max ₹2,00,000)</span></span>
                                                 <input type="number" value={homeLoanInterest || ''} onChange={(e) => setHomeLoanInterest(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-400">Donations 80G <br /><span className="text-[10px]">(subject to limits)</span></span>
+                                                <span className="text-slate-400">Donations 80G <br /><span className="text-xs">(subject to limits)</span></span>
                                                 <input type="number" value={donations || ''} onChange={(e) => setDonations(parseFloat(e.target.value) || 0)} placeholder="Enter" className="bg-surface text-right text-white px-3 py-1.5 rounded-lg border border-white/5 focus:border-primary focus:outline-none w-32" />
                                             </div>
                                         </div>
@@ -412,7 +412,7 @@ const Step6TaxOptimization = () => {
                         <div id="hra" className="bg-surface-dark border border-white/5 rounded-2xl overflow-hidden shadow-lg w-full">
                             <div className="bg-surface-active px-5 py-3 border-b border-white/5 flex items-center justify-between">
                                 <h3 className="font-bold text-white text-sm tracking-wide">HRA Exemption</h3>
-                                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Auto-calculated</span>
+                                <span className="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded uppercase">Auto-calculated</span>
                             </div>
                             <div className="p-5 font-mono text-sm space-y-2">
                                 <div className="flex justify-between items-center text-slate-300">
@@ -437,7 +437,7 @@ const Step6TaxOptimization = () => {
                             <div className="relative group rounded-2xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-amber-500/10 transition-shadow duration-500">
                                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-transparent to-orange-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
                                 <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-2xl p-5 flex flex-col border border-white/10 group-hover:border-amber-500/40 transition-colors duration-300">
-                                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
+                                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
                                     <h4 className="text-white font-bold text-base mb-2 group-hover:text-amber-400 transition-colors duration-300">Tax Harvesting</h4>
                                     <p className="text-xs text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Compare your <span className="text-amber-400 font-bold">portfolio</span> harvest of tax harvesting.</p>
                                 </div>
@@ -447,7 +447,7 @@ const Step6TaxOptimization = () => {
                             <div className="relative group rounded-2xl p-[1px] overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/10 transition-shadow duration-500">
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-transparent to-pink-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
                                 <div className="relative z-10 bg-surface-dark/40 backdrop-blur-2xl h-full rounded-2xl p-5 flex flex-col border border-white/10 group-hover:border-purple-500/40 transition-colors duration-300">
-                                    <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
+                                    <div className="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest w-fit mb-3">Premium</div>
                                     <h4 className="text-white font-bold text-base mb-2 group-hover:text-purple-400 transition-colors duration-300">Family Income Distribution</h4>
                                     <p className="text-xs text-slate-300 leading-relaxed group-hover:text-white transition-colors duration-300">Compare your account on <span className="text-purple-400 font-bold">Family Income</span> and bins distribution amounts.</p>
                                 </div>

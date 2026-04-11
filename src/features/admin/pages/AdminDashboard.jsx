@@ -49,8 +49,8 @@ const Sidebar = ({ activeTab, setActiveTab, onExport }) => {
                         <Shield className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <p className="text-sm font-extrabold text-slate-800 tracking-tight">MyFinancial</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+                        <p className="text-sm font-bold text-slate-800 tracking-tight">MyFinancial</p>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Admin Panel</p>
                     </div>
                 </div>
             </div>
@@ -108,8 +108,8 @@ const StatCard = ({ label, value, icon: Icon, color, bg, accent }) => (
             </div>
         </div>
         <div>
-            <p className={`text-[11px] uppercase tracking-[0.12em] font-semibold ${accent ? 'text-background-dark/60' : 'text-slate-500'}`}>{label}</p>
-            <p className={`text-2xl font-black tabular-nums tracking-tight mt-0.5 ${accent ? 'text-background-dark' : 'text-slate-800'}`}>{value}</p>
+            <p className={`text-xs uppercase tracking-[0.12em] font-semibold ${accent ? 'text-background-dark/60' : 'text-slate-500'}`}>{label}</p>
+            <p className={`text-2xl font-bold tabular-nums tracking-tight mt-0.5 ${accent ? 'text-background-dark' : 'text-slate-800'}`}>{value}</p>
         </div>
     </div>
 );
@@ -128,8 +128,8 @@ const GoalRing = ({ pct }) => {
                     className="transition-all duration-1000 ease-out" />
             </svg>
             <div className="absolute flex flex-col items-center">
-                <span className="text-3xl font-black text-slate-800 tabular-nums">{pct}%</span>
-                <span className="text-[10px] uppercase tracking-[0.15em] font-semibold text-slate-500">Reached</span>
+                <span className="text-3xl font-bold text-slate-800 tabular-nums">{pct}%</span>
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-slate-500">Reached</span>
             </div>
         </div>
     );
@@ -266,7 +266,7 @@ const UserDetailPanel = ({ userId, onClose }) => {
 
 const Section = ({ title, children }) => (
     <div>
-        <h4 className="text-[10px] uppercase tracking-[0.15em] font-bold text-slate-500 mb-3">{title}</h4>
+        <h4 className="text-xs uppercase tracking-[0.15em] font-bold text-slate-500 mb-3">{title}</h4>
         {children}
     </div>
 );
@@ -307,8 +307,8 @@ const AuditLogsView = () => {
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-slate-500 mb-1">System Logs</p>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Audit Logs</h1>
+                <p className="text-xs uppercase tracking-[0.15em] font-semibold text-slate-500 mb-1">System Logs</p>
+                <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Audit Logs</h1>
                 <p className="text-sm text-slate-500 mt-1">Real-time activity feed — auto-refreshes every 10s</p>
             </div>
 
@@ -333,7 +333,7 @@ const AuditLogsView = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-semibold text-slate-800">{log.userName || 'Unknown'}</span>
-                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${actionColors[log.action] || 'bg-slate-500/15 text-slate-400 border-slate-500/20'}`}>
+                                        <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full border ${actionColors[log.action] || 'bg-slate-500/15 text-slate-400 border-slate-500/20'}`}>
                                             {log.action?.replace('_', ' ')}
                                         </span>
                                     </div>
@@ -345,7 +345,7 @@ const AuditLogsView = () => {
                                 </div>
                                 <div className="text-right shrink-0">
                                     <p className="text-xs text-slate-500">{timeAgo(log.createdAt)}</p>
-                                    <p className="text-[10px] text-slate-600">{log.userEmail}</p>
+                                    <p className="text-xs text-slate-600">{log.userEmail}</p>
                                 </div>
                             </div>
                         ))}
@@ -409,8 +409,8 @@ export default function AdminDashboard() {
                     {activeTab === 'audit' ? <AuditLogsView /> : <>
                     {/* Section Header */}
                     <div>
-                        <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-slate-500 mb-1">Admin Intelligence</p>
-                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">Fiscal Overview</h1>
+                        <p className="text-xs uppercase tracking-[0.15em] font-semibold text-slate-500 mb-1">Admin Intelligence</p>
+                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Fiscal Overview</h1>
                     </div>
 
                     {/* Stats Row */}
@@ -446,13 +446,13 @@ export default function AdminDashboard() {
                                     const label = new Date(day.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' });
                                     return (
                                         <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-dark border border-white/10 rounded-lg px-2 py-1 text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-dark border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                                                 {day.logins} logins · {day.actions} actions
                                             </div>
                                             <div className="w-full rounded-t-lg bg-primary/20 transition-all" style={{ height: `${pct}%` }}>
                                                 <div className="w-full rounded-t-lg bg-primary transition-all" style={{ height: `${loginPct}%` }} />
                                             </div>
-                                            <span className="text-[10px] text-slate-500 uppercase font-semibold">{label}</span>
+                                            <span className="text-xs text-slate-500 uppercase font-semibold">{label}</span>
                                         </div>
                                     );
                                 })}
@@ -500,7 +500,7 @@ export default function AdminDashboard() {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
-                                            <tr className="border-b border-white/5 text-slate-500 uppercase tracking-wider text-[11px]">
+                                            <tr className="border-b border-white/5 text-slate-500 uppercase tracking-wider text-xs">
                                                 <th className="text-left px-6 py-3.5 font-semibold">User</th>
                                                 <th className="text-left px-4 py-3.5 font-semibold">City</th>
                                                 <th className="text-left px-4 py-3.5 font-semibold">Joined</th>

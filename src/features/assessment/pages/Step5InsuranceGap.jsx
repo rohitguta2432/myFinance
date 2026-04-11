@@ -180,7 +180,7 @@ const Step5InsuranceGap = () => {
 
                         {(actualCorpHealth > 0 || actualCorpLife > 0) && (
                             <div className="mt-5 border border-blue-500/20 bg-blue-500/5 rounded-xl p-4">
-                                <h4 className="text-[10px] font-bold tracking-wider text-blue-400 uppercase mb-3">Corporate Coverage Summary</h4>
+                                <h4 className="text-xs font-bold tracking-wider text-blue-400 uppercase mb-3">Corporate Coverage Summary</h4>
                                 <div className="space-y-1 text-sm font-medium mb-3">
                                     <div className="flex justify-between">
                                         <span className="text-slate-400">Health:</span>
@@ -237,7 +237,7 @@ const Step5InsuranceGap = () => {
                     </div>
 
                     <div className="p-5 bg-gradient-to-b from-surface-dark to-background-dark">
-                        <h4 className="text-[10px] font-bold tracking-wider text-teal-400 uppercase mb-4 flex items-center gap-2">
+                        <h4 className="text-xs font-bold tracking-wider text-teal-400 uppercase mb-4 flex items-center gap-2">
                             <HeartPulse className="w-4 h-4" /> Health Coverage Analysis
                         </h4>
 
@@ -245,7 +245,7 @@ const Step5InsuranceGap = () => {
                             <div className="flex justify-between items-start border-b border-white/5 pb-2">
                                 <div>
                                     <p className="text-slate-400 font-semibold mb-0.5">RECOMMENDED FOR YOU</p>
-                                    <p className="text-[10px] text-slate-500">Based on family size & city</p>
+                                    <p className="text-xs text-slate-500">Based on family size & city</p>
                                 </div>
                                 <span className="font-bold text-lg text-white">{formatCurrency(recommendedHealthCover)}</span>
                             </div>
@@ -253,7 +253,7 @@ const Step5InsuranceGap = () => {
                             <div className="flex justify-between items-start border-b border-white/5 pb-2">
                                 <div>
                                     <p className="text-slate-400 font-semibold mb-0.5">YOUR CURRENT COVERAGE</p>
-                                    <p className="text-[10px] text-slate-500">Corporate: {formatCurrency(actualCorpHealth)} | Personal: {formatCurrency(actualPersonalHealth)}</p>
+                                    <p className="text-xs text-slate-500">Corporate: {formatCurrency(actualCorpHealth)} | Personal: {formatCurrency(actualPersonalHealth)}</p>
                                 </div>
                                 <span className="font-bold text-white">{formatCurrency(totalHealthCover)}</span>
                             </div>
@@ -307,7 +307,7 @@ const Step5InsuranceGap = () => {
                     </div>
 
                     <div className="p-5 bg-gradient-to-b from-surface-dark to-background-dark">
-                        <h4 className="text-[10px] font-bold tracking-wider text-blue-400 uppercase mb-4 flex items-center gap-2">
+                        <h4 className="text-xs font-bold tracking-wider text-blue-400 uppercase mb-4 flex items-center gap-2">
                             <Briefcase className="w-4 h-4" /> Life Coverage Analysis
                         </h4>
 
@@ -315,7 +315,7 @@ const Step5InsuranceGap = () => {
                             <div className="flex justify-between items-start border-b border-white/5 pb-2">
                                 <div>
                                     <p className="text-slate-400 font-semibold mb-0.5">RECOMMENDED FOR YOU</p>
-                                    <p className="text-[10px] text-slate-500">Based on Income, Goals & Liabilities</p>
+                                    <p className="text-xs text-slate-500">Based on Income, Goals & Liabilities</p>
                                 </div>
                                 <span className="font-bold text-lg text-white">{formatCurrency(recommendedLifeCover)}</span>
                             </div>
@@ -323,7 +323,7 @@ const Step5InsuranceGap = () => {
                             <div className="flex justify-between items-start border-b border-white/5 pb-2">
                                 <div>
                                     <p className="text-slate-400 font-semibold mb-0.5">YOUR CURRENT COVERAGE</p>
-                                    <p className="text-[10px] text-slate-500">Corporate: {formatCurrency(actualCorpLife)} | Personal: {formatCurrency(actualPersonalLife)}</p>
+                                    <p className="text-xs text-slate-500">Corporate: {formatCurrency(actualCorpLife)} | Personal: {formatCurrency(actualPersonalLife)}</p>
                                 </div>
                                 <span className="font-bold text-white">{formatCurrency(totalLifeCover)}</span>
                             </div>
@@ -334,7 +334,7 @@ const Step5InsuranceGap = () => {
                                         <span className="font-bold text-red-400 flex items-center gap-2"><X className="w-4 h-4" /> COVERAGE GAP</span>
                                         <span className="font-bold text-lg text-red-400">{formatCurrency(lifeGap)}</span>
                                     </div>
-                                    <p className="text-[10px] font-semibold text-red-400/80 uppercase tracking-wide mb-3">
+                                    <p className="text-xs font-semibold text-red-400/80 uppercase tracking-wide mb-3">
                                         (You're only {Math.round(lifeGapPercent)}% covered!)
                                     </p>
                                     <div className="border-t border-red-500/10 pt-3">
@@ -378,7 +378,7 @@ const Step5InsuranceGap = () => {
 
                 {/* FINAL ACTION SUMMARY */}
                 <section id="summary" className="bg-surface-dark border-2 border-primary/20 rounded-3xl shadow-2xl relative mt-10 p-6">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-background-dark font-black text-[10px] uppercase tracking-widest py-1 px-4 rounded-full shadow-lg">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-background-dark font-bold text-xs uppercase tracking-widest py-1 px-4 rounded-full shadow-lg">
                         Action Summary
                     </div>
                     <div className="h-full">

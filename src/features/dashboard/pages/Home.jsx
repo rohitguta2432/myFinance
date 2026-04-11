@@ -38,7 +38,7 @@ const Home = () => {
                         {/* Left Sidebar Navigation */}
                         <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-white/5 bg-background-dark/50">
                             <nav className="flex-1 p-4 space-y-1 pt-6">
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-4 px-3">Dashboard</p>
+                                <p className="text-xs uppercase tracking-widest font-bold text-slate-500 mb-4 px-3">Dashboard</p>
                                 {SIDEBAR_TABS.map((tab) => {
                                     const Icon = tab.icon;
                                     const isActive = activeTab === tab.id;
@@ -103,7 +103,7 @@ const Home = () => {
                     <div className="flex-1 flex flex-col">
                         {/* Hero Section */}
                         <div className="px-6 pt-8 pb-8 text-center">
-                            <h1 className="text-white text-3xl lg:text-5xl leading-tight font-extrabold tracking-tight mb-4 max-w-4xl mx-auto">
+                            <h1 className="text-white text-3xl lg:text-5xl leading-tight font-bold tracking-tight mb-4 max-w-4xl mx-auto">
                                 Fix Your Finances Early, or Pay <span className="text-primary whitespace-nowrap">10× Later</span>
                             </h1>
                             <p className="text-white/70 text-base lg:text-lg font-normal leading-relaxed max-w-sm lg:max-w-2xl mx-auto">
@@ -120,7 +120,7 @@ const Home = () => {
                                     <div className="w-8 h-8 rounded-full border-2 border-surface-dark bg-gray-500 flex items-center justify-center text-surface-dark text-xs font-bold">C</div>
                                 </div>
                                 <div className="flex flex-col items-start">
-                                    <div className="flex text-yellow-400 text-[10px] gap-0.5">
+                                    <div className="flex text-yellow-400 text-xs gap-0.5">
                                         {[...Array(5)].map((_, i) => (
                                             <Star key={i} className="w-3 h-3 fill-current" />
                                         ))}
@@ -162,7 +162,7 @@ const Home = () => {
                                     <div>
                                         <h3 className="text-white font-bold text-lg mb-1">Tax Regime Optimizer</h3>
                                         <div className="inline-block bg-white/10 rounded px-2 py-0.5 mb-2">
-                                            <span className="text-[10px] text-primary font-bold uppercase tracking-wider">FY 2026-27 Ready</span>
+                                            <span className="text-xs text-primary font-bold uppercase tracking-wider">FY 2026-27 Ready</span>
                                         </div>
                                         <p className="text-slate-400 text-sm leading-snug">Compare Old vs. New regime instantly tailored to your specific deductions.</p>
                                     </div>

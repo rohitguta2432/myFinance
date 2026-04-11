@@ -190,7 +190,7 @@ export default function AiChatWidget({ user }) {
         {
           role: 'assistant',
           content:
-            'Sorry, I\'m experiencing a technical issue right now. Please try again in a moment. 🙏',
+            'I couldn\'t process your request right now. Please try again in a moment.',
         },
       ]);
     } finally {

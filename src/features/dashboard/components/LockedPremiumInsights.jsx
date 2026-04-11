@@ -14,7 +14,7 @@ const LockedInsightCard = ({ card }) => {
             </div>
 
             {/* Impact figure — large, prominent, visible */}
-            <p className="text-2xl font-black text-amber-400 mb-3 tabular-nums">
+            <p className="text-2xl font-bold text-amber-400 mb-3 tabular-nums">
                 {card.impactLabel}
             </p>
 

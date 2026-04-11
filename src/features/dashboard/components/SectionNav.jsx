@@ -46,7 +46,7 @@ const SectionNav = ({ sections }) => {
                             className="flex items-center gap-2.5 group cursor-pointer py-1"
                         >
                             <span
-                                className={`text-[11px] font-medium tracking-wide transition-all duration-300 ${
+                                className={`text-xs font-medium tracking-wide transition-all duration-300 ${
                                     isActive
                                         ? 'text-primary opacity-100'
                                         : 'text-slate-500 opacity-0 group-hover:opacity-100'

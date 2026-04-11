@@ -111,7 +111,7 @@ public class DashboardDataLoader {
                 .annualIncome(monthlyIncome * 12)
                 .monthlyExpenses(monthlyExpenses)
                 .monthlyEMI(monthlyEMI)
-                .monthlySavings(monthlyIncome - monthlyExpenses - monthlyEMI)
+                .monthlySavings(monthlyIncome - monthlyExpenses)
                 .totalAssets(totalAssets)
                 .totalLiabilities(totalLiabilities)
                 .netWorth(totalAssets - totalLiabilities)
@@ -122,7 +122,7 @@ public class DashboardDataLoader {
                 .lifePremium(lifePremium)
                 .equityPct(totalAssets > 0 ? (equityTotal / totalAssets) * 100 : 0)
                 .savingsRate(
-                        monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses - monthlyEMI) / monthlyIncome) * 100 : 0)
+                        monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 : 0)
                 .build();
     }
 
