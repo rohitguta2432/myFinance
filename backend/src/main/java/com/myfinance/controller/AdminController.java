@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     // Allowlist of user IDs permitted to access admin endpoints
-    private static final java.util.Set<Long> ADMIN_USER_IDS = java.util.Set.of(1L, 5L);
+    private static final java.util.Set<Long> ADMIN_USER_IDS = java.util.Set.of(1L, 2L);
 
     private final AdminService adminService;
     private final AuditLogService auditLogService;
