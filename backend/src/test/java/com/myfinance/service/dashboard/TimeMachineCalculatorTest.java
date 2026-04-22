@@ -68,12 +68,12 @@ class TimeMachineCalculatorTest {
         }
 
         @Test
-        @DisplayName("should have zero delay for age 22")
+        @DisplayName("should have zero delay and zero missed wealth for age 22")
         void noDelay() {
             TimeMachineDTO result = calculator.calculate(baseData().age(22).build(), baseRaw());
             assertThat(result.getDelayYears()).isEqualTo(0);
             assertThat(result.getMissedWealth()).isEqualTo(0.0);
-            assertThat(result.getDailyCostOfInaction()).isEqualTo(0.0);
+            // dailyCostOfInaction is now forward-looking, independent of delayYears
         }
 
         @Test
@@ -104,11 +104,13 @@ class TimeMachineCalculatorTest {
         }
 
         @Test
-        @DisplayName("should increase with more delay years")
-        void moreDelayMoreMissed() {
-            TimeMachineDTO result30 = calculator.calculate(baseData().age(30).build(), baseRaw());
-            TimeMachineDTO result40 = calculator.calculate(baseData().age(40).build(), baseRaw());
-            assertThat(result40.getMissedWealth()).isGreaterThan(result30.getMissedWealth());
+        @DisplayName("should scale with monthly surplus (lookback is constant 5 yrs)")
+        void scalesWithSurplus() {
+            TimeMachineDTO low =
+                    calculator.calculate(baseData().monthlySavings(10000).build(), baseRaw());
+            TimeMachineDTO high =
+                    calculator.calculate(baseData().monthlySavings(50000).build(), baseRaw());
+            assertThat(high.getMissedWealth()).isGreaterThan(low.getMissedWealth());
         }
 
         @Test
@@ -124,19 +126,26 @@ class TimeMachineCalculatorTest {
     class DailyCost {
 
         @Test
-        @DisplayName("should be missedWealth / (delayYears * 365)")
+        @DisplayName("should be waitingPenalty / 365 (forward math)")
         void dailyCostFormula() {
             UserFinancialData data = baseData().age(30).build();
             TimeMachineDTO result = calculator.calculate(data, baseRaw());
-            int delay = 8; // 30 - 22
-            double expected = result.getMissedWealth() / (delay * 365.0);
+            double expected = result.getWaitingPenalty() / 365.0;
             assertThat(result.getDailyCostOfInaction()).isCloseTo(expected, within(0.01));
         }
 
         @Test
-        @DisplayName("should be zero when no delay")
-        void zeroDailyCost() {
+        @DisplayName("should still be positive when delayYears is 0 (forward-looking)")
+        void forwardLookingEvenWithNoLookbackDelay() {
             TimeMachineDTO result = calculator.calculate(baseData().age(22).build(), baseRaw());
+            assertThat(result.getDailyCostOfInaction()).isGreaterThan(0);
+        }
+
+        @Test
+        @DisplayName("should be zero when monthly surplus is zero")
+        void zeroDailyCostWhenNoSurplus() {
+            TimeMachineDTO result =
+                    calculator.calculate(baseData().monthlySavings(0).build(), baseRaw());
             assertThat(result.getDailyCostOfInaction()).isEqualTo(0.0);
         }
     }

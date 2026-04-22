@@ -158,6 +158,30 @@ public class DashboardSummaryDTO {
         private Double actualStartAge;
         private Double costOfDelay;
         private String costOfDelayFormatted;
+        // ── Forward-looking (backend-owned narrative) ──
+        private Integer horizonYears;
+        private Double monthlySurplus;
+        private Double baseCorpus;
+        private Double delayedCorpus;
+        private Double waitingPenalty;
+        private String heroSubtitle;
+        private String explanation;
+        private List<TimeMachineCardDTO> cards;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class TimeMachineCardDTO {
+        private String tone;           // "danger" | "warning" | "positive"
+        private String badge;          // uppercase pill label
+        private String amountPrefix;   // e.g. "+"
+        private String amountFormatted;
+        private String amountSuffix;   // e.g. "/day"
+        private String heading;
+        private String body;           // supports **bold**
+        private String formula;        // optional
     }
 
     // ══════════════════════════════════════════════════════════════
