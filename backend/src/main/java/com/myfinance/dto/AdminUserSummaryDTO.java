@@ -21,4 +21,5 @@ public class AdminUserSummaryDTO {
     private double monthlyIncome;
     private double monthlyExpenses;
     private double savingsRate;
+    private Boolean isAdmin;
 }

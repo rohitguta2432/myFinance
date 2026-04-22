@@ -30,6 +30,9 @@ public class User {
 
     private LocalDateTime lastLoginAt;
 
+    @Builder.Default
+    private Boolean isAdmin = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -159,7 +159,35 @@ public class AdminService {
                 .monthlyIncome(monthlyIncome)
                 .monthlyExpenses(monthlyExpenses)
                 .savingsRate(savingsRate)
+                .isAdmin(Boolean.TRUE.equals(user.getIsAdmin()))
                 .build();
+    }
+
+    public boolean isAdmin(Long userId) {
+        if (userId == null) return false;
+        return userRepo.findById(userId)
+                .map(u -> Boolean.TRUE.equals(u.getIsAdmin()))
+                .orElse(false);
+    }
+
+    public AdminUserSummaryDTO updateUserRole(Long requesterId, Long targetId, boolean makeAdmin) {
+        User target = userRepo.findById(targetId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + targetId));
+
+        boolean currentlyAdmin = Boolean.TRUE.equals(target.getIsAdmin());
+
+        if (currentlyAdmin && !makeAdmin) {
+            if (targetId.equals(requesterId)) {
+                throw new IllegalStateException("Cannot demote yourself");
+            }
+            if (userRepo.countByIsAdminTrue() <= 1) {
+                throw new IllegalStateException("Cannot demote the last admin");
+            }
+        }
+
+        target.setIsAdmin(makeAdmin);
+        userRepo.save(target);
+        return toSummary(target);
     }
 
     private int countSteps(Long userId) {
