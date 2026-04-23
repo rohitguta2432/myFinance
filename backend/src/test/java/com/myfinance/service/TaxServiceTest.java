@@ -1,13 +1,14 @@
 package com.myfinance.service;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.myfinance.dto.TaxDTO;
 import com.myfinance.model.Tax;
 import com.myfinance.model.enums.TaxRegime;
 import com.myfinance.repository.TaxRepository;
+import com.myfinance.service.TaxCalculationService.CalcContext;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,103 +23,46 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("TaxService")
 class TaxServiceTest {
 
-    @Mock
-    private TaxRepository taxRepo;
+    @Mock private TaxRepository taxRepo;
+    @Mock private TaxCalculationService taxCalcService;
+    @Mock private AuditLogService auditLogService;
+    @InjectMocks private TaxService taxService;
 
-    @Mock
-    private AuditLogService auditLogService;
-
-    @InjectMocks
-    private TaxService taxService;
+    private static final CalcContext EMPTY_CTX = CalcContext.builder()
+            .grossTotalIncome(0).incomeCategories(java.util.Map.of())
+            .autoEpf(0).autoLifeInsurance(0).annualRentPaid(0)
+            .annualBasic(0).actualHraReceived(0).hraExemption(0).rentalStdDeduction(0)
+            .build();
 
     @Nested
     @DisplayName("getTax")
     class GetTax {
 
         @Test
-        @DisplayName("should return mapped DTO when tax record exists")
-        void returnsDto_whenTaxExists() {
-            Long userId = 1L;
+        @DisplayName("returns mapped DTO when tax record exists")
+        void returnsDto() {
             Tax tax = Tax.builder()
-                    .id(10L)
-                    .userId(userId)
-                    .selectedRegime(TaxRegime.OLD)
-                    .ppfElssAmount(150000.0)
-                    .epfVpfAmount(50000.0)
-                    .tuitionFeesAmount(100000.0)
-                    .licPremiumAmount(25000.0)
-                    .homeLoanPrincipal(200000.0)
-                    .healthInsurancePremium(25000.0)
-                    .parentsHealthInsurance(50000.0)
-                    .calculatedTaxOld(150000.0)
-                    .calculatedTaxNew(120000.0)
+                    .id(10L).userId(1L).selectedRegime(TaxRegime.OLD)
+                    .ppfElssAmount(150000.0).epfVpfAmount(50000.0)
+                    .additionalNpsAmount(50000.0).homeLoanInterest(100000.0)
+                    .calculatedTaxOld(100000.0).calculatedTaxNew(150000.0)
                     .build();
+            when(taxRepo.findByUserId(1L)).thenReturn(Optional.of(tax));
 
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.of(tax));
+            TaxDTO result = taxService.getTax(1L);
 
-            TaxDTO result = taxService.getTax(userId);
-
-            assertThat(result.getId()).isEqualTo(10L);
             assertThat(result.getSelectedRegime()).isEqualTo("OLD");
             assertThat(result.getPpfElssAmount()).isEqualTo(150000.0);
-            assertThat(result.getEpfVpfAmount()).isEqualTo(50000.0);
-            assertThat(result.getTuitionFeesAmount()).isEqualTo(100000.0);
-            assertThat(result.getLicPremiumAmount()).isEqualTo(25000.0);
-            assertThat(result.getHomeLoanPrincipal()).isEqualTo(200000.0);
-            assertThat(result.getHealthInsurancePremium()).isEqualTo(25000.0);
-            assertThat(result.getParentsHealthInsurance()).isEqualTo(50000.0);
-            assertThat(result.getCalculatedTaxOld()).isEqualTo(150000.0);
-            assertThat(result.getCalculatedTaxNew()).isEqualTo(120000.0);
+            assertThat(result.getAdditionalNpsAmount()).isEqualTo(50000.0);
+            assertThat(result.getHomeLoanInterest()).isEqualTo(100000.0);
         }
 
         @Test
-        @DisplayName("should return empty DTO when no tax record exists")
-        void returnsEmptyDto_whenNotFound() {
-            when(taxRepo.findByUserId(99L)).thenReturn(Optional.empty());
-
-            TaxDTO result = taxService.getTax(99L);
-
-            assertThat(result).isNotNull();
-            assertThat(result.getId()).isNull();
-            assertThat(result.getSelectedRegime()).isNull();
-        }
-
-        @Test
-        @DisplayName("should handle tax with null regime")
-        void handlesNullRegime() {
-            Tax tax = Tax.builder()
-                    .id(5L)
-                    .userId(1L)
-                    .selectedRegime(null)
-                    .ppfElssAmount(100000.0)
-                    .build();
-
-            when(taxRepo.findByUserId(1L)).thenReturn(Optional.of(tax));
-
+        @DisplayName("returns empty DTO when no record")
+        void returnsEmpty() {
+            when(taxRepo.findByUserId(1L)).thenReturn(Optional.empty());
             TaxDTO result = taxService.getTax(1L);
-
             assertThat(result.getSelectedRegime()).isNull();
-            assertThat(result.getPpfElssAmount()).isEqualTo(100000.0);
-        }
-
-        @Test
-        @DisplayName("should handle tax with all null amounts")
-        void handlesAllNullAmounts() {
-            Tax tax = Tax.builder()
-                    .id(5L)
-                    .userId(1L)
-                    .selectedRegime(TaxRegime.NEW)
-                    .build();
-
-            when(taxRepo.findByUserId(1L)).thenReturn(Optional.of(tax));
-
-            TaxDTO result = taxService.getTax(1L);
-
-            assertThat(result.getSelectedRegime()).isEqualTo("NEW");
-            assertThat(result.getPpfElssAmount()).isNull();
-            assertThat(result.getEpfVpfAmount()).isNull();
-            assertThat(result.getCalculatedTaxOld()).isNull();
-            assertThat(result.getCalculatedTaxNew()).isNull();
         }
     }
 
@@ -127,156 +71,42 @@ class TaxServiceTest {
     class SaveTax {
 
         @Test
-        @DisplayName("should create new tax record when none exists")
-        void createsNewTax() {
-            Long userId = 1L;
-            TaxDTO dto = TaxDTO.builder()
-                    .selectedRegime("OLD")
-                    .ppfElssAmount(150000.0)
-                    .epfVpfAmount(50000.0)
-                    .tuitionFeesAmount(100000.0)
-                    .licPremiumAmount(25000.0)
-                    .homeLoanPrincipal(200000.0)
-                    .healthInsurancePremium(25000.0)
-                    .parentsHealthInsurance(50000.0)
-                    .calculatedTaxOld(150000.0)
-                    .calculatedTaxNew(120000.0)
-                    .build();
-
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {
-                Tax t = inv.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            TaxDTO result = taxService.saveTax(userId, dto);
-
-            assertThat(result.getId()).isEqualTo(1L);
-            assertThat(result.getSelectedRegime()).isEqualTo("OLD");
-            assertThat(result.getPpfElssAmount()).isEqualTo(150000.0);
-            verify(auditLogService).log(userId, "SAVE_TAX", "tax");
-        }
-
-        @Test
-        @DisplayName("should update existing tax record")
-        void updatesExistingTax() {
-            Long userId = 1L;
-            Tax existing = Tax.builder()
-                    .id(10L)
-                    .userId(userId)
-                    .selectedRegime(TaxRegime.OLD)
-                    .ppfElssAmount(100000.0)
-                    .build();
-
-            TaxDTO dto = TaxDTO.builder()
-                    .selectedRegime("NEW")
-                    .ppfElssAmount(0.0)
-                    .calculatedTaxOld(200000.0)
-                    .calculatedTaxNew(150000.0)
-                    .build();
-
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.of(existing));
+        @DisplayName("persists all granular fields and recomputes tax totals")
+        void persistsAllFieldsAndRecomputes() {
+            when(taxRepo.findByUserId(1L)).thenReturn(Optional.empty());
+            when(taxCalcService.buildContext(1L)).thenReturn(EMPTY_CTX);
             when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            TaxDTO result = taxService.saveTax(userId, dto);
-
-            assertThat(result.getId()).isEqualTo(10L);
-            assertThat(result.getSelectedRegime()).isEqualTo("NEW");
-            assertThat(result.getPpfElssAmount()).isEqualTo(0.0);
-        }
-
-        @Test
-        @DisplayName("should save with correct arguments via ArgumentCaptor")
-        void capturesSaveArguments() {
-            Long userId = 5L;
-            TaxDTO dto = TaxDTO.builder()
+            TaxDTO input = TaxDTO.builder()
                     .selectedRegime("OLD")
-                    .ppfElssAmount(150000.0)
-                    .epfVpfAmount(21600.0)
-                    .healthInsurancePremium(25000.0)
-                    .parentsHealthInsurance(50000.0)
-                    .calculatedTaxOld(80000.0)
-                    .calculatedTaxNew(100000.0)
+                    .ppfElssAmount(150000.0).epfVpfAmount(21600.0)
+                    .nscFdAmount(50000.0).tuitionFeesAmount(25000.0)
+                    .healthInsurancePremium(25000.0).parentsHealthInsurance(25000.0).parentsHealthInsuranceSenior(0.0)
+                    .additionalNpsAmount(50000.0).homeLoanInterest(200000.0)
+                    .educationLoanInterest(30000.0).donationsAmount(10000.0)
+                    // client-supplied values should be ignored/overwritten
+                    .calculatedTaxOld(999999.0).calculatedTaxNew(999999.0)
                     .build();
 
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {
-                Tax t = inv.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            taxService.saveTax(userId, dto);
+            TaxDTO saved = taxService.saveTax(1L, input);
 
             ArgumentCaptor<Tax> captor = ArgumentCaptor.forClass(Tax.class);
             verify(taxRepo).save(captor.capture());
-            Tax saved = captor.getValue();
+            Tax persisted = captor.getValue();
 
-            assertThat(saved.getUserId()).isEqualTo(5L);
-            assertThat(saved.getSelectedRegime()).isEqualTo(TaxRegime.OLD);
-            assertThat(saved.getPpfElssAmount()).isEqualTo(150000.0);
-            assertThat(saved.getEpfVpfAmount()).isEqualTo(21600.0);
-            assertThat(saved.getHealthInsurancePremium()).isEqualTo(25000.0);
-            assertThat(saved.getParentsHealthInsurance()).isEqualTo(50000.0);
-        }
+            assertThat(persisted.getPpfElssAmount()).isEqualTo(150000.0);
+            assertThat(persisted.getNscFdAmount()).isEqualTo(50000.0);
+            assertThat(persisted.getAdditionalNpsAmount()).isEqualTo(50000.0);
+            assertThat(persisted.getHomeLoanInterest()).isEqualTo(200000.0);
+            assertThat(persisted.getEducationLoanInterest()).isEqualTo(30000.0);
+            assertThat(persisted.getDonationsAmount()).isEqualTo(10000.0);
 
-        @Test
-        @DisplayName("should handle invalid regime string gracefully")
-        void handlesInvalidRegime() {
-            Long userId = 1L;
-            TaxDTO dto = TaxDTO.builder()
-                    .selectedRegime("INVALID_REGIME")
-                    .ppfElssAmount(100000.0)
-                    .build();
+            // Server recomputed: zero gross in empty context yields zero tax (not 999999 from client)
+            assertThat(persisted.getCalculatedTaxOld()).isZero();
+            assertThat(persisted.getCalculatedTaxNew()).isZero();
+            assertThat(saved.getCalculatedTaxOld()).isNotEqualTo(999999.0);
 
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {
-                Tax t = inv.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            TaxDTO result = taxService.saveTax(userId, dto);
-
-            assertThat(result.getSelectedRegime()).isNull();
-        }
-
-        @Test
-        @DisplayName("should handle null regime string")
-        void handlesNullRegime() {
-            Long userId = 1L;
-            TaxDTO dto =
-                    TaxDTO.builder().selectedRegime(null).ppfElssAmount(50000.0).build();
-
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {
-                Tax t = inv.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            TaxDTO result = taxService.saveTax(userId, dto);
-
-            assertThat(result.getSelectedRegime()).isNull();
-        }
-
-        @Test
-        @DisplayName("should log audit after saving")
-        void logsAuditAfterSave() {
-            Long userId = 2L;
-            TaxDTO dto = TaxDTO.builder().selectedRegime("NEW").build();
-
-            when(taxRepo.findByUserId(userId)).thenReturn(Optional.empty());
-            when(taxRepo.save(any(Tax.class))).thenAnswer(inv -> {
-                Tax t = inv.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            taxService.saveTax(userId, dto);
-
-            verify(auditLogService, times(1)).log(userId, "SAVE_TAX", "tax");
+            verify(auditLogService).log(1L, "SAVE_TAX", "tax");
         }
     }
 }

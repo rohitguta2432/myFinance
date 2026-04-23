@@ -12,9 +12,14 @@ import com.myfinance.repository.AssetRepository;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.IncomeRepository;
 import com.myfinance.repository.InsuranceRepository;
+import com.myfinance.service.tax.TaxComputationEngine;
+import com.myfinance.service.tax.TaxComputationEngine.Inputs;
+import com.myfinance.service.tax.TaxComputationEngine.Regime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Builder;
+import lombok.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,46 +35,116 @@ public class TaxCalculationService {
     private final AssetRepository assetRepo;
     private final InsuranceRepository insuranceRepo;
 
-    // ─── Public entry point ─────────────────────────────────────────────────────
+    /** Granular per-component deduction inputs (sent from step-6 UI). */
+    @Value
+    @Builder
+    public static class DeductionInputs {
+        // 80C components (user-entered)
+        double ppfNps;
+        double homeLoanPrincipal;
+        double tuitionFees;
+        double nscFd;
+        // 80D components
+        double medSelfSpouse;
+        double medParentsLt60;
+        double medParentsGt60;
+        // Other
+        double additionalNps;        // 80CCD(1B)
+        double homeLoanInterest;     // 24(b)
+        double educationLoanInterest;// 80E
+        double donations;            // 80G
+    }
+
+    // ─── Public entry points ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public TaxCalculationDTO calculate(
-            Long userId, double deductions80C, double deductions80D, double otherDeductions) {
-        log.info(
-                "tax-calculation.start user={} 80C={} 80D={} other={}",
-                userId,
-                deductions80C,
-                deductions80D,
-                otherDeductions);
+    public TaxCalculationDTO calculate(Long userId, DeductionInputs in) {
+        log.info("tax-calculation.start user={}", userId);
 
-        // 1) Income annualization
+        // Income, HRA, rental, auto-fetched 80C helpers
+        var ctx = buildContext(userId);
+
+        // Build engine inputs
+        double raw80C = ctx.autoEpf + ctx.autoLifeInsurance
+                + in.getPpfNps() + in.getHomeLoanPrincipal()
+                + in.getTuitionFees() + in.getNscFd();
+        double raw80D = Math.min(in.getMedSelfSpouse(), 25_000)
+                + Math.min(in.getMedParentsLt60(), 25_000)
+                + Math.min(in.getMedParentsGt60(), 50_000);
+
+        Inputs engineIn = Inputs.builder()
+                .grossIncome(ctx.grossTotalIncome)
+                .deductions80CRaw(raw80C)
+                .deductions80D(raw80D)
+                .additionalNps(in.getAdditionalNps())
+                .hraExemption(ctx.hraExemption)
+                .homeLoanInterest(in.getHomeLoanInterest())
+                .educationLoanInterest(in.getEducationLoanInterest())
+                .donations(in.getDonations())
+                .rentalStdDeduction(ctx.rentalStdDeduction)
+                .employerNps(0)
+                .build();
+
+        Regime oldReg = TaxComputationEngine.oldRegime(engineIn);
+        Regime newReg = TaxComputationEngine.newRegime(engineIn);
+        String recommended = oldReg.getTotalTax() <= newReg.getTotalTax() ? "old" : "new";
+        double savings = Math.abs(oldReg.getTotalTax() - newReg.getTotalTax());
+
+        return TaxCalculationDTO.builder()
+                .grossTotalIncome(ctx.grossTotalIncome)
+                .incomeCategories(ctx.incomeCategories)
+                .autoEpf(ctx.autoEpf)
+                .autoPpf(0.0)
+                .autoLifeInsurance(ctx.autoLifeInsurance)
+                .annualRentPaid(ctx.annualRentPaid)
+                .annualBasic(ctx.annualBasic)
+                .actualHraReceived(ctx.actualHraReceived)
+                .hraExemption(ctx.hraExemption)
+                .oldRegime(toBreakdown(oldReg))
+                .newRegime(toBreakdown(newReg))
+                .recommendedRegime(recommended)
+                .savings(savings)
+                .build();
+    }
+
+    // ─── Context loader (income, HRA, rental, auto-populated 80C) ──────
+
+    @Value
+    @Builder
+    public static class CalcContext {
+        double grossTotalIncome;
+        Map<String, Double> incomeCategories;
+        double autoEpf;
+        double autoLifeInsurance;
+        double annualRentPaid;
+        double annualBasic;
+        double actualHraReceived;
+        double hraExemption;
+        double rentalStdDeduction;
+    }
+
+    @Transactional(readOnly = true)
+    public CalcContext buildContext(Long userId) {
         List<Income> incomes = incomeRepo.findByUserId(userId);
         Map<String, Double> incomeCategories = new LinkedHashMap<>();
         for (Income inc : incomes) {
             String source = inc.getSourceName() != null ? inc.getSourceName() : "Other";
             incomeCategories.merge(source, toAnnual(inc.getAmount(), inc.getFrequency()), Double::sum);
         }
-        double grossTotalIncome = incomeCategories.values().stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
+        double gross = incomeCategories.values().stream().mapToDouble(Double::doubleValue).sum();
 
-        // 2) Auto-populated deductions from stored data
         List<Asset> assets = assetRepo.findByUserId(userId);
         double autoEpf = assets.stream()
                 .filter(a -> containsAny(a.getAssetType(), "EPF"))
                 .mapToDouble(a -> safe(a.getCurrentValue()))
                 .sum();
-        // PPF/NPS auto-fetch removed — Asset.currentValue is lifetime balance,
-        // not current year contribution. Users enter manually on frontend.
-        double autoPpf = 0;
 
         List<Insurance> insurances = insuranceRepo.findByUserId(userId);
-        double autoLifeInsurance = insurances.stream()
+        double autoLife = insurances.stream()
                 .filter(ins -> ins.getInsuranceType() == InsuranceType.LIFE)
                 .mapToDouble(ins -> safe(ins.getPremiumAmount()))
                 .sum();
 
-        // 3) HRA exemption (auto-calculated from expenses + income)
         List<Expense> expenses = expenseRepo.findByUserId(userId);
         double monthlyRent = expenses.stream()
                 .filter(e -> "Rent/Mortgage".equalsIgnoreCase(e.getCategory()))
@@ -84,127 +159,46 @@ public class TaxCalculationService {
         double hraExemption = 0;
         if (annualRentPaid > 0 && annualBasic > 0) {
             double rentMinus10Basic = Math.max(0, annualRentPaid - (0.10 * annualBasic));
-            double fiftyPercentBasic = 0.50 * annualBasic; // Metro assumption
-            hraExemption = Math.min(actualHraReceived, Math.min(fiftyPercentBasic, rentMinus10Basic));
+            double fiftyPctBasic = 0.50 * annualBasic; // Metro assumption
+            hraExemption = Math.min(actualHraReceived, Math.min(fiftyPctBasic, rentMinus10Basic));
         }
 
-        // 4) 30% standard deduction on rental income (Section 24)
         double rentalIncome = incomeCategories.entrySet().stream()
                 .filter(e -> e.getKey().toLowerCase().contains("rent"))
                 .mapToDouble(Map.Entry::getValue)
                 .sum();
         double rentalStdDeduction = rentalIncome * 0.30;
-        double totalOtherDeductions = otherDeductions + rentalStdDeduction;
 
-        // 5) Tax calculation — both regimes
-        RegimeBreakdown oldRegime =
-                calculateOldRegime(grossTotalIncome, deductions80C, deductions80D, hraExemption, totalOtherDeductions);
-        RegimeBreakdown newRegime = calculateNewRegime(grossTotalIncome, rentalStdDeduction);
-
-        // 6) Recommendation
-        String recommended = oldRegime.getTotalTax() <= newRegime.getTotalTax() ? "old" : "new";
-        double savings = Math.abs(oldRegime.getTotalTax() - newRegime.getTotalTax());
-
-        log.info("tax-calculation.done recommended={} savings={}", recommended, savings);
-
-        return TaxCalculationDTO.builder()
-                .grossTotalIncome(grossTotalIncome)
+        return CalcContext.builder()
+                .grossTotalIncome(gross)
                 .incomeCategories(incomeCategories)
                 .autoEpf(autoEpf)
-                .autoPpf(autoPpf)
-                .autoLifeInsurance(autoLifeInsurance)
+                .autoLifeInsurance(autoLife)
                 .annualRentPaid(annualRentPaid)
                 .annualBasic(annualBasic)
                 .actualHraReceived(actualHraReceived)
                 .hraExemption(hraExemption)
-                .oldRegime(oldRegime)
-                .newRegime(newRegime)
-                .recommendedRegime(recommended)
-                .savings(savings)
+                .rentalStdDeduction(rentalStdDeduction)
                 .build();
     }
 
-    // ─── Old Regime ─────────────────────────────────────────────────────────────
-
-    private RegimeBreakdown calculateOldRegime(double income, double ded80C, double ded80D, double hra, double other) {
-        double stdDeduction = 50000;
-        double netTaxable = Math.max(0, income - stdDeduction - ded80C - ded80D - hra - other);
-
-        double tax = 0;
-        if (netTaxable > 1000000) {
-            tax += (netTaxable - 1000000) * 0.30;
-            tax += 112500;
-        } else if (netTaxable > 500000) {
-            tax += (netTaxable - 500000) * 0.20;
-            tax += 12500;
-        } else if (netTaxable > 250000) {
-            tax += (netTaxable - 250000) * 0.05;
-        }
-
-        double cess = tax * 0.04;
-        double totalTax = tax + cess;
-        double rate = income > 0 ? (totalTax / income) * 100 : 0;
-
+    private RegimeBreakdown toBreakdown(Regime r) {
         return RegimeBreakdown.builder()
-                .grossIncome(income)
-                .standardDeduction(stdDeduction)
-                .deductions80C(ded80C)
-                .deductions80D(ded80D)
-                .hraExemption(hra)
-                .otherDeductions(other)
-                .netTaxable(netTaxable)
-                .baseTax(tax)
-                .cess(cess)
-                .totalTax(totalTax)
-                .effectiveRate(rate)
+                .grossIncome(r.getGrossIncome())
+                .standardDeduction(r.getStdDeduction())
+                .deductions80C(r.getDeductions80C())
+                .deductions80D(r.getDeductions80D())
+                .hraExemption(r.getHraExemption())
+                .otherDeductions(r.getOtherDeductions() + r.getDeductionsNps())
+                .netTaxable(r.getTaxableIncome())
+                .baseTax(r.getBaseTax())
+                .cess(r.getCess())
+                .totalTax(r.getTotalTax())
+                .effectiveRate(r.getEffectiveRate())
                 .build();
     }
 
-    // ─── New Regime (FY 2026-27) ────────────────────────────────────────────────
-
-    private RegimeBreakdown calculateNewRegime(double income, double rentalStdDeduction) {
-        double stdDeduction = 75000;
-        double netTaxable = Math.max(0, income - stdDeduction - rentalStdDeduction);
-
-        double tax = 0;
-        if (netTaxable <= 700000) {
-            // Rebate u/s 87A — zero tax
-        } else if (netTaxable > 1500000) {
-            tax += (netTaxable - 1500000) * 0.30;
-            tax += 150000;
-        } else if (netTaxable > 1200000) {
-            tax += (netTaxable - 1200000) * 0.20;
-            tax += 90000;
-        } else if (netTaxable > 1000000) {
-            tax += (netTaxable - 1000000) * 0.15;
-            tax += 60000;
-        } else if (netTaxable > 700000) {
-            tax += (netTaxable - 700000) * 0.10;
-            tax += 30000;
-        } else if (netTaxable > 300000) {
-            tax += (netTaxable - 300000) * 0.05;
-        }
-
-        double cess = tax * 0.04;
-        double totalTax = tax + cess;
-        double rate = income > 0 ? (totalTax / income) * 100 : 0;
-
-        return RegimeBreakdown.builder()
-                .grossIncome(income)
-                .standardDeduction(stdDeduction)
-                .deductions80C(0.0)
-                .deductions80D(0.0)
-                .hraExemption(0.0)
-                .otherDeductions(rentalStdDeduction)
-                .netTaxable(netTaxable)
-                .baseTax(tax)
-                .cess(cess)
-                .totalTax(totalTax)
-                .effectiveRate(rate)
-                .build();
-    }
-
-    // ─── Helpers ────────────────────────────────────────────────────────────────
+    // ─── Helpers ────────────────────────────────────────────────────────
 
     private double toAnnual(Double amount, Frequency freq) {
         double amt = safe(amount);
@@ -227,15 +221,11 @@ public class TaxCalculationService {
         };
     }
 
-    private double safe(Double val) {
-        return val != null ? val : 0.0;
-    }
+    private double safe(Double v) { return v != null ? v : 0.0; }
 
-    private boolean containsAny(String text, String... keywords) {
+    private boolean containsAny(String text, String... kws) {
         if (text == null) return false;
-        for (String kw : keywords) {
-            if (text.toUpperCase().contains(kw.toUpperCase())) return true;
-        }
+        for (String kw : kws) if (text.toUpperCase().contains(kw.toUpperCase())) return true;
         return false;
     }
 }

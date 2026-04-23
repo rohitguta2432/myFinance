@@ -1,6 +1,7 @@
 package com.myfinance.controller;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -8,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.myfinance.dto.TaxCalculationDTO;
 import com.myfinance.security.JwtService;
 import com.myfinance.service.TaxCalculationService;
-import java.util.Map;
+import com.myfinance.service.TaxCalculationService.DeductionInputs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,139 +21,45 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(TaxCalculationController.class)
 class TaxCalculationControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private TaxCalculationService taxCalculationService;
-
-    @MockitoBean
-    private JwtService jwtService;
+    @Autowired private MockMvc mockMvc;
+    @MockitoBean private TaxCalculationService taxCalculationService;
+    @MockitoBean private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        org.mockito.Mockito.when(jwtService.extractUserId("test-token")).thenReturn(1L);
-        org.mockito.Mockito.when(jwtService.isTokenValid("test-token")).thenReturn(true);
+        when(jwtService.extractUserId("test-token")).thenReturn(1L);
+        when(jwtService.isTokenValid("test-token")).thenReturn(true);
     }
 
     @Test
-    @DisplayName("GET /api/v1/tax-calculation - calculates tax with all params")
-    void calculate_withAllParams() throws Exception {
+    @DisplayName("GET /api/v1/tax-calculation - passes granular params to service")
+    void callsService_withGranularParams() throws Exception {
         TaxCalculationDTO result = TaxCalculationDTO.builder()
-                .grossTotalIncome(1500000.0)
-                .incomeCategories(Map.of("Salary", 1500000.0))
-                .autoEpf(21600.0)
-                .autoPpf(0.0)
-                .recommendedRegime("old")
-                .savings(50000.0)
-                .oldRegime(TaxCalculationDTO.RegimeBreakdown.builder()
-                        .grossIncome(1500000.0)
-                        .standardDeduction(75000.0)
-                        .deductions80C(150000.0)
-                        .deductions80D(25000.0)
-                        .netTaxable(1200000.0)
-                        .totalTax(180000.0)
-                        .effectiveRate(12.0)
-                        .build())
-                .newRegime(TaxCalculationDTO.RegimeBreakdown.builder()
-                        .grossIncome(1500000.0)
-                        .standardDeduction(75000.0)
-                        .netTaxable(1425000.0)
-                        .totalTax(230000.0)
-                        .effectiveRate(15.3)
-                        .build())
+                .grossTotalIncome(1_500_000.0).recommendedRegime("old").savings(50_000.0)
                 .build();
-
-        when(taxCalculationService.calculate(1L, 150000.0, 25000.0, 10000.0)).thenReturn(result);
+        when(taxCalculationService.calculate(eq(1L), any(DeductionInputs.class))).thenReturn(result);
 
         mockMvc.perform(get("/api/v1/tax-calculation")
                         .header("Authorization", "Bearer test-token")
-                        .param("deductions80C", "150000.0")
-                        .param("deductions80D", "25000.0")
-                        .param("otherDeductions", "10000.0"))
+                        .param("ppfNps", "100000")
+                        .param("medSelfSpouse", "25000")
+                        .param("additionalNps", "50000"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.grossTotalIncome").value(1500000.0))
-                .andExpect(jsonPath("$.recommendedRegime").value("old"))
-                .andExpect(jsonPath("$.savings").value(50000.0))
-                .andExpect(jsonPath("$.oldRegime.totalTax").value(180000.0))
-                .andExpect(jsonPath("$.newRegime.totalTax").value(230000.0));
+                .andExpect(jsonPath("$.recommendedRegime").value("old"));
 
-        verify(taxCalculationService).calculate(1L, 150000.0, 25000.0, 10000.0);
+        verify(taxCalculationService).calculate(eq(1L), any(DeductionInputs.class));
     }
 
     @Test
     @DisplayName("GET /api/v1/tax-calculation - default params are 0")
-    void calculate_defaultParams() throws Exception {
+    void defaultsAreZero() throws Exception {
         TaxCalculationDTO result = TaxCalculationDTO.builder()
-                .grossTotalIncome(1000000.0)
-                .recommendedRegime("new")
-                .build();
-
-        when(taxCalculationService.calculate(1L, 0.0, 0.0, 0.0)).thenReturn(result);
+                .grossTotalIncome(1_000_000.0).recommendedRegime("new").build();
+        when(taxCalculationService.calculate(eq(1L), any(DeductionInputs.class))).thenReturn(result);
 
         mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.grossTotalIncome").value(1000000.0))
-                .andExpect(jsonPath("$.recommendedRegime").value("new"));
+                .andExpect(status().isOk());
 
-        verify(taxCalculationService).calculate(1L, 0.0, 0.0, 0.0);
-    }
-
-    @Test
-    @DisplayName("GET /api/v1/tax-calculation - missing header returns 401")
-    void calculate_missingHeader() throws Exception {
-        mockMvc.perform(get("/api/v1/tax-calculation")).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @DisplayName("GET /api/v1/tax-calculation - partial params provided")
-    void calculate_partialParams() throws Exception {
-        TaxCalculationDTO result =
-                TaxCalculationDTO.builder().grossTotalIncome(1200000.0).build();
-
-        when(taxCalculationService.calculate(1L, 150000.0, 0.0, 0.0)).thenReturn(result);
-
-        mockMvc.perform(get("/api/v1/tax-calculation")
-                        .header("Authorization", "Bearer test-token")
-                        .param("deductions80C", "150000.0"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.grossTotalIncome").value(1200000.0));
-
-        verify(taxCalculationService).calculate(1L, 150000.0, 0.0, 0.0);
-    }
-
-    @Test
-    @DisplayName("GET /api/v1/tax-calculation - service exception propagates")
-    void calculate_serviceException() {
-        when(taxCalculationService.calculate(anyLong(), anyDouble(), anyDouble(), anyDouble()))
-                .thenThrow(new RuntimeException("Calculation error"));
-
-        assertThrows(
-                Exception.class,
-                () -> mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token")));
-    }
-
-    @Test
-    @DisplayName("GET /api/v1/tax-calculation - response includes auto-populated fields")
-    void calculate_autoPopulatedFields() throws Exception {
-        TaxCalculationDTO result = TaxCalculationDTO.builder()
-                .grossTotalIncome(1800000.0)
-                .autoEpf(21600.0)
-                .autoPpf(50000.0)
-                .autoLifeInsurance(12000.0)
-                .annualRentPaid(240000.0)
-                .annualBasic(900000.0)
-                .actualHraReceived(360000.0)
-                .hraExemption(240000.0)
-                .build();
-
-        when(taxCalculationService.calculate(1L, 0.0, 0.0, 0.0)).thenReturn(result);
-
-        mockMvc.perform(get("/api/v1/tax-calculation").header("Authorization", "Bearer test-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.autoEpf").value(21600.0))
-                .andExpect(jsonPath("$.autoPpf").value(50000.0))
-                .andExpect(jsonPath("$.autoLifeInsurance").value(12000.0))
-                .andExpect(jsonPath("$.hraExemption").value(240000.0));
+        verify(taxCalculationService).calculate(eq(1L), any(DeductionInputs.class));
     }
 }

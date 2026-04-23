@@ -6,11 +6,15 @@ import com.myfinance.dto.DashboardSummaryDTO.*;
 import com.myfinance.model.Income;
 import com.myfinance.model.Tax;
 import com.myfinance.service.dashboard.DashboardDataLoader.UserFinancialData;
+import com.myfinance.service.tax.TaxComputationEngine;
+import com.myfinance.service.tax.TaxComputationEngine.Inputs;
+import com.myfinance.service.tax.TaxComputationEngine.Regime;
 import java.util.*;
 import org.springframework.stereotype.Component;
 
 /**
- * Translates useTaxAnalysis.js (275 lines) — dual regime comparison, TDS, deductions.
+ * Dashboard tax analysis. Delegates regime math to {@link TaxComputationEngine}
+ * so numbers always match step-6 assessment page.
  */
 @Component
 public class TaxAnalysisCalculator {
@@ -26,107 +30,77 @@ public class TaxAnalysisCalculator {
             incomeBySource.merge(src, toAnnual(inc.getAmount(), inc.getFrequency()), Double::sum);
         }
 
-        // Rental income
+        // Rental
         double rentalIncome = d.getIncomes().stream()
-                .filter(i -> i.getSourceName() != null
-                        && i.getSourceName().toLowerCase().contains("rent"))
+                .filter(i -> i.getSourceName() != null && i.getSourceName().toLowerCase().contains("rent"))
                 .mapToDouble(i -> toAnnual(i.getAmount(), i.getFrequency()))
                 .sum();
         double rentalStdDeduction = rentalIncome * 0.30;
         double netRental = rentalIncome - rentalStdDeduction;
 
-        // Deductions from Tax model - map actual fields to deduction categories
-        double ppf = tax != null && tax.getPpfElssAmount() != null ? tax.getPpfElssAmount() : 0;
-        double epf = tax != null && tax.getEpfVpfAmount() != null ? tax.getEpfVpfAmount() : 0;
-        double tuition = tax != null && tax.getTuitionFeesAmount() != null ? tax.getTuitionFeesAmount() : 0;
-        double lic = tax != null && tax.getLicPremiumAmount() != null ? tax.getLicPremiumAmount() : 0;
-        double ded80C = Math.min(ppf + epf + tuition + lic, 150000);
-        double dedHomeLoan =
-                tax != null && tax.getHomeLoanPrincipal() != null ? Math.min(tax.getHomeLoanPrincipal(), 200000) : 0;
-        double healthPremium =
-                tax != null && tax.getHealthInsurancePremium() != null ? tax.getHealthInsurancePremium() : 0;
-        double parentsHealth =
-                tax != null && tax.getParentsHealthInsurance() != null ? tax.getParentsHealthInsurance() : 0;
-        double ded80D = healthPremium + parentsHealth;
-        double dedNPS = 0; // No NPS field in current model
-        double dedHRA = 0; // No HRA field in current model
-        double employerNps = 0; // No employer NPS field in current model
-        double totalTDS = 0; // No TDS field in current model
-
-        double stdDeduction = 75000; // FY 2024-25 standard deduction
-
-        // === OLD REGIME ===
-        double oldOtherDeductions = rentalStdDeduction + dedHomeLoan + ded80D;
-        double oldTotalDeductions = ded80C + dedNPS + dedHRA + oldOtherDeductions + stdDeduction;
-        double oldTaxableIncome = Math.max(0, grossIncome - oldTotalDeductions);
-        double oldBaseTax = calcOldRegimeTax(oldTaxableIncome);
-        boolean oldRebate = oldTaxableIncome <= 500000;
-        if (oldRebate) oldBaseTax = 0;
-        double oldCess = oldBaseTax * 0.04;
-        double oldTotalTax = oldBaseTax + oldCess;
-        double oldEffRate = grossIncome > 0 ? (oldTotalTax / grossIncome) * 100 : 0;
-
-        // Use pre-calculated taxes from model if available
-        if (tax != null && tax.getCalculatedTaxOld() != null && tax.getCalculatedTaxOld() > 0) {
-            oldTotalTax = tax.getCalculatedTaxOld();
-            oldEffRate = grossIncome > 0 ? (oldTotalTax / grossIncome) * 100 : 0;
+        // HRA from rent expenses + salary (same formula as step-6 context)
+        double monthlyRent = d.getExpenses().stream()
+                .filter(e -> "Rent/Mortgage".equalsIgnoreCase(e.getCategory()))
+                .mapToDouble(e -> toMonthly(e.getAmount(), e.getFrequency()))
+                .sum();
+        double annualRentPaid = monthlyRent * 12;
+        double salaryIncome = incomeBySource.getOrDefault("Salary", 0.0);
+        double annualBasic = salaryIncome * 0.50;
+        double actualHraReceived = annualBasic * 0.40;
+        double hraExemption = 0;
+        if (annualRentPaid > 0 && annualBasic > 0) {
+            double rentMinus10Basic = Math.max(0, annualRentPaid - (0.10 * annualBasic));
+            double fiftyPctBasic = 0.50 * annualBasic;
+            hraExemption = Math.min(actualHraReceived, Math.min(fiftyPctBasic, rentMinus10Basic));
         }
 
-        RegimeDetailDTO oldRegime = RegimeDetailDTO.builder()
+        // Persisted deductions from Tax entity
+        double ppf = nz(tax != null ? tax.getPpfElssAmount() : null);
+        double epf = nz(tax != null ? tax.getEpfVpfAmount() : null);
+        double tuition = nz(tax != null ? tax.getTuitionFeesAmount() : null);
+        double lic = nz(tax != null ? tax.getLicPremiumAmount() : null);
+        double homeLoanPrincipal = nz(tax != null ? tax.getHomeLoanPrincipal() : null);
+        double nscFd = nz(tax != null ? tax.getNscFdAmount() : null);
+        double raw80C = ppf + epf + tuition + lic + homeLoanPrincipal + nscFd;
+        double ded80C = Math.min(raw80C, 150_000);
+
+        double medSelf = Math.min(nz(tax != null ? tax.getHealthInsurancePremium() : null), 25_000);
+        double medParents = Math.min(nz(tax != null ? tax.getParentsHealthInsurance() : null), 25_000);
+        double medParentsSenior = Math.min(nz(tax != null ? tax.getParentsHealthInsuranceSenior() : null), 50_000);
+        double ded80D = medSelf + medParents + medParentsSenior;
+
+        double addlNps = nz(tax != null ? tax.getAdditionalNpsAmount() : null);
+        double homeLoanInt = nz(tax != null ? tax.getHomeLoanInterest() : null);
+        double eduLoanInt = nz(tax != null ? tax.getEducationLoanInterest() : null);
+        double donations = nz(tax != null ? tax.getDonationsAmount() : null);
+
+        double employerNps = 0; // no model field yet
+        double totalTDS = 0;    // no model field yet
+
+        Inputs in = Inputs.builder()
                 .grossIncome(grossIncome)
-                .stdDeduction(stdDeduction)
-                .deductions80C(ded80C)
-                .deductionsNps(dedNPS)
-                .hraExemption(dedHRA)
-                .otherDeductions(oldOtherDeductions)
-                .totalDeductions(oldTotalDeductions)
-                .taxableIncome(oldTaxableIncome)
-                .baseTax(oldBaseTax)
-                .cess(oldCess)
-                .totalTax(oldTotalTax)
-                .effectiveRate(Math.round(oldEffRate * 100.0) / 100.0)
-                .rebateApplied(oldRebate)
+                .deductions80CRaw(raw80C)
+                .deductions80D(ded80D)
+                .additionalNps(addlNps)
+                .hraExemption(hraExemption)
+                .homeLoanInterest(homeLoanInt)
+                .educationLoanInterest(eduLoanInt)
+                .donations(donations)
+                .rentalStdDeduction(rentalStdDeduction)
+                .employerNps(employerNps)
                 .build();
 
-        // === NEW REGIME ===
-        double newStdDed = 75000;
-        double newEmployerNps = Math.min(employerNps, grossIncome * 0.14);
-        double newOtherDeductions = rentalStdDeduction;
-        double newTotalDed = newStdDed + newEmployerNps + newOtherDeductions;
-        double newTaxableIncome = Math.max(0, grossIncome - newTotalDed);
-        double newBaseTax = calcNewRegimeTax(newTaxableIncome);
-        boolean newRebate = newTaxableIncome <= 700000;
-        if (newRebate) newBaseTax = 0;
-        double newCess = newBaseTax * 0.04;
-        double newTotalTax = newBaseTax + newCess;
-        double newEffRate = grossIncome > 0 ? (newTotalTax / grossIncome) * 100 : 0;
+        Regime oldReg = TaxComputationEngine.oldRegime(in);
+        Regime newReg = TaxComputationEngine.newRegime(in);
 
-        if (tax != null && tax.getCalculatedTaxNew() != null && tax.getCalculatedTaxNew() > 0) {
-            newTotalTax = tax.getCalculatedTaxNew();
-            newEffRate = grossIncome > 0 ? (newTotalTax / grossIncome) * 100 : 0;
-        }
+        RegimeDetailDTO oldRegime = toDetail(oldReg);
+        RegimeDetailDTO newRegime = toDetail(newReg);
 
-        RegimeDetailDTO newRegime = RegimeDetailDTO.builder()
-                .grossIncome(grossIncome)
-                .stdDeduction(newStdDed)
-                .deductions80C(0.0)
-                .deductionsNps(newEmployerNps)
-                .hraExemption(0.0)
-                .otherDeductions(newOtherDeductions)
-                .totalDeductions(newTotalDed)
-                .taxableIncome(newTaxableIncome)
-                .baseTax(newBaseTax)
-                .cess(newCess)
-                .totalTax(newTotalTax)
-                .effectiveRate(Math.round(newEffRate * 100.0) / 100.0)
-                .rebateApplied(newRebate)
-                .build();
-
-        String recommended = oldTotalTax <= newTotalTax ? "old" : "new";
+        String recommended = oldReg.getTotalTax() <= newReg.getTotalTax() ? "old" : "new";
         String selected = tax != null && tax.getSelectedRegime() != null
                 ? tax.getSelectedRegime().name().toLowerCase()
                 : recommended;
-        double savings = Math.abs(oldTotalTax - newTotalTax);
+        double savings = Math.abs(oldReg.getTotalTax() - newReg.getTotalTax());
 
         RegimeComparisonDTO comparison = RegimeComparisonDTO.builder()
                 .old(oldRegime)
@@ -138,7 +112,7 @@ public class TaxAnalysisCalculator {
                 .build();
 
         // TDS reconciliation
-        double recommendedTax = "old".equals(recommended) ? oldTotalTax : newTotalTax;
+        double recommendedTax = "old".equals(recommended) ? oldReg.getTotalTax() : newReg.getTotalTax();
         double tdsDiff = totalTDS - recommendedTax;
         String tdsStatus = tdsDiff > 1000 ? "refund" : tdsDiff < -1000 ? "due" : "matched";
 
@@ -152,7 +126,6 @@ public class TaxAnalysisCalculator {
                 .status(tdsStatus)
                 .build();
 
-        // Rental
         RentalDTO rental = RentalDTO.builder()
                 .hasRentalIncome(rentalIncome > 0)
                 .grossRentalIncome(rentalIncome)
@@ -163,25 +136,23 @@ public class TaxAnalysisCalculator {
                 .netFormatted(fmt(netRental))
                 .build();
 
-        // Deduction items
+        // Deduction items (old regime view)
         boolean isOld = "old".equals(selected);
         List<DeductionItemDTO> dedItems = new ArrayList<>();
-        addDeduction(dedItems, "Section 80C", "PPF, ELSS, EPF, etc.", ded80C, 150000);
-        addDeduction(dedItems, "NPS 80CCD(1B)", "Additional NPS", dedNPS, 50000);
-        addDeduction(dedItems, "HRA Exemption", "House Rent Allowance", dedHRA, dedHRA > 0 ? dedHRA : 100000);
-        addDeduction(dedItems, "Home Loan Interest", "Section 24(b)", dedHomeLoan, 200000);
-        addDeduction(dedItems, "Section 80D", "Medical Insurance", ded80D, 75000);
+        addDeduction(dedItems, "Section 80C", "PPF, ELSS, EPF, etc.", ded80C, 150_000);
+        addDeduction(dedItems, "NPS 80CCD(1B)", "Additional NPS", Math.min(addlNps, 50_000), 50_000);
+        addDeduction(dedItems, "HRA Exemption", "House Rent Allowance", hraExemption, hraExemption > 0 ? hraExemption : 100_000);
+        addDeduction(dedItems, "Home Loan Interest", "Section 24(b)", Math.min(homeLoanInt, 200_000), 200_000);
+        addDeduction(dedItems, "Section 80D", "Medical Insurance", ded80D, 75_000);
 
-        double newRegimeDeduction = newStdDed + newEmployerNps;
         DeductionsDTO deductions = DeductionsDTO.builder()
                 .isOldRegime(isOld)
                 .items(dedItems)
-                .totalDeductions(oldTotalDeductions)
-                .newRegimeDeduction(newRegimeDeduction)
+                .totalDeductions(oldReg.getTotalDeductions())
+                .newRegimeDeduction(newReg.getTotalDeductions())
                 .build();
 
-        // Employer NPS
-        boolean incAbove15L = grossIncome > 1500000;
+        boolean incAbove15L = grossIncome > 1_500_000;
         double npsPotentialSaving = incAbove15L ? employerNps * 0.30 : employerNps * 0.20;
         EmployerNpsDTO empNps = EmployerNpsDTO.builder()
                 .show(employerNps > 0 || incAbove15L)
@@ -205,10 +176,27 @@ public class TaxAnalysisCalculator {
                 .build();
     }
 
+    private RegimeDetailDTO toDetail(Regime r) {
+        return RegimeDetailDTO.builder()
+                .grossIncome(r.getGrossIncome())
+                .stdDeduction(r.getStdDeduction())
+                .deductions80C(r.getDeductions80C())
+                .deductionsNps(r.getDeductionsNps())
+                .hraExemption(r.getHraExemption())
+                .otherDeductions(r.getOtherDeductions())
+                .totalDeductions(r.getTotalDeductions())
+                .taxableIncome(r.getTaxableIncome())
+                .baseTax(r.getBaseTax())
+                .cess(r.getCess())
+                .totalTax(r.getTotalTax())
+                .effectiveRate(r.getEffectiveRate())
+                .rebateApplied(r.isRebateApplied())
+                .build();
+    }
+
     private void addDeduction(List<DeductionItemDTO> items, String label, String sub, double amt, double max) {
         double gap = Math.max(0, max - amt);
         String status = amt >= max ? "full" : amt > 0 ? "partial" : "unused";
-        double potSaving = gap * 0.30; // ~30% marginal rate
         items.add(DeductionItemDTO.builder()
                 .label(label)
                 .sublabel(sub)
@@ -216,37 +204,9 @@ public class TaxAnalysisCalculator {
                 .max(max)
                 .gap(gap)
                 .status(status)
-                .potentialSaving(potSaving)
+                .potentialSaving(gap * 0.30)
                 .build());
     }
 
-    // Old regime slabs (FY 2024-25)
-    private double calcOldRegimeTax(double income) {
-        if (income <= 250000) return 0;
-        double tax = 0;
-        if (income > 250000) tax += Math.min(income - 250000, 250000) * 0.05;
-        if (income > 500000) tax += Math.min(income - 500000, 500000) * 0.20;
-        if (income > 1000000) tax += (income - 1000000) * 0.30;
-        return tax;
-    }
-
-    // New regime slabs (FY 2024-25)
-    private double calcNewRegimeTax(double income) {
-        if (income <= 300000) return 0;
-        double tax = 0;
-        double[][] slabs = {
-            {300000, 700000, 0.05},
-            {700000, 1000000, 0.10},
-            {1000000, 1200000, 0.15},
-            {1200000, 1500000, 0.20},
-            {1500000, Double.MAX_VALUE, 0.30}
-        };
-        for (double[] slab : slabs) {
-            if (income > slab[0]) {
-                double taxable = Math.min(income, slab[1]) - slab[0];
-                tax += taxable * slab[2];
-            }
-        }
-        return tax;
-    }
+    private double nz(Double v) { return v != null ? v : 0.0; }
 }

@@ -23,7 +23,7 @@ public class OpenApiConfig {
                                 "Personal finance assessment and advisory platform for Indian users. "
                                         + "6-step wizard (profile, cash flow, net worth, goals, insurance, tax) with AI-powered insights.")
                         .version("1.0.0")
-                        .contact(new Contact().name("MyFinancial").url("https://app.myfinancial.in")))
+                        .contact(new Contact().name("MyFinancial").url("https://myfinancial.in")))
                 .servers(List.of(new Server().url("/").description("Current")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
