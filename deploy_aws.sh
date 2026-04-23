@@ -101,5 +101,6 @@ sudo ./init-letsencrypt.sh
 EOF
 
 echo "Deployment complete!🚀"
-echo "You can access the UI at: https://app.myfinancial.in"
-echo "You can access the API at: https://app.myfinancial.in/api/v1/assessment/profile"
+echo "Backend API:  https://api-preprod.myfinancial.in/api/v1/"
+echo "Swagger UI:   https://api-preprod.myfinancial.in/swagger-ui.html"
+echo "Frontend UI is served separately via AWS Amplify (https://myfinancial.in)."

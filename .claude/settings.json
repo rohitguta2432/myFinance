@@ -5,9 +5,9 @@
   },
   "permissions": {
     "allow": [
-      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://app.myfinancial.in/)",
-      "Bash(curl -sk -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://app.myfinancial.in/)",
-      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\nRedirect: %{redirect_url}\\\\n\" --max-time 10 http://app.myfinancial.in/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://api-preprod.myfinancial.in/)",
+      "Bash(curl -sk -o /dev/null -w \"HTTP Status: %{http_code}\\\\n\" --max-time 10 https://api-preprod.myfinancial.in/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP Status: %{http_code}\\\\nRedirect: %{redirect_url}\\\\n\" --max-time 10 http://api-preprod.myfinancial.in/)",
       "Bash(grep -E \"\\\\.\\(jsx?|tsx?\\)$\")",
       "Bash(gh pr:*)"
     ],

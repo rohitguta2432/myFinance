@@ -4,7 +4,7 @@ set -e
 # Fast deploy — ships pre-built artifacts to EC2, no Docker build on server
 # Requires: pre-built dist/ (npm run build) and backend JAR (mvn package)
 
-EC2_HOST="app.myfinancial.in"
+EC2_HOST="api-preprod.myfinancial.in"
 KEY="myfinance-key.pem"
 SSH_OPTS="-o StrictHostKeyChecking=no -i ${KEY}"
 REMOTE_USER="ubuntu"
