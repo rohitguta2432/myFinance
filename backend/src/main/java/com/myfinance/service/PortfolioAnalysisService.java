@@ -1,6 +1,8 @@
 package com.myfinance.service;
 
+import com.myfinance.dto.AllocationRowDTO;
 import com.myfinance.dto.PortfolioAnalysisDTO;
+import com.myfinance.dto.RiskScoringDTO;
 import com.myfinance.model.Asset;
 import com.myfinance.model.Expense;
 import com.myfinance.model.Income;
@@ -9,6 +11,7 @@ import com.myfinance.repository.AssetRepository;
 import com.myfinance.repository.ExpenseRepository;
 import com.myfinance.repository.IncomeRepository;
 import com.myfinance.repository.LiabilityRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PortfolioAnalysisService {
 
+    /** Relative tolerance band around target (±10% of target). Example: target 50% → 45–55%. */
+    private static final double ALLOCATION_THRESHOLD_RATIO = 0.10;
+
     private final AssetRepository assetRepo;
     private final LiabilityRepository liabilityRepo;
     private final IncomeRepository incomeRepo;
     private final ExpenseRepository expenseRepo;
+    private final RiskScoringService riskScoringService;
 
     // ─── Asset Classification Maps ──────────────────────────────────────────
 
@@ -140,6 +147,10 @@ public class PortfolioAnalysisService {
                 .sum();
         boolean emiMismatch = monthlyEmiTotal > 0 && cashFlowEMI > 0 && Math.abs(monthlyEmiTotal - cashFlowEMI) > 1;
 
+        // ── 5. Allocation Status vs Target (±10% relative band) ─────────────
+        List<AllocationRowDTO> allocationStatus = buildAllocationStatus(
+                userId, totalAssets, equityPct, debtPct, realEstatePct, goldPct);
+
         log.info(
                 "portfolio.analysis.calculate.success totalAssets={} totalLiabilities={} netWorth={} dti={}%",
                 totalAssets, totalLiabilities, netWorth, String.format("%.1f", dtiRatio));
@@ -164,6 +175,52 @@ public class PortfolioAnalysisService {
                 .dtiRatio(dtiRatio)
                 .cashFlowEMI(cashFlowEMI)
                 .emiMismatch(emiMismatch)
+                .allocationStatus(allocationStatus)
+                .build();
+    }
+
+    // ─── Allocation status builder ──────────────────────────────────────────
+
+    private List<AllocationRowDTO> buildAllocationStatus(
+            Long userId, double totalAssets, double equityPct, double debtPct, double realEstatePct, double goldPct) {
+        if (totalAssets <= 0) return List.of();
+
+        RiskScoringDTO risk;
+        try {
+            risk = riskScoringService.calculateRiskScore(userId);
+        } catch (Exception e) {
+            log.warn("portfolio.analysis.allocationStatus.skipped reason={}", e.getMessage());
+            return List.of();
+        }
+        if (risk == null || risk.getTargetEquity() == null) return List.of();
+
+        List<AllocationRowDTO> rows = new ArrayList<>(4);
+        rows.add(toRow("Equity", equityPct, risk.getTargetEquity()));
+        rows.add(toRow("Debt", debtPct, risk.getTargetDebt()));
+        rows.add(toRow("Real Estate", realEstatePct, risk.getTargetRealEstate()));
+        rows.add(toRow("Gold", goldPct, risk.getTargetGold()));
+        return rows;
+    }
+
+    private AllocationRowDTO toRow(String label, double currentPct, Integer targetPctInt) {
+        double target = targetPctInt != null ? targetPctInt : 0;
+        double diff = currentPct - target;
+        double threshold = target * ALLOCATION_THRESHOLD_RATIO;
+        AllocationRowDTO.Status status;
+        if (diff > threshold) {
+            status = AllocationRowDTO.Status.ABOVE;
+        } else if (diff < -threshold) {
+            status = AllocationRowDTO.Status.BELOW;
+        } else {
+            status = AllocationRowDTO.Status.ON_TRACK;
+        }
+        return AllocationRowDTO.builder()
+                .label(label)
+                .currentPct(currentPct)
+                .targetPct(target)
+                .diffPct(diff)
+                .thresholdPct(threshold)
+                .status(status)
                 .build();
     }
 }

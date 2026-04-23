@@ -1,5 +1,6 @@
 package com.myfinance.dto;
 
+import java.util.List;
 import lombok.*;
 
 @Data
@@ -38,4 +39,7 @@ public class PortfolioAnalysisDTO {
     // ── Cross-step Validation ──
     private Double cashFlowEMI;
     private Boolean emiMismatch;
+
+    // ── Allocation Status (current vs target, ±10% band) ──
+    private List<AllocationRowDTO> allocationStatus;
 }
