@@ -127,3 +127,10 @@ myFinance/
 - [Frontend Specification](specs/frontend_specification.md) — React component guide
 - **Swagger UI** — `http://localhost:8080/swagger-ui.html` (when backend is running)
 
+---
+
+### 🤝 Work with me
+
+I'm an **AI Consultant · Forward Deployed Engineer** — I embed with teams and ship AI to production: agents, MCP integrations, and LLM features, with evals proving they work.
+
+**→ [rohitraj.tech/en/hire](https://rohitraj.tech/en/hire)**
